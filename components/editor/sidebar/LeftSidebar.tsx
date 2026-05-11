@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { v4 as uuidv4 } from "uuid";
 import {
   Layers,
@@ -164,37 +164,61 @@ function AnnotationRow({
 }
 
 export function LeftSidebar() {
-  const {
-    annotations,
-    updateAnnotation,
-    selectedAnnotationIds,
-    setSelectedAnnotationIds,
-    toggleSelectedAnnotationId,
-    labelClasses,
-    addLabelClass,
-    updateLabelClass,
-    deleteLabelClass,
-    activeLabelId,
-    setActiveLabelId,
-  } = useAnnotationStore();
+  const annotations = useAnnotationStore((s) => s.annotations);
+  const updateAnnotation = useAnnotationStore((s) => s.updateAnnotation);
+  const selectedAnnotationIds = useAnnotationStore((s) => s.selectedAnnotationIds);
+  const setSelectedAnnotationIds = useAnnotationStore((s) => s.setSelectedAnnotationIds);
+  const toggleSelectedAnnotationId = useAnnotationStore((s) => s.toggleSelectedAnnotationId);
+  const labelClasses = useAnnotationStore((s) => s.labelClasses);
+  const addLabelClass = useAnnotationStore((s) => s.addLabelClass);
+  const updateLabelClass = useAnnotationStore((s) => s.updateLabelClass);
+  const deleteLabelClass = useAnnotationStore((s) => s.deleteLabelClass);
+  const activeLabelId = useAnnotationStore((s) => s.activeLabelId);
+  const setActiveLabelId = useAnnotationStore((s) => s.setActiveLabelId);
 
   const [newClassName, setNewClassName] = useState("");
   const [newClassColor, setNewClassColor] = useState("#6366f1");
   const [filterText, setFilterText] = useState("");
 
-  const getClass = (labelId: string) =>
-    labelClasses.find((c) => c.id === labelId);
-  const getColor = (labelId: string) => getClass(labelId)?.color ?? "#6366f1";
-  const getName = (labelId: string) => getClass(labelId)?.name ?? "Unknown";
+  const labelColorMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const c of labelClasses) map.set(c.id, c.color);
+    return map;
+  }, [labelClasses]);
+  const labelNameMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const c of labelClasses) map.set(c.id, c.name);
+    return map;
+  }, [labelClasses]);
+  const getColor = (labelId: string) => labelColorMap.get(labelId) ?? "#6366f1";
+  const getName = (labelId: string) => labelNameMap.get(labelId) ?? "Unknown";
 
-  const filtered = filterText
-    ? annotations.filter(
-        (a) =>
-          a.type.includes(filterText.toLowerCase()) ||
-          getName(a.labelId).toLowerCase().includes(filterText.toLowerCase()) ||
-          a.id.toLowerCase().includes(filterText.toLowerCase()),
-      )
-    : annotations;
+  const filtered = useMemo(
+    () =>
+      filterText
+        ? annotations.filter((a) => {
+            const name = labelNameMap.get(a.labelId) ?? "Unknown";
+            return (
+              a.type.includes(filterText.toLowerCase()) ||
+              name.toLowerCase().includes(filterText.toLowerCase()) ||
+              a.id.toLowerCase().includes(filterText.toLowerCase())
+            );
+          })
+        : annotations,
+    [annotations, filterText, labelNameMap],
+  );
+
+  const typeCounts = useMemo(
+    () =>
+      annotations.reduce(
+        (acc, a) => {
+          acc[a.type] = (acc[a.type] ?? 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>,
+      ),
+    [annotations],
+  );
 
   const handleAddClass = () => {
     if (!newClassName.trim()) return;
@@ -210,15 +234,6 @@ export function LeftSidebar() {
     if (e.shiftKey || e.ctrlKey || e.metaKey) toggleSelectedAnnotationId(id);
     else setSelectedAnnotationIds([id]);
   };
-
-  // Group annotations by type for summary
-  const typeCounts = annotations.reduce(
-    (acc, a) => {
-      acc[a.type] = (acc[a.type] ?? 0) + 1;
-      return acc;
-    },
-    {} as Record<string, number>,
-  );
 
   return (
     <TooltipProvider>

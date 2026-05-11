@@ -67,14 +67,16 @@ export function usePolygonOps() {
     if (polys.length < 2) return;
 
     try {
-      const allPC = polys.map((p) => [pointsToPC(p.points)]);
+      const toPC = (pts: Point[]) => pts.map((p) => [p.x, p.y]);
+      const fromPC = (coords: number[][]) => coords.map(([x, y]) => ({ x, y }));
+      const allPC = polys.map((p) => [toPC(p.points)]);
       // @ts-ignore
       const result = polygonClipping.union(...allPC);
 
       const newPolys: Polygon[] = result.map((poly: any) => ({
         ...polys[0],
         id: uuidv4(),
-        points: pcToPoints(poly[0]),
+        points: fromPC(poly[0]),
       }));
 
       useAnnotationStore.getState().replaceAnnotations(ids, newPolys);

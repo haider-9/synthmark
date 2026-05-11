@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import {
   Stage,
   Layer,
@@ -17,14 +17,17 @@ import Konva from "konva";
 import { useAnnotationStore } from "@/stores/useAnnotationStore";
 import { useCanvasInteractions } from "@/hooks/useCanvasInteractions";
 import { usePolygonOps } from "@/hooks/usePolygonOps";
-import { Polygon, Keypoint, Point } from "@/types/annotation";
+import { Polygon, Keypoint, Point, BoundingBox, CircleAnnotation } from "@/types/annotation";
 import { polygonsOverlap } from "@/lib/polygon-utils";
 import { v4 as uuidv4 } from "uuid";
 
 const TOOL_CURSORS: Record<string, string> = {
   select: "default",
   pan: "grab",
+  box: "crosshair",
   polygon: "crosshair",
+  lasso: "crosshair",
+  circle: "crosshair",
   keypoint: "crosshair",
   erase: "cell",
   merge: "copy",
@@ -45,7 +48,7 @@ function dist(a: Point, b: Point) {
 }
 
 // ─── Diamond vertex handle ────────────────────────────────────────────────────
-function DiamondVertex({
+const DiamondVertex = React.memo(function DiamondVertex({
   x,
   y,
   color,
@@ -87,10 +90,10 @@ function DiamondVertex({
       }}
     />
   );
-}
+});
 
 // ─── Edge midpoint ────────────────────────────────────────────────────────────
-function EdgeMidpoint({
+const EdgeMidpoint = React.memo(function EdgeMidpoint({
   x,
   y,
   color,
@@ -124,7 +127,7 @@ function EdgeMidpoint({
       }}
     />
   );
-}
+});
 
 // ─── Polygon annotation ───────────────────────────────────────────────────────
 function PolygonAnnotationComp({
@@ -316,26 +319,222 @@ function KeypointAnnotationComp({
 }
 const KeypointAnnotationMemo = React.memo(KeypointAnnotationComp);
 
+// ─── Box annotation ───────────────────────────────────────────────────────────
+function BoxAnnotationComp({
+  ann,
+  isSelected,
+  color,
+  labelName,
+  zoom,
+  onSelect,
+  onDragEnd,
+}: {
+  ann: BoundingBox;
+  isSelected: boolean;
+  color: string;
+  labelName: string;
+  zoom: number;
+  onSelect: (e: Konva.KonvaEventObject<MouseEvent>) => void;
+  onDragEnd: (id: string, x: number, y: number) => void;
+}) {
+  const shapeRef = useRef<Konva.Rect>(null);
+  const trRef = useRef<Konva.Transformer>(null);
+
+  useEffect(() => {
+    if (isSelected && trRef.current && shapeRef.current) {
+      trRef.current.nodes([shapeRef.current]);
+      trRef.current.getLayer()?.batchDraw();
+    }
+  }, [isSelected]);
+
+  const tagW = Math.min(labelName.length * 6.8 + 12, 130) / zoom;
+  const tagH = 17 / zoom;
+
+  return (
+    <Group>
+      <Rect
+        ref={shapeRef}
+        x={ann.x}
+        y={ann.y}
+        width={ann.width}
+        height={ann.height}
+        stroke={isSelected ? "#ffffff" : color}
+        strokeWidth={(isSelected ? 2 : 1.5) / zoom}
+        fill={hexAlpha(color, isSelected ? 0.22 : 0.13)}
+        draggable={!ann.isLocked}
+        onClick={onSelect}
+        onDragEnd={(e) => onDragEnd(ann.id, e.target.x(), e.target.y())}
+        shadowColor={color}
+        shadowBlur={isSelected ? 12 / zoom : 0}
+        shadowOpacity={0.5}
+      />
+      <Group listening={false}>
+        <Rect
+          x={ann.x}
+          y={ann.y - tagH - 2 / zoom}
+          width={tagW}
+          height={tagH}
+          fill={color}
+          cornerRadius={3 / zoom}
+          shadowColor="rgba(0,0,0,0.4)"
+          shadowBlur={4 / zoom}
+          shadowOpacity={1}
+        />
+        <Text
+          x={ann.x + 5 / zoom}
+          y={ann.y - tagH}
+          text={labelName}
+          fontSize={10 / zoom}
+          fontFamily="'Plus Jakarta Sans', sans-serif"
+          fontStyle="600"
+          fill="#ffffff"
+        />
+      </Group>
+      {isSelected && (
+        <Transformer
+          ref={trRef}
+          rotateEnabled={false}
+          borderStroke={color}
+          borderStrokeWidth={1.5 / zoom}
+          anchorSize={8 / zoom}
+          anchorStroke={color}
+          anchorFill="#ffffff"
+          anchorCornerRadius={2}
+          keepRatio={false}
+          onTransformEnd={() => {
+            const node = shapeRef.current;
+            if (!node) return;
+            const sx = node.scaleX(), sy = node.scaleY();
+            node.scaleX(1);
+            node.scaleY(1);
+            useAnnotationStore.getState().updateAnnotation(ann.id, {
+              x: node.x(),
+              y: node.y(),
+              width: Math.max(5, node.width() * sx),
+              height: Math.max(5, node.height() * sy),
+            });
+          }}
+        />
+      )}
+    </Group>
+  );
+}
+const BoxAnnotationMemo = React.memo(BoxAnnotationComp);
+
+// ─── Circle annotation ────────────────────────────────────────────────────────
+function CircleAnnotationComp({
+  ann,
+  isSelected,
+  color,
+  labelName,
+  zoom,
+  onSelect,
+  onDragEnd,
+}: {
+  ann: CircleAnnotation;
+  isSelected: boolean;
+  color: string;
+  labelName: string;
+  zoom: number;
+  onSelect: (e: any) => void;
+  onDragEnd: (id: string, x: number, y: number) => void;
+}) {
+  const shapeRef = useRef<Konva.Circle>(null);
+  const trRef = useRef<Konva.Transformer>(null);
+
+  useEffect(() => {
+    if (isSelected && trRef.current && shapeRef.current) {
+      trRef.current.nodes([shapeRef.current]);
+      trRef.current.getLayer()?.batchDraw();
+    }
+  }, [isSelected]);
+
+  const tagW = (labelName.length * 6.8 + 12) / zoom;
+  const tagH = 17 / zoom;
+
+  return (
+    <Group>
+      <Circle
+        ref={shapeRef}
+        x={ann.x}
+        y={ann.y}
+        radius={ann.radius}
+        stroke={isSelected ? "#ffffff" : color}
+        strokeWidth={(isSelected ? 2 : 1.5) / zoom}
+        fill={hexAlpha(color, isSelected ? 0.22 : 0.13)}
+        draggable={!ann.isLocked}
+        onClick={onSelect}
+        onDragEnd={(e) => onDragEnd(ann.id, e.target.x(), e.target.y())}
+        shadowColor={color}
+        shadowBlur={isSelected ? 12 / zoom : 0}
+        shadowOpacity={0.5}
+      />
+      <Group listening={false}>
+        <Rect
+          x={ann.x - tagW / 2}
+          y={ann.y - ann.radius - tagH - 4 / zoom}
+          width={tagW}
+          height={tagH}
+          fill={color}
+          cornerRadius={3 / zoom}
+        />
+        <Text
+          x={ann.x - tagW / 2 + 5 / zoom}
+          y={ann.y - ann.radius - tagH - 2 / zoom}
+          text={labelName}
+          fontSize={10 / zoom}
+          fill="#ffffff"
+          fontStyle="600"
+        />
+      </Group>
+      {isSelected && (
+        <Transformer
+          ref={trRef}
+          rotateEnabled={false}
+          borderStroke={color}
+          anchorSize={8 / zoom}
+          keepRatio={true}
+          enabledAnchors={["top-left", "top-right", "bottom-left", "bottom-right"]}
+          onTransformEnd={() => {
+            const node = shapeRef.current;
+            if (!node) return;
+            const scale = node.scaleX();
+            node.scaleX(1);
+            node.scaleY(1);
+            useAnnotationStore.getState().updateAnnotation(ann.id, {
+              x: node.x(),
+              y: node.y(),
+              radius: Math.max(5, node.radius() * scale),
+            });
+          }}
+        />
+      )}
+    </Group>
+  );
+}
+const CircleAnnotationMemo = React.memo(CircleAnnotationComp);
+
 // ─── Main Canvas ──────────────────────────────────────────────────────────────
 
-export function AnnotationCanvas() {
-  const {
-    annotations,
-    addAnnotation,
-    updateAnnotation,
-    activeTool,
-    zoomLevel,
-    setZoomLevel,
-    setCanvasOffset,
-    selectedAnnotationIds,
-    setSelectedAnnotationIds,
-    toggleSelectedAnnotationId,
-    labelClasses,
-    activeLabelId,
-    setCursorPosition,
-    activeVertex,
-    setActiveVertex,
-  } = useAnnotationStore();
+export function AnnotationCanvas({
+  onCursorMove,
+}: {
+  onCursorMove?: (pos: { x: number; y: number }) => void;
+}) {
+  const annotations = useAnnotationStore((s) => s.annotations);
+  const addAnnotation = useAnnotationStore((s) => s.addAnnotation);
+  const updateAnnotation = useAnnotationStore((s) => s.updateAnnotation);
+  const activeTool = useAnnotationStore((s) => s.activeTool);
+  const zoomLevel = useAnnotationStore((s) => s.zoomLevel);
+  const setZoomLevel = useAnnotationStore((s) => s.setZoomLevel);
+  const setCanvasOffset = useAnnotationStore((s) => s.setCanvasOffset);
+  const selectedAnnotationIds = useAnnotationStore((s) => s.selectedAnnotationIds);
+  const setSelectedAnnotationIds = useAnnotationStore((s) => s.setSelectedAnnotationIds);
+  const toggleSelectedAnnotationId = useAnnotationStore((s) => s.toggleSelectedAnnotationId);
+  const labelClasses = useAnnotationStore((s) => s.labelClasses);
+  const activeLabelId = useAnnotationStore((s) => s.activeLabelId);
+  const activeVertex = useAnnotationStore((s) => s.activeVertex);
+  const setActiveVertex = useAnnotationStore((s) => s.setActiveVertex);
 
   const { handleVertexDragMove, handleEdgeClick, handleVertexDragEnd } =
     useCanvasInteractions();
@@ -352,6 +551,12 @@ export function AnnotationCanvas() {
 
   const [mousePos, setMousePos] = useState<Point>({ x: 0, y: 0 });
   const [snapPoint, setSnapPoint] = useState<Point | null>(null);
+
+  const [newBox, setNewBox] = useState<BoundingBox | null>(null);
+  const newBoxRef = useRef<BoundingBox | null>(null);
+  const [newCircle, setNewCircle] = useState<CircleAnnotation | null>(null);
+  const newCircleRef = useRef<CircleAnnotation | null>(null);
+  const isLassoDrawingRef = useRef(false);
 
   const activeToolRef = useRef(activeTool);
   const activeLabelIdRef = useRef(activeLabelId);
@@ -394,13 +599,23 @@ export function AnnotationCanvas() {
     img.onload = () => setImage(img);
   }, []);
 
+  const labelColorMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const c of labelClasses) map.set(c.id, c.color);
+    return map;
+  }, [labelClasses]);
+  const labelNameMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const c of labelClasses) map.set(c.id, c.name);
+    return map;
+  }, [labelClasses]);
   const getLabelColor = useCallback(
-    (id: string) => labelClasses.find((c) => c.id === id)?.color ?? "#6366f1",
-    [labelClasses],
+    (id: string) => labelColorMap.get(id) ?? "#6366f1",
+    [labelColorMap],
   );
   const getLabelName = useCallback(
-    (id: string) => labelClasses.find((c) => c.id === id)?.name ?? "Unknown",
-    [labelClasses],
+    (id: string) => labelNameMap.get(id) ?? "Unknown",
+    [labelNameMap],
   );
 
   // Finalize polygon
@@ -491,6 +706,40 @@ export function AnnotationCanvas() {
       const pos = stage.getRelativePointerPosition();
       if (!pos) return;
 
+      if (tool === "box") {
+        const box: BoundingBox = {
+          id: uuidv4(),
+          type: "box",
+          x: pos.x,
+          y: pos.y,
+          width: 0,
+          height: 0,
+          isVisible: true,
+          isLocked: false,
+          labelId: activeLabelIdRef.current ?? "cls-1",
+        };
+        newBoxRef.current = box;
+        setNewBox(box);
+      }
+      if (tool === "circle") {
+        const circle: CircleAnnotation = {
+          id: uuidv4(),
+          type: "circle",
+          x: pos.x,
+          y: pos.y,
+          radius: 0,
+          isVisible: true,
+          isLocked: false,
+          labelId: activeLabelIdRef.current ?? "cls-1",
+        };
+        newCircleRef.current = circle;
+        setNewCircle(circle);
+      }
+      if (tool === "lasso") {
+        isLassoDrawingRef.current = true;
+        polyRef.current = [{ x: pos.x, y: pos.y }];
+        bumpPoly();
+      }
       if (tool === "polygon" || tool === "erase") {
         polyRef.current = [...polyRef.current, pos];
         bumpPoly();
@@ -517,7 +766,7 @@ export function AnnotationCanvas() {
       const pos = stage.getRelativePointerPosition();
       if (!pos) return;
 
-      setCursorPosition({ x: Math.round(pos.x), y: Math.round(pos.y) });
+      onCursorMove?.({ x: Math.round(pos.x), y: Math.round(pos.y) });
       setMousePos(pos);
 
       const tool = activeToolRef.current;
@@ -529,6 +778,19 @@ export function AnnotationCanvas() {
         };
         newBoxRef.current = updated;
         setNewBox(updated);
+      }
+      if (tool === "circle" && newCircleRef.current) {
+        const radius = dist(pos, { x: newCircleRef.current.x, y: newCircleRef.current.y });
+        const updated = { ...newCircleRef.current, radius };
+        newCircleRef.current = updated;
+        setNewCircle(updated);
+      }
+      if (tool === "lasso" && isLassoDrawingRef.current) {
+        const last = polyRef.current[polyRef.current.length - 1];
+        if (dist(pos, last) > 5 / zoomRef.current) {
+          polyRef.current = [...polyRef.current, { x: pos.x, y: pos.y }];
+          bumpPoly();
+        }
       }
       if (
         (tool === "polygon" || tool === "erase") &&
@@ -543,10 +805,10 @@ export function AnnotationCanvas() {
         setSnapPoint(null);
       }
     },
-    [setCursorPosition],
+    [onCursorMove],
   );
 
-  // Mouse up — commit box
+  // Mouse up — commit box / circle / lasso
   const handleMouseUp = useCallback(() => {
     const tool = activeToolRef.current;
     if (tool === "pan") {
@@ -554,33 +816,73 @@ export function AnnotationCanvas() {
       if (stage) setCanvasOffset({ x: stage.x(), y: stage.y() });
       return;
     }
-  }, [setCanvasOffset]);
+    if (tool === "box" && newBoxRef.current) {
+      const b = newBoxRef.current;
+      const norm: BoundingBox = {
+        ...b,
+        x: b.width < 0 ? b.x + b.width : b.x,
+        y: b.height < 0 ? b.y + b.height : b.y,
+        width: Math.abs(b.width),
+        height: Math.abs(b.height),
+      };
+      if (norm.width > 5 && norm.height > 5) addAnnotation(norm);
+      newBoxRef.current = null;
+      setNewBox(null);
+    }
+    if (tool === "circle" && newCircleRef.current) {
+      if (newCircleRef.current.radius > 5) {
+        addAnnotation(newCircleRef.current);
+      }
+      newCircleRef.current = null;
+      setNewCircle(null);
+    }
+    if (tool === "lasso" && isLassoDrawingRef.current) {
+      isLassoDrawingRef.current = false;
+      if (polyRef.current.length >= 3) {
+        finalizePolygon(polyRef.current);
+      } else {
+        polyRef.current = [];
+        bumpPoly();
+      }
+    }
+  }, [addAnnotation, setCanvasOffset, finalizePolygon]);
 
-  // Wheel zoom
+  // Wheel zoom (ctrlKey) / pan (two-finger drag)
   const handleWheel = useCallback(
     (e: Konva.KonvaEventObject<WheelEvent>) => {
       e.evt.preventDefault();
       const stage = stageRef.current;
       if (!stage) return;
-      const oldScale = stage.scaleX();
-      const pointer = stage.getPointerPosition();
-      if (!pointer) return;
-      const anchor = {
-        x: (pointer.x - stage.x()) / oldScale,
-        y: (pointer.y - stage.y()) / oldScale,
-      };
-      const newScale = Math.max(
-        0.05,
-        Math.min(40, e.evt.deltaY < 0 ? oldScale * 1.08 : oldScale / 1.08),
-      );
-      setZoomLevel(newScale);
-      const newPos = {
-        x: pointer.x - anchor.x * newScale,
-        y: pointer.y - anchor.y * newScale,
-      };
-      stage.scale({ x: newScale, y: newScale });
-      stage.position(newPos);
-      setCanvasOffset(newPos);
+
+      if (e.evt.ctrlKey) {
+        // Pinch-to-zoom
+        const oldScale = stage.scaleX();
+        const pointer = stage.getPointerPosition();
+        if (!pointer) return;
+        const anchor = {
+          x: (pointer.x - stage.x()) / oldScale,
+          y: (pointer.y - stage.y()) / oldScale,
+        };
+        const newScale = Math.max(
+          0.05,
+          Math.min(40, e.evt.deltaY < 0 ? oldScale * 1.08 : oldScale / 1.08),
+        );
+        setZoomLevel(newScale);
+        const newPos = {
+          x: pointer.x - anchor.x * newScale,
+          y: pointer.y - anchor.y * newScale,
+        };
+        stage.scale({ x: newScale, y: newScale });
+        stage.position(newPos);
+        setCanvasOffset(newPos);
+      } else {
+        // Two-finger drag / scroll — pan
+        stage.position({
+          x: stage.x() - e.evt.deltaX,
+          y: stage.y() - e.evt.deltaY,
+        });
+        setCanvasOffset({ x: stage.x(), y: stage.y() });
+      }
     },
     [setZoomLevel, setCanvasOffset],
   );
@@ -615,6 +917,10 @@ export function AnnotationCanvas() {
       if (e.key === "Escape") {
         polyRef.current = [];
         bumpPoly();
+        newBoxRef.current = null;
+        setNewBox(null);
+        newCircleRef.current = null;
+        setNewCircle(null);
         setSnapPoint(null);
         setActiveVertex(null);
       }
@@ -670,6 +976,19 @@ export function AnnotationCanvas() {
             const color = getLabelColor(ann.labelId);
             const labelName = getLabelName(ann.labelId);
 
+            if (ann.type === "box")
+              return (
+                <BoxAnnotationMemo
+                  key={ann.id}
+                  ann={ann as BoundingBox}
+                  isSelected={isSelected}
+                  color={color}
+                  labelName={labelName}
+                  zoom={zoomLevel}
+                  onSelect={(e) => handleAnnotationSelect(e, ann.id)}
+                  onDragEnd={(id, x, y) => updateAnnotation(id, { x, y })}
+                />
+              );
             if (ann.type === "polygon")
               return (
                 <PolygonAnnotationMemo
@@ -693,6 +1012,19 @@ export function AnnotationCanvas() {
                   }
                 />
               );
+            if (ann.type === "circle")
+              return (
+                <CircleAnnotationMemo
+                  key={ann.id}
+                  ann={ann as CircleAnnotation}
+                  isSelected={isSelected}
+                  color={color}
+                  labelName={labelName}
+                  zoom={zoomLevel}
+                  onSelect={(e) => handleAnnotationSelect(e, ann.id)}
+                  onDragEnd={(id, x, y) => updateAnnotation(id, { x, y })}
+                />
+              );
             if (ann.type === "keypoint")
               return (
                 <KeypointAnnotationMemo
@@ -710,28 +1042,60 @@ export function AnnotationCanvas() {
 
         {/* Layer 3: Interaction & UI (Active Drawing) */}
         <Layer id="interaction-layer">
-          {/* In-progress polygon */}
+          {/* In-progress box */}
+          {newBox && (
+            <Rect
+              x={newBox.width < 0 ? newBox.x + newBox.width : newBox.x}
+              y={newBox.height < 0 ? newBox.y + newBox.height : newBox.y}
+              width={Math.abs(newBox.width)}
+              height={Math.abs(newBox.height)}
+              stroke={getLabelColor(newBox.labelId)}
+              strokeWidth={1.5 / zoomLevel}
+              dash={[6 / zoomLevel, 3 / zoomLevel]}
+              fill={hexAlpha(getLabelColor(newBox.labelId), 0.1)}
+              listening={false}
+            />
+          )}
+
+          {/* In-progress circle */}
+          {newCircle && (
+            <Circle
+              x={newCircle.x}
+              y={newCircle.y}
+              radius={newCircle.radius}
+              stroke={getLabelColor(newCircle.labelId)}
+              strokeWidth={1.5 / zoomLevel}
+              dash={[6 / zoomLevel, 3 / zoomLevel]}
+              fill={hexAlpha(getLabelColor(newCircle.labelId), 0.1)}
+              listening={false}
+            />
+          )}
+
+          {/* In-progress polygon/lasso */}
           {tempPoints.length > 0 && (
             <Group listening={false}>
               <Line
                 points={tempPoints.flatMap((p) => [p.x, p.y])}
                 stroke={drawColor}
-                strokeWidth={1.5 / zoomLevel}
-                dash={[6 / zoomLevel, 3 / zoomLevel]}
+                strokeWidth={activeTool === "lasso" ? 2 / zoomLevel : 1.5 / zoomLevel}
+                dash={activeTool === "lasso" ? [] : [6 / zoomLevel, 3 / zoomLevel]}
                 lineJoin="round"
+                closed={activeTool === "lasso"}
               />
-              <Line
-                points={[
-                  tempPoints[tempPoints.length - 1].x,
-                  tempPoints[tempPoints.length - 1].y,
-                  effectiveMouse.x,
-                  effectiveMouse.y,
-                ]}
-                stroke={drawColor}
-                strokeWidth={1 / zoomLevel}
-                opacity={0.45}
-              />
-              {tempPoints.map((p, idx) => (
+              {activeTool !== "lasso" && (
+                <Line
+                  points={[
+                    tempPoints[tempPoints.length - 1].x,
+                    tempPoints[tempPoints.length - 1].y,
+                    effectiveMouse.x,
+                    effectiveMouse.y,
+                  ]}
+                  stroke={drawColor}
+                  strokeWidth={1 / zoomLevel}
+                  opacity={0.45}
+                />
+              )}
+              {activeTool !== "lasso" && tempPoints.map((p, idx) => (
                 <RegularPolygon
                   key={`tmp-${idx}`}
                   x={p.x}
@@ -747,7 +1111,7 @@ export function AnnotationCanvas() {
                   shadowOpacity={1}
                 />
               ))}
-              {snapPoint && (
+              {snapPoint && activeTool !== "lasso" && (
                 <Circle
                   x={snapPoint.x}
                   y={snapPoint.y}
