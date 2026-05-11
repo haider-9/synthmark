@@ -10,6 +10,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { Separator } from "@/components/ui/separator";
 import { useAnnotationStore } from "@/stores/useAnnotationStore";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { OnboardingTour } from "@/components/editor/onboarding/OnboardingTour";
 
 const TOOL_LABELS: Record<string, string> = {
   select: "Select",
@@ -79,6 +80,7 @@ export default function ProjectPage() {
         }
       />
       <Toaster />
+      <OnboardingTour />
     </div>
   );
 }

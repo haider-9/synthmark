@@ -7,7 +7,6 @@ import {
   PanelLeftClose, PanelLeftOpen,
   PanelRightClose, PanelRightOpen,
 } from 'lucide-react';
-import { OnboardingTour } from '../onboarding/OnboardingTour';
 
 interface MainLayoutProps {
   leftSidebar: React.ReactNode;
@@ -24,10 +23,9 @@ export function MainLayout({ leftSidebar, rightSidebar, canvas, topToolbar, bott
   return (
     <TooltipProvider>
       <div className="flex flex-col h-screen w-full bg-background text-foreground overflow-hidden select-none">
-        <OnboardingTour />
 
         {/* ── Top toolbar ─────────────────────────────────────────────── */}
-        <header id="editor-toolbar" className="h-11 border-b border-border/60 flex items-center px-3 bg-card flex-shrink-0 z-20">
+        <header id="top-toolbar" className="h-11 border-b border-border/60 flex items-center px-3 bg-card flex-shrink-0 z-20">
           {topToolbar}
         </header>
 
@@ -36,7 +34,7 @@ export function MainLayout({ leftSidebar, rightSidebar, canvas, topToolbar, bott
 
           {/* Left sidebar */}
           <aside
-            id="editor-left-sidebar"
+            id="sidebar-left"
             className="flex flex-col border-r border-border/60 bg-card flex-shrink-0 overflow-hidden"
             style={{
               width: leftOpen ? 256 : 36,
@@ -83,13 +81,13 @@ export function MainLayout({ leftSidebar, rightSidebar, canvas, topToolbar, bott
           </aside>
 
           {/* Canvas */}
-          <main id="editor-canvas" className="flex-1 relative overflow-hidden bg-[#0d0d0d]">
+          <main id="canvas-container" className="flex-1 relative overflow-hidden bg-[#0d0d0d]">
             {canvas}
           </main>
 
           {/* Right sidebar */}
           <aside
-            id="editor-right-sidebar"
+            id="sidebar-right"
             className="flex flex-col border-l border-border/60 bg-card flex-shrink-0 overflow-hidden"
             style={{
               width: rightOpen ? 256 : 36,

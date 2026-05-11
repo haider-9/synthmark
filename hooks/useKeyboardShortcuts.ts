@@ -128,14 +128,6 @@ export function useKeyboardShortcuts() {
           }
           break;
         }
-        case "c":
-        case "C":
-          setActiveTool("circle");
-          break;
-        case "l":
-        case "L":
-          setActiveTool("line");
-          break;
         case " ":
           e.preventDefault();
           if (activeTool !== "pan") {

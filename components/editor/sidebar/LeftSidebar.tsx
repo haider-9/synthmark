@@ -23,7 +23,6 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
-  Brush,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -45,8 +44,6 @@ const TYPE_ICON: Record<string, React.ElementType> = {
   polygon: Hexagon,
   keypoint: Circle,
   line: Minus,
-  circle: Circle,
-  brush: Brush,
 };
 
 const TYPE_COLOR: Record<string, string> = {
@@ -54,8 +51,6 @@ const TYPE_COLOR: Record<string, string> = {
   polygon: "text-emerald-400",
   keypoint: "text-amber-400",
   line: "text-purple-400",
-  circle: "text-orange-400",
-  brush: "text-pink-400",
 };
 
 const DATASET_ITEMS = [

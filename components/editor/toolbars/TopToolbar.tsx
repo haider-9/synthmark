@@ -22,9 +22,8 @@ import {
   Share2,
   Play,
   Circle as CircleIcon,
-  Spline,
-  Brush,
-  Lasso,
+  Pencil,
+  HelpCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -55,6 +54,8 @@ const TOOLS = [
     key: "P",
     group: "draw",
   },
+  { value: "lasso", icon: Pencil, label: "Lasso", key: "L", group: "draw" },
+  { value: "circle", icon: CircleIcon, label: "Circle", key: "C", group: "draw" },
   { value: "keypoint", icon: Dot, label: "Keypoint", key: "K", group: "draw" },
   { value: "erase", icon: Eraser, label: "Erase", key: "E", group: "ops" },
   { value: "merge", icon: Merge, label: "Merge", key: "M", group: "ops" },
@@ -151,11 +152,11 @@ export function TopToolbar() {
             active={activeTool === "polygon"}
           />
           <ToolBtn
-            value="keypoint"
-            icon={Dot}
-            label="Keypoint"
-            shortcut="K"
-            active={activeTool === "keypoint"}
+            value="lasso"
+            icon={Pencil}
+            label="Lasso (Freehand)"
+            shortcut="L"
+            active={activeTool === "lasso"}
           />
           <ToolBtn
             value="circle"
@@ -165,25 +166,11 @@ export function TopToolbar() {
             active={activeTool === "circle"}
           />
           <ToolBtn
-            value="line"
-            icon={Spline}
-            label="Polyline"
-            shortcut="L"
-            active={activeTool === "line"}
-          />
-          <ToolBtn
-            value="brush"
-            icon={Brush}
-            label="Brush"
-            shortcut="S"
-            active={activeTool === "brush"}
-          />
-          <ToolBtn
-            value="lasso"
-            icon={Lasso}
-            label="Lasso"
-            shortcut="O"
-            active={activeTool === "lasso"}
+            value="keypoint"
+            icon={Dot}
+            label="Keypoint"
+            shortcut="K"
+            active={activeTool === "keypoint"}
           />
 
           <div className="toolbar-separator mx-0.5" />
@@ -268,6 +255,16 @@ export function TopToolbar() {
           <ActionBtn icon={Share2} label="Share" />
           <ActionBtn icon={Download} label="Export" />
         </div>
+
+        <div className="toolbar-separator" />
+        <ActionBtn
+          icon={HelpCircle}
+          label="Show Tour"
+          onClick={() => {
+            localStorage.removeItem("synthmark-onboarding-done");
+            window.location.reload();
+          }}
+        />
 
         <div className="toolbar-separator" />
 

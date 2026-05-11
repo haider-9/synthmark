@@ -17,15 +17,7 @@ import Konva from "konva";
 import { useAnnotationStore } from "@/stores/useAnnotationStore";
 import { useCanvasInteractions } from "@/hooks/useCanvasInteractions";
 import { usePolygonOps } from "@/hooks/usePolygonOps";
-import {
-  BoundingBox,
-  Polygon,
-  Keypoint,
-  Point,
-  CircleAnnotation,
-  LineAnnotation,
-  BrushAnnotation,
-} from "@/types/annotation";
+import { BoundingBox, Polygon, Keypoint, Point } from "@/types/annotation";
 import { polygonsOverlap } from "@/lib/polygon-utils";
 import { v4 as uuidv4 } from "uuid";
 
@@ -34,13 +26,10 @@ const TOOL_CURSORS: Record<string, string> = {
   pan: "grab",
   box: "crosshair",
   polygon: "crosshair",
-  circle: "crosshair",
   keypoint: "crosshair",
   erase: "cell",
   merge: "copy",
   line: "crosshair",
-  brush: "crosshair",
-  lasso: "crosshair",
 };
 const SNAP_RADIUS = 10;
 const DBL_CLICK_MS = 300;
@@ -139,7 +128,7 @@ function EdgeMidpoint({
 }
 
 // ─── Box annotation ───────────────────────────────────────────────────────────
-const BoxAnnotation = React.memo(({
+function BoxAnnotationComp({
   ann,
   isSelected,
   color,
@@ -155,7 +144,7 @@ const BoxAnnotation = React.memo(({
   zoom: number;
   onSelect: (e: Konva.KonvaEventObject<MouseEvent>) => void;
   onDragEnd: (id: string, x: number, y: number) => void;
-}) => {
+}) {
   const shapeRef = useRef<Konva.Rect>(null);
   const trRef = useRef<Konva.Transformer>(null);
 
@@ -239,10 +228,11 @@ const BoxAnnotation = React.memo(({
       )}
     </Group>
   );
-});
+}
+const BoxAnnotationMemo = React.memo(BoxAnnotationComp);
 
 // ─── Polygon annotation ───────────────────────────────────────────────────────
-const PolygonAnnotation = React.memo(({
+function PolygonAnnotationComp({
   ann,
   isSelected,
   color,
@@ -264,7 +254,7 @@ const PolygonAnnotation = React.memo(({
   onEdgeClick: (annId: string, idx: number, pos: Point) => void;
   activeVertexIdx: number | null;
   onVertexClick: (idx: number) => void;
-}) => {
+}) {
   const fillColor = hexAlpha(color, isSelected ? 0.28 : 0.15);
   const strokeColor = isSelected ? "#ffffff" : color;
 
@@ -361,170 +351,11 @@ const PolygonAnnotation = React.memo(({
         })}
     </Group>
   );
-});
-
-const CircleAnnotation = React.memo(({
-  ann,
-  isSelected,
-  color,
-  labelName,
-  zoom,
-  onSelect,
-  onDragEnd,
-}: {
-  ann: CircleAnnotation;
-  isSelected: boolean;
-  color: string;
-  labelName: string;
-  zoom: number;
-  onSelect: (e: Konva.KonvaEventObject<MouseEvent>) => void;
-  onDragEnd: (id: string, x: number, y: number) => void;
-}) => {
-  const trRef = useRef<Konva.Transformer>(null);
-  const shapeRef = useRef<Konva.Circle>(null);
-
-  useEffect(() => {
-    if (isSelected && trRef.current && shapeRef.current) {
-      trRef.current.nodes([shapeRef.current]);
-      trRef.current.getLayer()?.batchDraw();
-    }
-  }, [isSelected]);
-
-  const tagW = (labelName.length * 7 + 14) / zoom;
-  const tagH = 17 / zoom;
-
-  return (
-    <Group>
-      <Circle
-        ref={shapeRef}
-        x={ann.x}
-        y={ann.y}
-        radius={ann.radius}
-        stroke={isSelected ? "#ffffff" : color}
-        strokeWidth={(isSelected ? 2 : 1.5) / zoom}
-        fill={hexAlpha(color, isSelected ? 0.25 : 0.15)}
-        draggable={!ann.isLocked}
-        onClick={onSelect}
-        onDragEnd={(e) => onDragEnd(ann.id, e.target.x(), e.target.y())}
-        shadowColor={color}
-        shadowBlur={isSelected ? 12 / zoom : 0}
-      />
-      <Group listening={false}>
-        <Rect
-          x={ann.x - tagW / 2}
-          y={ann.y - ann.radius - tagH - 4 / zoom}
-          width={tagW}
-          height={tagH}
-          fill={color}
-          cornerRadius={tagH / 2}
-        />
-        <Text
-          x={ann.x - tagW / 2 + 6 / zoom}
-          y={ann.y - ann.radius - tagH - 0.5 / zoom}
-          text={labelName}
-          fontSize={10 / zoom}
-          fill="#fff"
-          fontStyle="600"
-        />
-      </Group>
-      {isSelected && (
-        <Transformer
-          ref={trRef}
-          enabledAnchors={["top-left", "top-right", "bottom-left", "bottom-right"]}
-          rotateEnabled={false}
-          borderStroke={color}
-          anchorStroke={color}
-          anchorFill="#fff"
-          onTransformEnd={() => {
-            const node = shapeRef.current;
-            if (!node) return;
-            const scaleX = node.scaleX();
-            node.scaleX(1);
-            node.scaleY(1);
-            useAnnotationStore.getState().updateAnnotation(ann.id, {
-              x: node.x(),
-              y: node.y(),
-              radius: Math.max(5, node.radius() * scaleX),
-            });
-          }}
-        />
-      )}
-    </Group>
-  );
-});
-
-const PolylineAnnotation = React.memo(({
-  ann,
-  isSelected,
-  color,
-  labelName,
-  zoom,
-  onSelect,
-  onVertexDrag,
-}: {
-  ann: LineAnnotation;
-  isSelected: boolean;
-  color: string;
-  labelName: string;
-  zoom: number;
-  onSelect: (e: Konva.KonvaEventObject<MouseEvent>) => void;
-  onVertexDrag: (annId: string, idx: number, pos: Point) => void;
-}) => {
-  const cx = ann.points.reduce((s, p) => s + p.x, 0) / ann.points.length;
-  const cy = ann.points.reduce((s, p) => s + p.y, 0) / ann.points.length;
-  const tagW = (labelName.length * 7 + 14) / zoom;
-  const tagH = 17 / zoom;
-
-  return (
-    <Group>
-      <Line
-        points={ann.points.flatMap((p) => [p.x, p.y])}
-        stroke={isSelected ? "#ffffff" : color}
-        strokeWidth={(isSelected ? 3 : 2) / zoom}
-        lineCap="round"
-        lineJoin="round"
-        onClick={onSelect}
-        hitStrokeWidth={12 / zoom}
-      />
-      <Group listening={false}>
-        <Rect
-          x={cx - tagW / 2}
-          y={cy - tagH / 2}
-          width={tagW}
-          height={tagH}
-          fill={color}
-          cornerRadius={tagH / 2}
-          opacity={0.8}
-        />
-        <Text
-          x={cx - tagW / 2 + 6 / zoom}
-          y={cy - tagH / 2 + 3.5 / zoom}
-          text={labelName}
-          fontSize={10 / zoom}
-          fill="#fff"
-          fontStyle="600"
-        />
-      </Group>
-      {isSelected && ann.points.map((p, idx) => (
-        <DiamondVertex
-          key={`${ann.id}-v-${idx}`}
-          x={p.x}
-          y={p.y}
-          color={color}
-          zoom={zoom}
-          draggable
-          onDragMove={(e) => {
-            const pos = e.target.getStage()?.getRelativePointerPosition();
-            if (pos) onVertexDrag(ann.id, idx, pos);
-          }}
-        />
-      ))}
-    </Group>
-  );
-});
+}
+const PolygonAnnotationMemo = React.memo(PolygonAnnotationComp);
 
 // ─── Keypoint annotation ──────────────────────────────────────────────────────
-const KeypointAnnotation = React.memo(({
+function KeypointAnnotationComp({
   ann,
   isSelected,
   color,
@@ -536,7 +367,7 @@ const KeypointAnnotation = React.memo(({
   color: string;
   zoom: number;
   onSelect: (e: Konva.KonvaEventObject<MouseEvent>) => void;
-}) => {
+}) {
   const r = 6 / zoom;
   return (
     <Group>
@@ -587,7 +418,101 @@ const KeypointAnnotation = React.memo(({
       />
     </Group>
   );
-});
+}
+const KeypointAnnotationMemo = React.memo(KeypointAnnotationComp);
+
+// ─── Circle annotation ────────────────────────────────────────────────────────
+function CircleAnnotationComp({
+  ann,
+  isSelected,
+  color,
+  labelName,
+  zoom,
+  onSelect,
+  onDragEnd,
+}: {
+  ann: import("@/types/annotation").CircleAnnotation;
+  isSelected: boolean;
+  color: string;
+  labelName: string;
+  zoom: number;
+  onSelect: (e: any) => void;
+  onDragEnd: (id: string, x: number, y: number) => void;
+}) {
+  const shapeRef = useRef<Konva.Circle>(null);
+  const trRef = useRef<Konva.Transformer>(null);
+
+  useEffect(() => {
+    if (isSelected && trRef.current && shapeRef.current) {
+      trRef.current.nodes([shapeRef.current]);
+      trRef.current.getLayer()?.batchDraw();
+    }
+  }, [isSelected]);
+
+  const tagW = (labelName.length * 6.8 + 12) / zoom;
+  const tagH = 17 / zoom;
+
+  return (
+    <Group>
+      <Circle
+        ref={shapeRef}
+        x={ann.x}
+        y={ann.y}
+        radius={ann.radius}
+        stroke={isSelected ? "#ffffff" : color}
+        strokeWidth={(isSelected ? 2 : 1.5) / zoom}
+        fill={hexAlpha(color, isSelected ? 0.22 : 0.13)}
+        draggable={!ann.isLocked}
+        onClick={onSelect}
+        onDragEnd={(e) => onDragEnd(ann.id, e.target.x(), e.target.y())}
+        shadowColor={color}
+        shadowBlur={isSelected ? 12 / zoom : 0}
+        shadowOpacity={0.5}
+      />
+      <Group listening={false}>
+        <Rect
+          x={ann.x - tagW / 2}
+          y={ann.y - ann.radius - tagH - 4 / zoom}
+          width={tagW}
+          height={tagH}
+          fill={color}
+          cornerRadius={3 / zoom}
+        />
+        <Text
+          x={ann.x - tagW / 2 + 5 / zoom}
+          y={ann.y - ann.radius - tagH - 2 / zoom}
+          text={labelName}
+          fontSize={10 / zoom}
+          fill="#ffffff"
+          fontStyle="600"
+        />
+      </Group>
+      {isSelected && (
+        <Transformer
+          ref={trRef}
+          rotateEnabled={false}
+          borderStroke={color}
+          anchorSize={8 / zoom}
+          keepRatio={true}
+          enabledAnchors={["top-left", "top-right", "bottom-left", "bottom-right"]}
+          onTransformEnd={() => {
+            const node = shapeRef.current;
+            if (!node) return;
+            const scale = node.scaleX();
+            node.scaleX(1);
+            node.scaleY(1);
+            useAnnotationStore.getState().updateAnnotation(ann.id, {
+              x: node.x(),
+              y: node.y(),
+              radius: Math.max(5, node.radius() * scale),
+            });
+          }}
+        />
+      )}
+    </Group>
+  );
+}
+const CircleAnnotationMemo = React.memo(CircleAnnotationComp);
 
 // ─── Main Canvas ──────────────────────────────────────────────────────────────
 
@@ -621,9 +546,6 @@ export function AnnotationCanvas() {
 
   const [newBox, setNewBox] = useState<BoundingBox | null>(null);
   const newBoxRef = useRef<BoundingBox | null>(null);
-  const [newCircle, setNewCircle] = useState<{ x: number; y: number; radius: number } | null>(null);
-  const [selectionRect, setSelectionRect] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
-  const dragStartPos = useRef<Point | null>(null);
 
   const polyRef = useRef<Point[]>([]);
   const [, setPolyVersion] = useState(0);
@@ -631,6 +553,10 @@ export function AnnotationCanvas() {
 
   const [mousePos, setMousePos] = useState<Point>({ x: 0, y: 0 });
   const [snapPoint, setSnapPoint] = useState<Point | null>(null);
+
+  const [newCircle, setNewCircle] = useState<import("@/types/annotation").CircleAnnotation | null>(null);
+  const newCircleRef = useRef<import("@/types/annotation").CircleAnnotation | null>(null);
+  const isLassoDrawingRef = useRef(false);
 
   const activeToolRef = useRef(activeTool);
   const activeLabelIdRef = useRef(activeLabelId);
@@ -682,14 +608,13 @@ export function AnnotationCanvas() {
     [labelClasses],
   );
 
-  // Finalize polygon / line
+  // Finalize polygon
   const finalizePolygon = useCallback(
     (points: Point[]) => {
-      if (points.length < 2) return;
+      if (points.length < 3) return;
       const tool = activeToolRef.current;
       const labelId = activeLabelIdRef.current ?? "cls-1";
-      
-      if (tool === "polygon" && points.length >= 3) {
+      if (tool === "polygon") {
         addAnnotation({
           id: uuidv4(),
           type: "polygon",
@@ -698,16 +623,7 @@ export function AnnotationCanvas() {
           isLocked: false,
           labelId,
         });
-      } else if (tool === "line") {
-        addAnnotation({
-          id: uuidv4(),
-          type: "line",
-          points,
-          isVisible: true,
-          isLocked: false,
-          labelId,
-        });
-      } else if (tool === "erase" && points.length >= 3) {
+      } else if (tool === "erase") {
         useAnnotationStore.getState().annotations.forEach((ann) => {
           if (ann.type === "polygon" && ann.isVisible && !ann.isLocked)
             handleSubtract(ann.id, [...points]);
@@ -734,7 +650,7 @@ export function AnnotationCanvas() {
         }
         return;
       }
-      if (tool !== "polygon" && tool !== "erase" && tool !== "line") return;
+      if (tool !== "polygon" && tool !== "erase") return;
 
       const stage = stageRef.current;
       if (!stage) return;
@@ -745,19 +661,16 @@ export function AnnotationCanvas() {
       const elapsed = now - lastClickTimeRef.current;
       const moveDist = dist(pos, lastClickPosRef.current);
 
-      // Double click to finalize
       if (elapsed < DBL_CLICK_MS && moveDist < 10 / zoomRef.current) {
         const pts = polyRef.current;
         const toFinalize = pts.length >= 1 ? pts.slice(0, -1) : pts;
-        finalizePolygon(toFinalize);
+        if (toFinalize.length >= 3) finalizePolygon(toFinalize);
         lastClickTimeRef.current = 0;
         return;
       }
 
       const current = polyRef.current;
-      // Snap to start to finalize
       if (
-        tool !== "line" && 
         current.length >= 3 &&
         dist(pos, current[0]) < SNAP_RADIUS / zoomRef.current
       ) {
@@ -774,9 +687,14 @@ export function AnnotationCanvas() {
     [finalizePolygon, setSelectedAnnotationIds],
   );
 
-  // Mouse down — box + keypoint + circle
+  // Mouse down — box + keypoint
   const handleMouseDown = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
+      const tool = activeToolRef.current;
+      const stage = stageRef.current;
+      if (!stage) return;
+      const pos = stage.getRelativePointerPosition();
+      if (!pos) return;
 
       if (tool === "box") {
         const box: BoundingBox = {
@@ -794,9 +712,23 @@ export function AnnotationCanvas() {
         setNewBox(box);
       }
       if (tool === "circle") {
-        const circle = { x: pos.x, y: pos.y, radius: 0 };
+        const circle: import("@/types/annotation").CircleAnnotation = {
+          id: uuidv4(),
+          type: "circle",
+          x: pos.x,
+          y: pos.y,
+          radius: 0,
+          isVisible: true,
+          isLocked: false,
+          labelId: activeLabelIdRef.current ?? "cls-1",
+        };
         newCircleRef.current = circle;
         setNewCircle(circle);
+      }
+      if (tool === "lasso") {
+        isLassoDrawingRef.current = true;
+        polyRef.current = [{ x: pos.x, y: pos.y }];
+        bumpPoly();
       }
       if (tool === "keypoint") {
         addAnnotation({
@@ -823,47 +755,35 @@ export function AnnotationCanvas() {
       setCursorPosition({ x: Math.round(pos.x), y: Math.round(pos.y) });
       setMousePos(pos);
 
-      if (activeTool === "select" && selectionRect) {
-        setSelectionRect({
-          ...selectionRect,
-          width: pos.x - selectionRect.x,
-          height: pos.y - selectionRect.y,
-        });
+      const tool = activeToolRef.current;
+      if (tool === "box" && newBoxRef.current) {
+        const updated = {
+          ...newBoxRef.current,
+          width: pos.x - newBoxRef.current.x,
+          height: pos.y - newBoxRef.current.y,
+        };
+        newBoxRef.current = updated;
+        setNewBox(updated);
       }
-
-      if (activeTool === "box" && newBox) {
-        setNewBox({
-          ...newBox,
-          width: pos.x - newBox.x,
-          height: pos.y - newBox.y,
-        });
+      if (tool === "circle" && newCircleRef.current) {
+        const radius = dist(pos, { x: newCircleRef.current.x, y: newCircleRef.current.y });
+        const updated = { ...newCircleRef.current, radius };
+        newCircleRef.current = updated;
+        setNewCircle(updated);
       }
-
-      if (activeTool === "circle" && newCircle) {
-        const r = Math.sqrt(Math.pow(pos.x - newCircle.x, 2) + Math.pow(pos.y - newCircle.y, 2));
-        setNewCircle({ ...newCircle, radius: r });
-      }
-
-      if (activeTool === "brush" && dragStartPos.current) {
-        const selected = annotations.find(a => a.id === selectedAnnotationIds[0]) as BrushAnnotation;
-        if (selected && selected.type === "brush") {
-          updateAnnotation(selected.id, {
-            points: [...selected.points, pos]
-          });
+      if (tool === "lasso" && isLassoDrawingRef.current) {
+        const last = polyRef.current[polyRef.current.length - 1];
+        if (dist(pos, last) > 5 / zoomRef.current) {
+          polyRef.current = [...polyRef.current, { x: pos.x, y: pos.y }];
+          bumpPoly();
         }
       }
-
-      if (activeTool === "lasso" && dragStartPos.current) {
-        polyRef.current = [...polyRef.current, pos];
-        setPolyVersion(v => v + 1);
-      }
-
       if (
-        (activeTool === "polygon" || activeTool === "erase") &&
+        (tool === "polygon" || tool === "erase") &&
         polyRef.current.length >= 3
       ) {
         setSnapPoint(
-          dist(pos, polyRef.current[0]) < SNAP_RADIUS / zoomLevel
+          dist(pos, polyRef.current[0]) < SNAP_RADIUS / zoomRef.current
             ? polyRef.current[0]
             : null,
         );
@@ -874,103 +794,44 @@ export function AnnotationCanvas() {
     [setCursorPosition],
   );
 
-  // Mouse up — commit box + circle
+  // Mouse up — commit box
   const handleMouseUp = useCallback(() => {
-    if (activeTool === "pan") {
+    const tool = activeToolRef.current;
+    if (tool === "pan") {
       const stage = stageRef.current;
       if (stage) setCanvasOffset({ x: stage.x(), y: stage.y() });
       return;
     }
-
-    if (activeTool === "select" && selectionRect) {
-      const rect = {
-        x: selectionRect.width < 0 ? selectionRect.x + selectionRect.width : selectionRect.x,
-        y: selectionRect.height < 0 ? selectionRect.y + selectionRect.height : selectionRect.y,
-        width: Math.abs(selectionRect.width),
-        height: Math.abs(selectionRect.height),
-      };
-
-      const selectedIds = annotations
-        .filter((ann) => {
-          if (ann.type === "box") {
-            const b = ann as BoundingBox;
-            return (
-              b.x >= rect.x &&
-              b.y >= rect.y &&
-              b.x + b.width <= rect.x + rect.width &&
-              b.y + b.height <= rect.y + rect.height
-            );
-          }
-          if (ann.type === "circle") {
-            const c = ann as CircleAnnotation;
-            return (
-              c.x - c.radius >= rect.x &&
-              c.y - c.radius >= rect.y &&
-              c.x + c.radius <= rect.x + rect.width &&
-              c.y + c.radius <= rect.y + rect.height
-            );
-          }
-          if (ann.type === "polygon" || ann.type === "line" || ann.type === "brush") {
-            const points = (ann as any).points as Point[];
-            return points.every(p => 
-              p.x >= rect.x && p.y >= rect.y && p.x <= rect.x + rect.width && p.y <= rect.y + rect.height
-            );
-          }
-          if (ann.type === "keypoint") {
-            const k = ann as Keypoint;
-            return k.point.x >= rect.x && k.point.y >= rect.y && k.point.x <= rect.x + rect.width && k.point.y <= rect.y + rect.height;
-          }
-          return false;
-        })
-        .map((a) => a.id);
-
-      setSelectedAnnotationIds(selectedIds);
-      setSelectionRect(null);
-      dragStartPos.current = null;
-      return;
-    }
-
-    if (activeTool === "box" && newBox) {
+    if (tool === "box" && newBoxRef.current) {
+      const b = newBoxRef.current;
       const norm: BoundingBox = {
-        ...newBox,
-        x: newBox.width < 0 ? newBox.x + newBox.width : newBox.x,
-        y: newBox.height < 0 ? newBox.y + newBox.height : newBox.y,
-        width: Math.abs(newBox.width),
-        height: Math.abs(newBox.height),
+        ...b,
+        x: b.width < 0 ? b.x + b.width : b.x,
+        y: b.height < 0 ? b.y + b.height : b.y,
+        width: Math.abs(b.width),
+        height: Math.abs(b.height),
       };
-      if (norm.width > 2 && norm.height > 2) addAnnotation(norm);
+      if (norm.width > 5 && norm.height > 5) addAnnotation(norm);
+      newBoxRef.current = null;
       setNewBox(null);
-      dragStartPos.current = null;
     }
-
-    if (activeTool === "circle" && newCircle) {
-      if (newCircle.radius > 2) {
-        addAnnotation({
-          id: uuidv4(),
-          type: "circle",
-          labelId: activeLabelId ?? "cls-1",
-          ...newCircle,
-          isVisible: true,
-          isLocked: false,
-        });
+    if (tool === "circle" && newCircleRef.current) {
+      if (newCircleRef.current.radius > 5) {
+        addAnnotation(newCircleRef.current);
       }
+      newCircleRef.current = null;
       setNewCircle(null);
-      dragStartPos.current = null;
     }
-
-    if (activeTool === "brush") {
-      dragStartPos.current = null;
-    }
-
-    if (activeTool === "lasso") {
-      if (polyRef.current.length > 3) {
+    if (tool === "lasso" && isLassoDrawingRef.current) {
+      isLassoDrawingRef.current = false;
+      if (polyRef.current.length >= 3) {
         finalizePolygon(polyRef.current);
+      } else {
+        polyRef.current = [];
+        bumpPoly();
       }
-      polyRef.current = [];
-      setPolyVersion(v => v + 1);
-      dragStartPos.current = null;
     }
-  }, [activeTool, selectionRect, annotations, setSelectedAnnotationIds, newBox, addAnnotation, newCircle, activeLabelId, finalizePolygon, setCanvasOffset]);
+  }, [addAnnotation, setCanvasOffset, finalizePolygon]);
 
   // Wheel zoom
   const handleWheel = useCallback(
@@ -1096,20 +957,21 @@ export function AnnotationCanvas() {
         onClick={handleClick}
         onWheel={handleWheel}
       >
-        {/* Background layer - optimized with listening=false */}
-        <Layer listening={false}>
+        {/* Layer 1: Static Background */}
+        <Layer id="background-layer">
           {image && (
             <KonvaImage
               image={image}
               name="background-image"
               x={0}
               y={0}
+              listening={activeTool === "select" || activeTool === "pan"}
             />
           )}
         </Layer>
 
-        {/* Annotation layer */}
-        <Layer>
+        {/* Layer 2: Main Annotations */}
+        <Layer id="annotation-layer">
           {annotations.map((ann) => {
             if (!ann.isVisible) return null;
             const isSelected = selectedAnnotationIds.includes(ann.id);
@@ -1118,7 +980,7 @@ export function AnnotationCanvas() {
 
             if (ann.type === "box")
               return (
-                <BoxAnnotation
+                <BoxAnnotationMemo
                   key={ann.id}
                   ann={ann as BoundingBox}
                   isSelected={isSelected}
@@ -1129,22 +991,9 @@ export function AnnotationCanvas() {
                   onDragEnd={(id, x, y) => updateAnnotation(id, { x, y })}
                 />
               );
-            if (ann.type === "circle")
-              return (
-                <CircleAnnotation
-                  key={ann.id}
-                  ann={ann as CircleAnnotation}
-                  isSelected={isSelected}
-                  color={color}
-                  labelName={labelName}
-                  zoom={zoomLevel}
-                  onSelect={(e) => handleAnnotationSelect(e, ann.id)}
-                  onDragEnd={(id, x, y) => updateAnnotation(id, { x, y })}
-                />
-              );
             if (ann.type === "polygon")
               return (
-                <PolygonAnnotation
+                <PolygonAnnotationMemo
                   key={ann.id}
                   ann={ann as Polygon}
                   isSelected={isSelected}
@@ -1165,22 +1014,22 @@ export function AnnotationCanvas() {
                   }
                 />
               );
-            if (ann.type === "line")
+            if (ann.type === "circle")
               return (
-                <PolylineAnnotation
+                <CircleAnnotationMemo
                   key={ann.id}
-                  ann={ann as LineAnnotation}
+                  ann={ann as any}
                   isSelected={isSelected}
                   color={color}
                   labelName={labelName}
                   zoom={zoomLevel}
                   onSelect={(e) => handleAnnotationSelect(e, ann.id)}
-                  onVertexDrag={handleVertexDragMove}
+                  onDragEnd={(id, x, y) => updateAnnotation(id, { x, y })}
                 />
               );
             if (ann.type === "keypoint")
               return (
-                <KeypointAnnotation
+                <KeypointAnnotationMemo
                   key={ann.id}
                   ann={ann as Keypoint}
                   isSelected={isSelected}
@@ -1189,21 +1038,12 @@ export function AnnotationCanvas() {
                   onSelect={(e) => handleAnnotationSelect(e, ann.id)}
                 />
               );
-            if (ann.type === "brush")
-              return (
-                <BrushAnnotation
-                  key={ann.id}
-                  ann={ann as BrushAnnotation}
-                  isSelected={isSelected}
-                  color={color}
-                  labelName={labelName}
-                  zoom={zoomLevel}
-                  onSelect={(e) => handleAnnotationSelect(e, ann.id)}
-                />
-              );
             return null;
           })}
+        </Layer>
 
+        {/* Layer 3: Interaction & UI (Active Drawing) */}
+        <Layer id="interaction-layer">
           {/* In-progress box */}
           {newBox && (
             <Rect
@@ -1225,37 +1065,39 @@ export function AnnotationCanvas() {
               x={newCircle.x}
               y={newCircle.y}
               radius={newCircle.radius}
-              stroke={getLabelColor(activeLabelId ?? "cls-1")}
+              stroke={getLabelColor(newCircle.labelId)}
               strokeWidth={1.5 / zoomLevel}
               dash={[6 / zoomLevel, 3 / zoomLevel]}
-              fill={hexAlpha(getLabelColor(activeLabelId ?? "cls-1"), 0.1)}
+              fill={hexAlpha(getLabelColor(newCircle.labelId), 0.1)}
               listening={false}
             />
           )}
 
-          {/* In-progress polygon / line */}
+          {/* In-progress polygon/lasso */}
           {tempPoints.length > 0 && (
             <Group listening={false}>
               <Line
                 points={tempPoints.flatMap((p) => [p.x, p.y])}
                 stroke={drawColor}
-                strokeWidth={1.5 / zoomLevel}
-                dash={[6 / zoomLevel, 3 / zoomLevel]}
+                strokeWidth={activeTool === "lasso" ? 2 / zoomLevel : 1.5 / zoomLevel}
+                dash={activeTool === "lasso" ? [] : [6 / zoomLevel, 3 / zoomLevel]}
                 lineJoin="round"
-                closed={activeTool === "polygon" || activeTool === "erase"}
+                closed={activeTool === "lasso"}
               />
-              <Line
-                points={[
-                  tempPoints[tempPoints.length - 1].x,
-                  tempPoints[tempPoints.length - 1].y,
-                  effectiveMouse.x,
-                  effectiveMouse.y,
-                ]}
-                stroke={drawColor}
-                strokeWidth={1 / zoomLevel}
-                opacity={0.45}
-              />
-              {tempPoints.map((p, idx) => (
+              {activeTool !== "lasso" && (
+                <Line
+                  points={[
+                    tempPoints[tempPoints.length - 1].x,
+                    tempPoints[tempPoints.length - 1].y,
+                    effectiveMouse.x,
+                    effectiveMouse.y,
+                  ]}
+                  stroke={drawColor}
+                  strokeWidth={1 / zoomLevel}
+                  opacity={0.45}
+                />
+              )}
+              {activeTool !== "lasso" && tempPoints.map((p, idx) => (
                 <RegularPolygon
                   key={`tmp-${idx}`}
                   x={p.x}
@@ -1271,7 +1113,7 @@ export function AnnotationCanvas() {
                   shadowOpacity={1}
                 />
               ))}
-              {snapPoint && (
+              {snapPoint && activeTool !== "lasso" && (
                 <Circle
                   x={snapPoint.x}
                   y={snapPoint.y}
@@ -1283,21 +1125,6 @@ export function AnnotationCanvas() {
                 />
               )}
             </Group>
-          )}
-
-          {/* Marquee selection box */}
-          {selectionRect && (
-            <Rect
-              x={selectionRect.width < 0 ? selectionRect.x + selectionRect.width : selectionRect.x}
-              y={selectionRect.height < 0 ? selectionRect.y + selectionRect.height : selectionRect.y}
-              width={Math.abs(selectionRect.width)}
-              height={Math.abs(selectionRect.height)}
-              fill="rgba(63, 142, 247, 0.15)"
-              stroke="#3f8ef7"
-              strokeWidth={1 / zoomLevel}
-              dash={[4 / zoomLevel, 2 / zoomLevel]}
-              listening={false}
-            />
           )}
         </Layer>
       </Stage>

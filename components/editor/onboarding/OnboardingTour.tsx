@@ -1,76 +1,77 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { driver } from 'driver.js';
-import 'driver.js/dist/driver.css';
+import { useEffect } from "react";
+import { driver } from "driver.js";
+import "driver.js/dist/driver.css";
 
 export function OnboardingTour() {
   useEffect(() => {
-    const hasSeenTour = localStorage.getItem('synthmark-tour-seen');
-    if (hasSeenTour) return;
+    const isDone = localStorage.getItem("synthmark-onboarding-done");
+    if (isDone) return;
 
     const driverObj = driver({
       showProgress: true,
       animate: true,
+      overlayColor: "rgba(0, 0, 0, 0.75)",
       steps: [
         {
-          element: '#editor-toolbar',
+          element: "#top-toolbar",
           popover: {
-            title: 'Toolbar',
-            description: 'Select your annotation tools here. You can choose between Bounding Boxes, Polygons, Circles, Polylines, Brush, and Lasso tools.',
-            side: 'bottom',
-            align: 'start'
-          }
+            title: "Welcome to Synthmark!",
+            description: "This is your primary toolbar where you can select tools, undo/redo actions, and export your work.",
+            side: "bottom",
+            align: "start",
+          },
         },
         {
-          element: '#editor-toolbar',
+          element: ".bg-muted\\/40.rounded-md.p-0\\.5", // This targets the Tool Palette group
           popover: {
-            title: 'Advanced Tools',
-            description: 'The Brush tool allows freeform drawing, while Lasso helps you quickly create complex polygons by tracing.',
-            side: 'bottom',
-            align: 'center'
-          }
+            title: "Annotation Tools",
+            description: "Choose from Bounding Boxes, Polygons, Lasso, Circles, and Keypoints to annotate your images. Use shortcuts like 'B', 'P', 'L', 'C' to switch quickly.",
+            side: "bottom",
+            align: "center",
+          },
         },
         {
-          element: '#editor-canvas',
+          element: "#canvas-container",
           popover: {
-            title: 'Annotation Canvas',
-            description: 'This is where the magic happens. Click and drag to draw boxes or circles, and click to place points for polygons and lines.',
-            side: 'bottom',
-            align: 'center'
-          }
+            title: "The Canvas",
+            description: "Draw your annotations directly on the image. You can use Space to pan and Scroll to zoom. Use the new Lasso tool for free-hand drawing!",
+            side: "left",
+            align: "center",
+          },
         },
         {
-          element: '#editor-left-sidebar',
+          element: "#sidebar-left",
           popover: {
-            title: 'Layers Panel',
-            description: 'Manage all your created annotations here. You can toggle visibility, lock layers, or delete them.',
-            side: 'right',
-            align: 'start'
-          }
+            title: "Layers & Objects",
+            description: "Manage your annotations here. You can toggle visibility, lock layers, or delete them.",
+            side: "right",
+            align: "start",
+          },
         },
         {
-          element: '#editor-right-sidebar',
+          element: "#sidebar-right",
           popover: {
-            title: 'Properties Panel',
-            description: 'Define your label classes and adjust properties of the selected annotation.',
-            side: 'left',
-            align: 'start'
-          }
+            title: "Properties & Labels",
+            description: "Define label classes and edit properties of the selected annotation.",
+            side: "left",
+            align: "start",
+          },
         },
         {
           popover: {
-            title: 'Ready to go!',
-            description: 'Use the keyboard shortcuts (hover over tools to see them) for a faster workflow. Happy labeling!',
-          }
-        }
+            title: "Ready to go!",
+            description: "You're all set. Start by drawing your first object or use the Auto-label feature for AI assistance.",
+          },
+        },
       ],
       onDestroyed: () => {
-        localStorage.setItem('synthmark-tour-seen', 'true');
-      }
+        localStorage.setItem("synthmark-onboarding-done", "true");
+      },
     });
 
-    // Small delay to ensure layout is ready
+    // Small delay to ensure everything is rendered
     const timer = setTimeout(() => {
       driverObj.drive();
     }, 1000);
