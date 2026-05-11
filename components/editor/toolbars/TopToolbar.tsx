@@ -3,7 +3,6 @@
 import React from "react";
 import {
   MousePointer2,
-  Square,
   Hexagon,
   Dot,
   Undo2,
@@ -21,8 +20,6 @@ import {
   FolderOpen,
   Share2,
   Play,
-  Circle as CircleIcon,
-  Pencil,
   HelpCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -46,7 +43,6 @@ const TOOLS = [
     group: "nav",
   },
   { value: "pan", icon: Hand, label: "Pan", key: "Space", group: "nav" },
-  { value: "box", icon: Square, label: "Box", key: "B", group: "draw" },
   {
     value: "polygon",
     icon: Hexagon,
@@ -54,8 +50,6 @@ const TOOLS = [
     key: "P",
     group: "draw",
   },
-  { value: "lasso", icon: Pencil, label: "Lasso", key: "L", group: "draw" },
-  { value: "circle", icon: CircleIcon, label: "Circle", key: "C", group: "draw" },
   { value: "keypoint", icon: Dot, label: "Keypoint", key: "K", group: "draw" },
   { value: "erase", icon: Eraser, label: "Erase", key: "E", group: "ops" },
   { value: "merge", icon: Merge, label: "Merge", key: "M", group: "ops" },
@@ -138,32 +132,11 @@ export function TopToolbar() {
 
           {/* Draw group */}
           <ToolBtn
-            value="box"
-            icon={Square}
-            label="Bounding Box"
-            shortcut="B"
-            active={activeTool === "box"}
-          />
-          <ToolBtn
             value="polygon"
             icon={Hexagon}
             label="Polygon"
             shortcut="P"
             active={activeTool === "polygon"}
-          />
-          <ToolBtn
-            value="lasso"
-            icon={Pencil}
-            label="Lasso (Freehand)"
-            shortcut="L"
-            active={activeTool === "lasso"}
-          />
-          <ToolBtn
-            value="circle"
-            icon={CircleIcon}
-            label="Circle"
-            shortcut="C"
-            active={activeTool === "circle"}
           />
           <ToolBtn
             value="keypoint"

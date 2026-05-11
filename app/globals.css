@@ -171,3 +171,52 @@
     @apply inline-flex items-center gap-1.5 text-xs font-medium;
   }
 }
+
+/* ── Custom driver.js Styles ─────────────────────────────────────────── */
+
+.driver-popover.synthmark-tour {
+  @apply bg-card/95 backdrop-blur-md border border-border/60 shadow-2xl rounded-xl p-4 max-w-[320px] font-sans;
+  color: var(--foreground);
+}
+
+.driver-popover.synthmark-tour .driver-popover-title {
+  @apply text-lg font-bold text-foreground mb-2;
+  font-family: var(--font-sans);
+}
+
+.driver-popover.synthmark-tour .driver-popover-description {
+  @apply text-sm text-muted-foreground leading-relaxed;
+}
+
+.driver-popover.synthmark-tour .driver-popover-footer {
+  @apply mt-6 flex gap-2 justify-end;
+}
+
+.driver-popover.synthmark-tour .driver-popover-next-btn,
+.driver-popover.synthmark-tour .driver-popover-prev-btn {
+  @apply px-4 py-2 rounded-md text-xs font-semibold transition-all shadow-none outline-none border-none;
+}
+
+.driver-popover.synthmark-tour .driver-popover-next-btn {
+  @apply !bg-primary !text-primary-foreground hover:!bg-primary/90;
+}
+
+.driver-popover.synthmark-tour .driver-popover-prev-btn {
+  @apply !bg-secondary !text-secondary-foreground hover:!bg-accent;
+}
+
+.driver-popover.synthmark-tour .driver-popover-close-btn {
+  @apply !text-muted-foreground hover:!text-foreground;
+}
+
+.driver-popover.synthmark-tour .driver-popover-progress-text {
+  @apply text-[10px] font-mono text-muted-foreground/60 mr-auto flex items-center;
+}
+
+.driver-popover.synthmark-tour .driver-popover-arrow {
+  @apply border-card/95;
+}
+
+.driver-active-element {
+  @apply !ring-4 !ring-primary/20 !ring-offset-2 !ring-offset-background rounded-md transition-all duration-300;
+}

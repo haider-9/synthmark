@@ -13,6 +13,7 @@ export function OnboardingTour() {
       showProgress: true,
       animate: true,
       overlayColor: "rgba(0, 0, 0, 0.75)",
+      popoverClass: "synthmark-tour",
       steps: [
         {
           element: "#top-toolbar",

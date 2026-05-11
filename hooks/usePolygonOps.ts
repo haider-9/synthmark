@@ -61,22 +61,23 @@ export function usePolygonOps() {
     }
   };
 
-  // ─── Merge: union all selected polygons into one ─────────────────────────────
+  // ─── Merge: union all selected polygons ─────────────────────────────────────
   const handleMerge = (ids: string[]) => {
     const polys = ids.map(getPolygon).filter((p): p is Polygon => p !== null);
     if (polys.length < 2) return;
+
     try {
-      let mergedPoints = polys[0].points;
-      for (let i = 1; i < polys.length; i++) {
-        const result = unionPolygons(mergedPoints, polys[i].points);
-        if (result.length > 0) mergedPoints = result[0];
-      }
-      const merged: Polygon = {
+      const allPC = polys.map((p) => [pointsToPC(p.points)]);
+      // @ts-ignore
+      const result = polygonClipping.union(...allPC);
+
+      const newPolys: Polygon[] = result.map((poly: any) => ({
         ...polys[0],
         id: uuidv4(),
-        points: mergedPoints,
-      };
-      useAnnotationStore.getState().replaceAnnotations(ids, [merged]);
+        points: pcToPoints(poly[0]),
+      }));
+
+      useAnnotationStore.getState().replaceAnnotations(ids, newPolys);
     } catch (err) {
       console.warn("[usePolygonOps] merge failed:", err);
     }
