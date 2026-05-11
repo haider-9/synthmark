@@ -14,7 +14,6 @@ interface AnnotationState {
   history: Annotation[][];
   historyIndex: number;
   labelClasses: LabelClass[];
-  cursorPosition: Point;
 
   // Actions
   setActiveVertex: (v: { annId: string; idx: number } | null) => void;
@@ -32,7 +31,6 @@ interface AnnotationState {
   setActiveLabelId: (id: string | null) => void;
   setZoomLevel: (level: number) => void;
   setCanvasOffset: (offset: Point) => void;
-  setCursorPosition: (pos: Point) => void;
 
   // Label class management
   addLabelClass: (cls: LabelClass) => void;
@@ -63,7 +61,6 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
   history: [[]],
   historyIndex: 0,
   labelClasses: DEFAULT_CLASSES,
-  cursorPosition: { x: 0, y: 0 },
 
   setActiveVertex: (v) => set({ activeVertex: v }),
 
@@ -154,7 +151,6 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
   setZoomLevel: (level) =>
     set({ zoomLevel: Math.max(0.05, Math.min(40, level)) }),
   setCanvasOffset: (offset) => set({ canvasOffset: offset }),
-  setCursorPosition: (pos) => set({ cursorPosition: pos }),
 
   addLabelClass: (cls) =>
     set((state) => ({ labelClasses: [...state.labelClasses, cls] })),

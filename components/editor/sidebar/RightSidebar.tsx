@@ -88,15 +88,12 @@ function FieldRow({
 }
 
 export function RightSidebar() {
-  const {
-    selectedAnnotationIds,
-    annotations,
-    deleteAnnotations,
-    duplicateAnnotations,
-    updateAnnotation,
-    labelClasses,
-    activeLabelId,
-  } = useAnnotationStore();
+  const selectedAnnotationIds = useAnnotationStore((s) => s.selectedAnnotationIds);
+  const annotations = useAnnotationStore((s) => s.annotations);
+  const deleteAnnotations = useAnnotationStore((s) => s.deleteAnnotations);
+  const duplicateAnnotations = useAnnotationStore((s) => s.duplicateAnnotations);
+  const updateAnnotation = useAnnotationStore((s) => s.updateAnnotation);
+  const labelClasses = useAnnotationStore((s) => s.labelClasses);
 
   const { handleMerge, handleSubtractSelected } = usePolygonOps();
 

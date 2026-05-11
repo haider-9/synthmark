@@ -3,30 +3,25 @@
 import React from "react";
 import {
   MousePointer2,
-  Square,
   Hexagon,
   Dot,
   Undo2,
   Redo2,
   Save,
-  Download,
-  Settings,
   Hand,
   Eraser,
   Merge,
-  ZoomIn,
-  ZoomOut,
   ChevronDown,
   Sparkles,
   FolderOpen,
   Share2,
   Play,
-  Circle as CircleIcon,
   Pencil,
   HelpCircle,
+  Square,
+  CircleIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
@@ -36,6 +31,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Badge } from "@/components/ui/badge";
 import { useAnnotationStore } from "@/stores/useAnnotationStore";
+import { ExportDialog } from "@/components/editor/export/ExportDialog";
 
 const TOOLS = [
   {
@@ -62,17 +58,12 @@ const TOOLS = [
 ] as const;
 
 export function TopToolbar() {
-  const {
-    activeTool,
-    setActiveTool,
-    undo,
-    redo,
-    historyIndex,
-    history,
-    setZoomLevel,
-    zoomLevel,
-    annotations,
-  } = useAnnotationStore();
+  const activeTool = useAnnotationStore((s) => s.activeTool);
+  const setActiveTool = useAnnotationStore((s) => s.setActiveTool);
+  const undo = useAnnotationStore((s) => s.undo);
+  const redo = useAnnotationStore((s) => s.redo);
+  const historyIndex = useAnnotationStore((s) => s.historyIndex);
+  const history = useAnnotationStore((s) => s.history);
 
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < history.length - 1;
@@ -119,77 +110,23 @@ export function TopToolbar() {
           className="flex items-center gap-0.5 bg-muted/40 rounded-md p-0.5"
         >
           {/* Nav group */}
-          <ToolBtn
-            value="select"
-            icon={MousePointer2}
-            label="Select"
-            shortcut="V"
-            active={activeTool === "select"}
-          />
-          <ToolBtn
-            value="pan"
-            icon={Hand}
-            label="Pan"
-            shortcut="Space"
-            active={activeTool === "pan"}
-          />
+          <ToolBtn value="select" icon={MousePointer2} label="Select" shortcut="V" />
+          <ToolBtn value="pan" icon={Hand} label="Pan" shortcut="Space" />
 
           <div className="toolbar-separator mx-0.5" />
 
           {/* Draw group */}
-          <ToolBtn
-            value="box"
-            icon={Square}
-            label="Bounding Box"
-            shortcut="B"
-            active={activeTool === "box"}
-          />
-          <ToolBtn
-            value="polygon"
-            icon={Hexagon}
-            label="Polygon"
-            shortcut="P"
-            active={activeTool === "polygon"}
-          />
-          <ToolBtn
-            value="lasso"
-            icon={Pencil}
-            label="Lasso (Freehand)"
-            shortcut="L"
-            active={activeTool === "lasso"}
-          />
-          <ToolBtn
-            value="circle"
-            icon={CircleIcon}
-            label="Circle"
-            shortcut="C"
-            active={activeTool === "circle"}
-          />
-          <ToolBtn
-            value="keypoint"
-            icon={Dot}
-            label="Keypoint"
-            shortcut="K"
-            active={activeTool === "keypoint"}
-          />
+          <ToolBtn value="box" icon={Square} label="Bounding Box" shortcut="B" />
+          <ToolBtn value="polygon" icon={Hexagon} label="Polygon" shortcut="P" />
+          <ToolBtn value="lasso" icon={Pencil} label="Lasso (Freehand)" shortcut="L" />
+          <ToolBtn value="circle" icon={CircleIcon} label="Circle" shortcut="C" />
+          <ToolBtn value="keypoint" icon={Dot} label="Keypoint" shortcut="K" />
 
           <div className="toolbar-separator mx-0.5" />
 
           {/* Ops group */}
-          <ToolBtn
-            value="erase"
-            icon={Eraser}
-            label="Subtract / Erase"
-            shortcut="E"
-            active={activeTool === "erase"}
-          />
-          <ToolBtn
-            value="merge"
-            icon={Merge}
-            label="Merge Polygons"
-            shortcut="M"
-            active={activeTool === "merge"}
-          />
+          <ToolBtn value="erase" icon={Eraser} label="Subtract / Erase" shortcut="E" />
+          <ToolBtn value="merge" icon={Merge} label="Merge Polygons" shortcut="M" />
         </ToggleGroup>
 
         <div className="toolbar-separator" />
@@ -215,45 +152,11 @@ export function TopToolbar() {
         {/* ── Spacer ────────────────────────────────────────────────────── */}
         <div className="flex-1" />
 
-        {/* ── Zoom ──────────────────────────────────────────────────────── */}
-        <div className="flex items-center gap-0.5 bg-muted/40 rounded-md p-0.5">
-          <ActionBtn
-            icon={ZoomOut}
-            onClick={() => setZoomLevel(zoomLevel / 1.25)}
-            label="Zoom Out"
-            shortcut="-"
-          />
-          <button
-            onClick={() => setZoomLevel(1)}
-            className="text-[11px] font-mono text-muted-foreground hover:text-foreground transition-colors px-2 min-w-[3.5rem] text-center tabular-nums"
-            title="Reset zoom (click)"
-          >
-            {Math.round(zoomLevel * 100)}%
-          </button>
-          <ActionBtn
-            icon={ZoomIn}
-            onClick={() => setZoomLevel(zoomLevel * 1.25)}
-            label="Zoom In"
-            shortcut="+"
-          />
-        </div>
-
-        <div className="toolbar-separator" />
-
-        {/* ── Annotation count ──────────────────────────────────────────── */}
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground px-1">
-          <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-          <span className="tabular-nums font-medium">{annotations.length}</span>
-          <span>objects</span>
-        </div>
-
-        <div className="toolbar-separator" />
-
         {/* ── Actions ───────────────────────────────────────────────────── */}
         <div className="flex items-center gap-1">
           <ActionBtn icon={Save} label="Save" shortcut="Ctrl+S" />
           <ActionBtn icon={Share2} label="Share" />
-          <ActionBtn icon={Download} label="Export" />
+          <ExportDialog />
         </div>
 
         <div className="toolbar-separator" />
@@ -283,13 +186,11 @@ function ToolBtn({
   icon: Icon,
   label,
   shortcut,
-  active,
 }: {
   value: string;
   icon: React.ElementType;
   label: string;
   shortcut: string;
-  active: boolean;
 }) {
   return (
     <Tooltip>
@@ -298,10 +199,7 @@ function ToolBtn({
           <ToggleGroupItem
             value={value}
             aria-label={label}
-            className={`h-7 w-7 p-0 rounded transition-all ${active
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "hover:bg-accent hover:text-accent-foreground"
-              }`}
+            className="h-7 w-7 p-0 rounded transition-all aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:shadow-sm hover:bg-accent hover:text-accent-foreground"
           >
             <Icon className="h-3.5 w-3.5" />
           </ToggleGroupItem>
@@ -309,10 +207,10 @@ function ToolBtn({
       />
       <TooltipContent
         side="bottom"
-        className="flex items-center gap-2 bg-[#111] text-[#ccc] border border-[#2a2a2a] text-xs"
+        className="flex items-center gap-2 text-xs"
       >
         <span>{label}</span>
-        <kbd className="text-[10px] bg-[#1e1e1e] text-[#4f8ef7] border border-[#2e2e2e] px-1.5 py-0.5 rounded font-mono leading-none">
+        <kbd className="text-[10px] bg-muted text-primary border border-border px-1.5 py-0.5 rounded font-mono leading-none">
           {shortcut}
         </kbd>
       </TooltipContent>
@@ -350,11 +248,11 @@ function ActionBtn({
       />
       <TooltipContent
         side="bottom"
-        className="flex items-center gap-2 bg-[#111] text-[#ccc] border border-[#2a2a2a] text-xs"
+        className="flex items-center gap-2 text-xs"
       >
         <span>{label}</span>
         {shortcut && (
-          <kbd className="text-[10px] bg-[#1e1e1e] text-[#4f8ef7] border border-[#2e2e2e] px-1.5 py-0.5 rounded font-mono leading-none">
+          <kbd className="text-[10px] bg-muted text-primary border border-border px-1.5 py-0.5 rounded font-mono leading-none">
             {shortcut}
           </kbd>
         )}

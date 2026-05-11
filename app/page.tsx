@@ -40,16 +40,16 @@ export const metadata: Metadata = buildMetadata({
 
 function EditorPreview() {
   return (
-    <div className="rounded-xl border border-[#1e1e1e] overflow-hidden bg-[#0d0d14] select-none">
+    <div className="rounded-xl border border-border overflow-hidden bg-card select-none">
       {/* Window chrome */}
-      <div className="flex items-center gap-2 px-4 h-9 bg-[#111118] border-b border-[#1a1a24]">
+      <div className="flex items-center gap-2 px-4 h-9 bg-muted border-b border-border">
         <div className="flex items-center gap-1.5 shrink-0">
           <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
           <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
           <div className="w-3 h-3 rounded-full bg-[#28c840]" />
         </div>
         <div className="flex-1 flex justify-center">
-          <div className="bg-[#161616] text-[#444] text-[10px] font-mono px-3 py-0.5 rounded-md">
+          <div className="bg-muted text-muted-foreground text-[10px] font-mono px-3 py-0.5 rounded-md">
             app.synthmark.ai/project/cv-pedestrian
           </div>
         </div>
@@ -240,48 +240,48 @@ function EditorPreview() {
         </div>
 
         {/* Properties sidebar */}
-        <div className="w-[140px] bg-[#0d0d14] border-l border-[#111] flex flex-col shrink-0">
+        <div className="w-[140px] bg-card border-l border-border flex flex-col shrink-0">
           <div className="px-3 pt-3 pb-2">
-            <p className="text-[9px] uppercase tracking-[0.12em] text-[#333] font-semibold">
+            <p className="text-[9px] uppercase tracking-[0.12em] text-muted-foreground font-semibold">
               Properties
             </p>
           </div>
-          <div className="flex items-center justify-between px-3 py-1.5 border-b border-[#0f0f18]">
-            <span className="text-[10px] text-[#444] font-mono">Class</span>
-            <span className="text-[10px] font-semibold font-mono text-[#5B8AF0]">
+          <div className="flex items-center justify-between px-3 py-1.5 border-b border-border">
+            <span className="text-[10px] text-muted-foreground font-mono">Class</span>
+            <span className="text-[10px] font-semibold font-mono text-primary">
               person
             </span>
           </div>
-          <div className="flex items-center justify-between px-3 py-1.5 border-b border-[#0f0f18]">
-            <span className="text-[10px] text-[#444] font-mono">Vertices</span>
-            <span className="text-[10px] font-semibold font-mono text-[#888]">
+          <div className="flex items-center justify-between px-3 py-1.5 border-b border-border">
+            <span className="text-[10px] text-muted-foreground font-mono">Vertices</span>
+            <span className="text-[10px] font-semibold font-mono text-muted-foreground">
               8
             </span>
           </div>
-          <div className="flex items-center justify-between px-3 py-1.5 border-b border-[#0f0f18]">
-            <span className="text-[10px] text-[#444] font-mono">Conf.</span>
+          <div className="flex items-center justify-between px-3 py-1.5 border-b border-border">
+            <span className="text-[10px] text-muted-foreground font-mono">Conf.</span>
             <span className="text-[10px] font-semibold font-mono text-[#22C55E]">
               94.7%
             </span>
           </div>
-          <div className="flex items-center justify-between px-3 py-1.5 border-b border-[#0f0f18]">
-            <span className="text-[10px] text-[#444] font-mono">Occluded</span>
-            <span className="text-[10px] font-semibold font-mono text-[#555]">
+          <div className="flex items-center justify-between px-3 py-1.5 border-b border-border">
+            <span className="text-[10px] text-muted-foreground font-mono">Occluded</span>
+            <span className="text-[10px] font-semibold font-mono text-muted-foreground">
               No
             </span>
           </div>
-          <div className="flex items-center justify-between px-3 py-1.5 border-b border-[#0f0f18]">
-            <span className="text-[10px] text-[#444] font-mono">Truncated</span>
-            <span className="text-[10px] font-semibold font-mono text-[#555]">
+          <div className="flex items-center justify-between px-3 py-1.5 border-b border-border">
+            <span className="text-[10px] text-muted-foreground font-mono">Truncated</span>
+            <span className="text-[10px] font-semibold font-mono text-muted-foreground">
               No
             </span>
           </div>
           <div className="px-3 pt-3 pb-1.5">
-            <p className="text-[9px] uppercase tracking-[0.12em] text-[#333] font-semibold mb-2">
+            <p className="text-[9px] uppercase tracking-[0.12em] text-muted-foreground font-semibold mb-2">
               Label Class
             </p>
-            <div className="rounded bg-[#111118] border border-[#1a1a24] px-2 py-1">
-              <span className="text-[9px] text-[#666] font-mono">
+            <div className="rounded bg-muted border border-border px-2 py-1">
+              <span className="text-[9px] text-muted-foreground font-mono">
                 person_01
               </span>
             </div>
@@ -290,11 +290,11 @@ function EditorPreview() {
       </div>
 
       {/* Status bar */}
-      <div className="flex items-center justify-between px-4 h-7 bg-[#0f0f18] border-t border-[#111]">
-        <span className="text-[10px] text-[#444] font-mono">
+      <div className="flex items-center justify-between px-4 h-7 bg-muted border-t border-border">
+        <span className="text-[10px] text-muted-foreground font-mono">
           Polygon · 3 selected · 847 objects
         </span>
-        <span className="text-[10px] text-[#444] font-mono">128%</span>
+        <span className="text-[10px] text-muted-foreground font-mono">128%</span>
       </div>
     </div>
   );
@@ -321,7 +321,7 @@ function FilledStar() {
 
 export default function HomePage() {
   return (
-    <div className="bg-[#0a0a0a] text-white min-h-screen overflow-x-hidden">
+    <div className="bg-background text-white min-h-screen overflow-x-hidden">
       {/* Breadcrumb JSON-LD */}
       <script
         type="application/ld+json"
@@ -339,7 +339,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left — text */}
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#555] mb-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground mb-5">
               AI Annotation Platform
             </p>
             <h1 className="text-5xl lg:text-6xl font-bold text-white tracking-tight leading-[1.08]">
@@ -347,7 +347,7 @@ export default function HomePage() {
               <br />
               Ship AI faster.
             </h1>
-            <p className="text-[17px] text-[#666] leading-relaxed mt-5 max-w-md">
+            <p className="text-[17px] text-muted-foreground leading-relaxed mt-5 max-w-md">
               The annotation workspace built for ML teams. Precision polygon
               tools, AI-assisted labeling, role-based workflows, and one-click
               export.
@@ -357,13 +357,13 @@ export default function HomePage() {
             <div className="flex flex-wrap items-center gap-3 mt-9">
               <Link
                 href="/auth/sign-up"
-                className="bg-white text-black hover:bg-[#e8e8e8] px-6 py-3 rounded-lg font-semibold text-sm inline-flex items-center gap-1.5 transition-colors"
+                className="bg-white text-black hover:bg-muted px-6 py-3 rounded-lg font-semibold text-sm inline-flex items-center gap-1.5 transition-colors"
               >
                 Get started free
               </Link>
               <Link
                 href="/project/sample-project"
-                className="inline-flex items-center gap-1.5 px-6 py-3 rounded-lg border border-[#1e1e1e] text-[#888] hover:text-white hover:border-[#2a2a2a] text-sm font-medium transition-colors"
+                className="inline-flex items-center gap-1.5 px-6 py-3 rounded-lg border border-border text-muted-foreground hover:text-white hover:border-border text-sm font-medium transition-colors"
               >
                 <svg
                   viewBox="0 0 16 16"
@@ -383,66 +383,66 @@ export default function HomePage() {
               </Link>
               <Link
                 href="/auth/sign-in"
-                className="text-[#444] hover:text-[#888] text-sm transition-colors"
+                className="text-muted-foreground hover:text-foreground text-sm transition-colors"
               >
                 Sign in →
               </Link>
             </div>
 
             {/* Stats row */}
-            <div className="flex items-center gap-8 mt-10 pt-10 border-t border-[#111]">
+            <div className="flex items-center gap-8 mt-10 pt-10 border-t border-border">
               <div>
                 <p className="text-xl font-bold text-white">1.2M+</p>
-                <p className="text-[12px] text-[#555] mt-0.5">
+                <p className="text-[12px] text-muted-foreground mt-0.5">
                   Annotations created
                 </p>
               </div>
-              <div className="w-px h-8 bg-[#1e1e1e]" />
+              <div className="w-px h-8 bg-border" />
               <div>
                 <p className="text-xl font-bold text-white">500+</p>
-                <p className="text-[12px] text-[#555] mt-0.5">
+                <p className="text-[12px] text-muted-foreground mt-0.5">
                   Teams worldwide
                 </p>
               </div>
-              <div className="w-px h-8 bg-[#1e1e1e]" />
+              <div className="w-px h-8 bg-border" />
               <div>
                 <p className="text-xl font-bold text-white">99.9%</p>
-                <p className="text-[12px] text-[#555] mt-0.5">Uptime SLA</p>
+                <p className="text-[12px] text-muted-foreground mt-0.5">Uptime SLA</p>
               </div>
             </div>
           </div>
 
           {/* Right — editor preview */}
           <div className="relative">
-            <div className="absolute -inset-4 bg-[#4f8ef7]/5 rounded-2xl blur-2xl pointer-events-none" />
+            <div className="absolute -inset-4 bg-primary/5 rounded-2xl blur-2xl pointer-events-none" />
             <EditorPreview />
           </div>
         </div>
       </section>
 
       {/* ─── 2. TRUSTED-BY STRIP ─────────────────────────────────────────── */}
-      <div className="border-y border-[#111] py-8 px-5 lg:px-8">
+      <div className="border-y border-border py-8 px-5 lg:px-8">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center gap-6 sm:gap-10">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-[#333] font-semibold shrink-0">
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold shrink-0">
             Trusted by AI teams at
           </p>
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-6 sm:gap-9">
-            <span className="text-sm font-semibold text-[#2a2a2a] hover:text-[#555] transition-colors cursor-default">
+            <span className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-default">
               Voyage AI
             </span>
-            <span className="text-sm font-semibold text-[#2a2a2a] hover:text-[#555] transition-colors cursor-default">
+            <span className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-default">
               Luminary Health
             </span>
-            <span className="text-sm font-semibold text-[#2a2a2a] hover:text-[#555] transition-colors cursor-default">
+            <span className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-default">
               Orbital Vision
             </span>
-            <span className="text-sm font-semibold text-[#2a2a2a] hover:text-[#555] transition-colors cursor-default">
+            <span className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-default">
               DeepSight Labs
             </span>
-            <span className="text-sm font-semibold text-[#2a2a2a] hover:text-[#555] transition-colors cursor-default">
+            <span className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-default">
               Nexus Robotics
             </span>
-            <span className="text-sm font-semibold text-[#2a2a2a] hover:text-[#555] transition-colors cursor-default">
+            <span className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-default">
               Axon Research
             </span>
           </div>
@@ -453,7 +453,7 @@ export default function HomePage() {
       <section id="features" className="py-24 px-5 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="mb-14">
-            <p className="text-[11px] uppercase tracking-[0.14em] text-[#555] font-semibold mb-4">
+            <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground font-semibold mb-4">
               Features
             </p>
             <h2 className="text-4xl font-bold text-white tracking-tight">
@@ -461,74 +461,74 @@ export default function HomePage() {
               <br />
               annotation workflows.
             </h2>
-            <p className="text-[#666] mt-4 max-w-lg text-[15px] leading-relaxed">
+            <p className="text-muted-foreground mt-4 max-w-lg text-[15px] leading-relaxed">
               Every tool your team needs to build high-quality training datasets
               — from raw images to export-ready annotations.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#111] rounded-xl overflow-hidden">
-            <div className="bg-[#0a0a0a] p-7 hover:bg-[#0e0e0e] transition-colors">
-              <Hexagon className="h-5 w-5 text-[#555] mb-5" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-border rounded-xl overflow-hidden">
+            <div className="bg-background p-7 hover:bg-muted transition-colors">
+              <Hexagon className="h-5 w-5 text-muted-foreground mb-5" />
               <h3 className="text-[14px] font-semibold text-white mb-2">
                 Polygon &amp; Bounding Box
               </h3>
-              <p className="text-[13px] text-[#555] leading-relaxed">
+              <p className="text-[13px] text-muted-foreground leading-relaxed">
                 Precision polygon segmentation, axis-aligned and rotated
                 bounding boxes, keypoints, and polylines in one canvas.
               </p>
             </div>
 
-            <div className="bg-[#0a0a0a] p-7 hover:bg-[#0e0e0e] transition-colors">
-              <Zap className="h-5 w-5 text-[#555] mb-5" />
+            <div className="bg-background p-7 hover:bg-muted transition-colors">
+              <Zap className="h-5 w-5 text-muted-foreground mb-5" />
               <h3 className="text-[14px] font-semibold text-white mb-2">
                 AI Auto-labeling
               </h3>
-              <p className="text-[13px] text-[#555] leading-relaxed">
+              <p className="text-[13px] text-muted-foreground leading-relaxed">
                 One-click AI pre-annotation across your entire dataset. Review,
                 correct, and accept — typically 80%+ accurate out of the box.
               </p>
             </div>
 
-            <div className="bg-[#0a0a0a] p-7 hover:bg-[#0e0e0e] transition-colors">
-              <Users className="h-5 w-5 text-[#555] mb-5" />
+            <div className="bg-background p-7 hover:bg-muted transition-colors">
+              <Users className="h-5 w-5 text-muted-foreground mb-5" />
               <h3 className="text-[14px] font-semibold text-white mb-2">
                 Team Collaboration
               </h3>
-              <p className="text-[13px] text-[#555] leading-relaxed">
+              <p className="text-[13px] text-muted-foreground leading-relaxed">
                 Multiple annotators work on the same dataset simultaneously with
                 presence indicators and conflict resolution.
               </p>
             </div>
 
-            <div className="bg-[#0a0a0a] p-7 hover:bg-[#0e0e0e] transition-colors">
-              <Shield className="h-5 w-5 text-[#555] mb-5" />
+            <div className="bg-background p-7 hover:bg-muted transition-colors">
+              <Shield className="h-5 w-5 text-muted-foreground mb-5" />
               <h3 className="text-[14px] font-semibold text-white mb-2">
                 Role-based Access
               </h3>
-              <p className="text-[13px] text-[#555] leading-relaxed">
+              <p className="text-[13px] text-muted-foreground leading-relaxed">
                 Five roles with precisely scoped permissions — Admin, Project
                 Manager, Annotator, Reviewer, and Viewer.
               </p>
             </div>
 
-            <div className="bg-[#0a0a0a] p-7 hover:bg-[#0e0e0e] transition-colors">
-              <GitBranch className="h-5 w-5 text-[#555] mb-5" />
+            <div className="bg-background p-7 hover:bg-muted transition-colors">
+              <GitBranch className="h-5 w-5 text-muted-foreground mb-5" />
               <h3 className="text-[14px] font-semibold text-white mb-2">
                 Version History
               </h3>
-              <p className="text-[13px] text-[#555] leading-relaxed">
+              <p className="text-[13px] text-muted-foreground leading-relaxed">
                 Every change is tracked. Jump to any prior state with unlimited
                 undo/redo and a complete commit history.
               </p>
             </div>
 
-            <div className="bg-[#0a0a0a] p-7 hover:bg-[#0e0e0e] transition-colors">
-              <Download className="h-5 w-5 text-[#555] mb-5" />
+            <div className="bg-background p-7 hover:bg-muted transition-colors">
+              <Download className="h-5 w-5 text-muted-foreground mb-5" />
               <h3 className="text-[14px] font-semibold text-white mb-2">
                 Export Formats
               </h3>
-              <p className="text-[13px] text-[#555] leading-relaxed">
+              <p className="text-[13px] text-muted-foreground leading-relaxed">
                 COCO JSON, YOLO v5–v10, Pascal VOC, TFRecord, CSV — export in
                 any format your pipeline expects.
               </p>
@@ -538,11 +538,11 @@ export default function HomePage() {
       </section>
 
       {/* ─── 4. PRECISION TOOLS ──────────────────────────────────────────── */}
-      <section className="py-24 px-5 lg:px-8 border-t border-[#111]">
+      <section className="py-24 px-5 lg:px-8 border-t border-border">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           {/* Left — text */}
           <div>
-            <p className="text-[11px] uppercase tracking-[0.14em] text-[#555] font-semibold mb-4">
+            <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground font-semibold mb-4">
               Annotation Tools
             </p>
             <h2 className="text-4xl font-bold text-white tracking-tight leading-[1.1]">
@@ -550,7 +550,7 @@ export default function HomePage() {
               <br />
               At sub-pixel precision.
             </h2>
-            <p className="text-[15px] text-[#666] leading-relaxed mt-5 max-w-md">
+            <p className="text-[15px] text-muted-foreground leading-relaxed mt-5 max-w-md">
               Our canvas is built from scratch for annotation — not adapted from
               a generic drawing library. Hardware-accelerated rendering keeps
               the UI responsive even at 10,000+ objects.
@@ -565,9 +565,9 @@ export default function HomePage() {
               ].map((item) => (
                 <li
                   key={item}
-                  className="flex items-start gap-3 text-[14px] text-[#666]"
+                  className="flex items-start gap-3 text-[14px] text-muted-foreground"
                 >
-                  <Check className="h-3.5 w-3.5 text-[#444] shrink-0 mt-0.5" />
+                  <Check className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
                   {item}
                 </li>
               ))}
@@ -575,7 +575,7 @@ export default function HomePage() {
             <div className="mt-9">
               <Link
                 href="/auth/sign-up"
-                className="bg-white text-black hover:bg-[#e8e8e8] px-6 py-3 rounded-lg font-semibold text-sm inline-flex items-center gap-1.5 transition-colors"
+                className="bg-white text-black hover:bg-muted px-6 py-3 rounded-lg font-semibold text-sm inline-flex items-center gap-1.5 transition-colors"
               >
                 Try the tools free →
               </Link>
@@ -584,36 +584,36 @@ export default function HomePage() {
 
           {/* Right — 2×2 tool cards */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="border border-[#1a1a1a] rounded-xl p-5 bg-[#0d0d0d]">
-              <PenTool className="h-5 w-5 text-[#555] mb-3" />
+            <div className="border border-border rounded-xl p-5 bg-card">
+              <PenTool className="h-5 w-5 text-muted-foreground mb-3" />
               <p className="text-[13px] font-semibold text-white">Polygon</p>
-              <p className="text-[12px] text-[#555] mt-1 leading-relaxed">
+              <p className="text-[12px] text-muted-foreground mt-1 leading-relaxed">
                 Click-to-add vertices, drag to adjust, Ctrl+Z to undo any point.
               </p>
             </div>
 
-            <div className="border border-[#1a1a1a] rounded-xl p-5 bg-[#0d0d0d]">
-              <Hexagon className="h-5 w-5 text-[#555] mb-3" />
+            <div className="border border-border rounded-xl p-5 bg-card">
+              <Hexagon className="h-5 w-5 text-muted-foreground mb-3" />
               <p className="text-[13px] font-semibold text-white">Box</p>
-              <p className="text-[12px] text-[#555] mt-1 leading-relaxed">
+              <p className="text-[12px] text-muted-foreground mt-1 leading-relaxed">
                 Drag to draw axis-aligned or rotated boxes with aspect-ratio
                 lock.
               </p>
             </div>
 
-            <div className="border border-[#1a1a1a] rounded-xl p-5 bg-[#0d0d0d]">
-              <GitBranch className="h-5 w-5 text-[#555] mb-3" />
+            <div className="border border-border rounded-xl p-5 bg-card">
+              <GitBranch className="h-5 w-5 text-muted-foreground mb-3" />
               <p className="text-[13px] font-semibold text-white">Keypoint</p>
-              <p className="text-[12px] text-[#555] mt-1 leading-relaxed">
+              <p className="text-[12px] text-muted-foreground mt-1 leading-relaxed">
                 Place joint keypoints and connect them via configurable skeleton
                 templates.
               </p>
             </div>
 
-            <div className="border border-[#1a1a1a] rounded-xl p-5 bg-[#0d0d0d]">
-              <Zap className="h-5 w-5 text-[#555] mb-3" />
+            <div className="border border-border rounded-xl p-5 bg-card">
+              <Zap className="h-5 w-5 text-muted-foreground mb-3" />
               <p className="text-[13px] font-semibold text-white">AI Assist</p>
-              <p className="text-[12px] text-[#555] mt-1 leading-relaxed">
+              <p className="text-[12px] text-muted-foreground mt-1 leading-relaxed">
                 Segment Anything integration — click a point and let the model
                 outline the shape.
               </p>
@@ -623,76 +623,76 @@ export default function HomePage() {
       </section>
 
       {/* ─── 5. ROLES ────────────────────────────────────────────────────── */}
-      <section id="roles" className="py-24 px-5 lg:px-8 border-t border-[#111]">
+      <section id="roles" className="py-24 px-5 lg:px-8 border-t border-border">
         <div className="max-w-7xl mx-auto">
           <div className="mb-12">
             <h2 className="text-4xl font-bold text-white tracking-tight">
               Five roles. One platform.
             </h2>
-            <p className="text-[15px] text-[#666] mt-3 max-w-lg leading-relaxed">
+            <p className="text-[15px] text-muted-foreground mt-3 max-w-lg leading-relaxed">
               Every team member gets exactly the scoped access they need — no
               over-provisioned permissions, no friction.
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            <div className="border border-[#1a1a1a] rounded-xl p-5 hover:border-[#222] transition-colors">
-              <Shield className="h-5 w-5 text-[#555]" />
+            <div className="border border-border rounded-xl p-5 hover:border-border transition-colors">
+              <Shield className="h-5 w-5 text-muted-foreground" />
               <p className="text-[13.5px] font-semibold text-white mt-4">
                 Admin
               </p>
-              <p className="text-[11.5px] text-[#555] mt-0.5">Full control</p>
-              <p className="text-[12px] text-[#444] mt-3 leading-relaxed">
+              <p className="text-[11.5px] text-muted-foreground mt-0.5">Full control</p>
+              <p className="text-[12px] text-muted-foreground mt-3 leading-relaxed">
                 Manages billing, team members, SSO settings, and all project
                 data across the workspace.
               </p>
             </div>
 
-            <div className="border border-[#1a1a1a] rounded-xl p-5 hover:border-[#222] transition-colors">
-              <Briefcase className="h-5 w-5 text-[#555]" />
+            <div className="border border-border rounded-xl p-5 hover:border-border transition-colors">
+              <Briefcase className="h-5 w-5 text-muted-foreground" />
               <p className="text-[13.5px] font-semibold text-white mt-4">
                 Project Manager
               </p>
-              <p className="text-[11.5px] text-[#555] mt-0.5">Owns projects</p>
-              <p className="text-[12px] text-[#444] mt-3 leading-relaxed">
+              <p className="text-[11.5px] text-muted-foreground mt-0.5">Owns projects</p>
+              <p className="text-[12px] text-muted-foreground mt-3 leading-relaxed">
                 Creates projects, assigns annotators, configures label schemas,
                 and tracks progress.
               </p>
             </div>
 
-            <div className="border border-[#1a1a1a] rounded-xl p-5 hover:border-[#222] transition-colors">
-              <PenTool className="h-5 w-5 text-[#555]" />
+            <div className="border border-border rounded-xl p-5 hover:border-border transition-colors">
+              <PenTool className="h-5 w-5 text-muted-foreground" />
               <p className="text-[13.5px] font-semibold text-white mt-4">
                 Annotator
               </p>
-              <p className="text-[11.5px] text-[#555] mt-0.5">Labels data</p>
-              <p className="text-[12px] text-[#444] mt-3 leading-relaxed">
+              <p className="text-[11.5px] text-muted-foreground mt-0.5">Labels data</p>
+              <p className="text-[12px] text-muted-foreground mt-3 leading-relaxed">
                 Draws annotations on assigned tasks. Cannot view other
                 annotators' work or export data.
               </p>
             </div>
 
-            <div className="border border-[#1a1a1a] rounded-xl p-5 hover:border-[#222] transition-colors">
-              <CheckSquare className="h-5 w-5 text-[#555]" />
+            <div className="border border-border rounded-xl p-5 hover:border-border transition-colors">
+              <CheckSquare className="h-5 w-5 text-muted-foreground" />
               <p className="text-[13.5px] font-semibold text-white mt-4">
                 Reviewer
               </p>
-              <p className="text-[11.5px] text-[#555] mt-0.5">QA annotations</p>
-              <p className="text-[12px] text-[#444] mt-3 leading-relaxed">
+              <p className="text-[11.5px] text-muted-foreground mt-0.5">QA annotations</p>
+              <p className="text-[12px] text-muted-foreground mt-3 leading-relaxed">
                 Accepts, rejects, or corrects submitted annotations. Flags
                 ambiguous labels for discussion.
               </p>
             </div>
 
-            <div className="border border-[#1a1a1a] rounded-xl p-5 hover:border-[#222] transition-colors">
-              <Eye className="h-5 w-5 text-[#555]" />
+            <div className="border border-border rounded-xl p-5 hover:border-border transition-colors">
+              <Eye className="h-5 w-5 text-muted-foreground" />
               <p className="text-[13.5px] font-semibold text-white mt-4">
                 Viewer
               </p>
-              <p className="text-[11.5px] text-[#555] mt-0.5">
+              <p className="text-[11.5px] text-muted-foreground mt-0.5">
                 Read-only access
               </p>
-              <p className="text-[12px] text-[#444] mt-3 leading-relaxed">
+              <p className="text-[12px] text-muted-foreground mt-3 leading-relaxed">
                 Browses datasets and annotation results. Ideal for stakeholders
                 and model training engineers.
               </p>
@@ -704,14 +704,14 @@ export default function HomePage() {
       {/* ─── 6. PRICING ──────────────────────────────────────────────────── */}
       <section
         id="pricing"
-        className="py-24 px-5 lg:px-8 border-t border-[#111]"
+        className="py-24 px-5 lg:px-8 border-t border-border"
       >
         <div className="max-w-5xl mx-auto">
           <div className="mb-12 text-center">
             <h2 className="text-4xl font-bold text-white tracking-tight">
               Simple pricing. Scale as you grow.
             </h2>
-            <p className="text-[15px] text-[#666] mt-3 leading-relaxed">
+            <p className="text-[15px] text-muted-foreground mt-3 leading-relaxed">
               No hidden fees. No annotation limits on Enterprise. Cancel any
               time.
             </p>
@@ -719,18 +719,18 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* Starter */}
-            <div className="rounded-xl border border-[#1a1a1a] bg-[#0d0d0d] p-7 flex flex-col">
-              <p className="text-[11px] uppercase tracking-[0.12em] text-[#555] font-semibold">
+            <div className="rounded-xl border border-border bg-card p-7 flex flex-col">
+              <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground font-semibold">
                 Starter
               </p>
               <p className="text-4xl font-bold text-white mt-3">Free</p>
-              <p className="text-[12px] text-[#444] mt-1">forever</p>
-              <p className="text-[13px] text-[#666] mt-3 leading-relaxed">
+              <p className="text-[12px] text-muted-foreground mt-1">forever</p>
+              <p className="text-[13px] text-muted-foreground mt-3 leading-relaxed">
                 Solo researchers and small experiments.
               </p>
               <Link
                 href="/auth/sign-up"
-                className="mt-6 w-full text-center px-5 py-2.5 rounded-lg border border-[#1e1e1e] text-[#666] hover:text-white hover:border-[#333] text-sm font-semibold transition-colors"
+                className="mt-6 w-full text-center px-5 py-2.5 rounded-lg border border-border text-muted-foreground hover:text-white hover:border-border text-sm font-semibold transition-colors"
               >
                 Get started free
               </Link>
@@ -745,9 +745,9 @@ export default function HomePage() {
                 ].map((f) => (
                   <li
                     key={f}
-                    className="flex items-center gap-2.5 text-[13px] text-[#666]"
+                    className="flex items-center gap-2.5 text-[13px] text-muted-foreground"
                   >
-                    <Check className="h-3.5 w-3.5 text-[#444] shrink-0" />
+                    <Check className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     {f}
                   </li>
                 ))}
@@ -755,19 +755,19 @@ export default function HomePage() {
             </div>
 
             {/* Pro */}
-            <div className="rounded-xl border border-[#2a2a2a] bg-[#111] p-7 flex flex-col relative">
-              <div className="absolute -top-px left-6 right-6 h-px bg-gradient-to-r from-transparent via-[#4f8ef7]/60 to-transparent" />
-              <p className="text-[11px] uppercase tracking-[0.12em] text-[#555] font-semibold">
+            <div className="rounded-xl border border-border bg-card p-7 flex flex-col relative">
+              <div className="absolute -top-px left-6 right-6 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
+              <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground font-semibold">
                 Pro
               </p>
               <p className="text-4xl font-bold text-white mt-3">$29</p>
-              <p className="text-[12px] text-[#444] mt-1">per seat / month</p>
-              <p className="text-[13px] text-[#666] mt-3 leading-relaxed">
+              <p className="text-[12px] text-muted-foreground mt-1">per seat / month</p>
+              <p className="text-[13px] text-muted-foreground mt-3 leading-relaxed">
                 Growing ML teams.
               </p>
               <Link
                 href="/auth/sign-up"
-                className="mt-6 w-full text-center px-5 py-2.5 rounded-lg bg-white text-black hover:bg-[#e8e8e8] text-sm font-semibold transition-colors"
+                className="mt-6 w-full text-center px-5 py-2.5 rounded-lg bg-white text-black hover:bg-muted text-sm font-semibold transition-colors"
               >
                 Start 14-day trial
               </Link>
@@ -784,9 +784,9 @@ export default function HomePage() {
                 ].map((f) => (
                   <li
                     key={f}
-                    className="flex items-center gap-2.5 text-[13px] text-[#666]"
+                    className="flex items-center gap-2.5 text-[13px] text-muted-foreground"
                   >
-                    <Check className="h-3.5 w-3.5 text-[#444] shrink-0" />
+                    <Check className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     {f}
                   </li>
                 ))}
@@ -794,18 +794,18 @@ export default function HomePage() {
             </div>
 
             {/* Enterprise */}
-            <div className="rounded-xl border border-[#1a1a1a] bg-[#0d0d0d] p-7 flex flex-col">
-              <p className="text-[11px] uppercase tracking-[0.12em] text-[#555] font-semibold">
+            <div className="rounded-xl border border-border bg-card p-7 flex flex-col">
+              <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground font-semibold">
                 Enterprise
               </p>
               <p className="text-4xl font-bold text-white mt-3">Custom</p>
-              <p className="text-[12px] text-[#444] mt-1">annual</p>
-              <p className="text-[13px] text-[#666] mt-3 leading-relaxed">
+              <p className="text-[12px] text-muted-foreground mt-1">annual</p>
+              <p className="text-[13px] text-muted-foreground mt-3 leading-relaxed">
                 Unlimited scale, SSO, SLAs.
               </p>
               <a
                 href="mailto:sales@synthmark.ai"
-                className="mt-6 w-full text-center px-5 py-2.5 rounded-lg border border-[#1e1e1e] text-[#666] hover:text-white hover:border-[#333] text-sm font-semibold transition-colors"
+                className="mt-6 w-full text-center px-5 py-2.5 rounded-lg border border-border text-muted-foreground hover:text-white hover:border-border text-sm font-semibold transition-colors"
               >
                 Talk to sales
               </a>
@@ -821,9 +821,9 @@ export default function HomePage() {
                 ].map((f) => (
                   <li
                     key={f}
-                    className="flex items-center gap-2.5 text-[13px] text-[#666]"
+                    className="flex items-center gap-2.5 text-[13px] text-muted-foreground"
                   >
-                    <Check className="h-3.5 w-3.5 text-[#444] shrink-0" />
+                    <Check className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     {f}
                   </li>
                 ))}
@@ -834,19 +834,19 @@ export default function HomePage() {
       </section>
 
       {/* ─── 7. TESTIMONIALS ─────────────────────────────────────────────── */}
-      <section className="py-24 px-5 lg:px-8 border-t border-[#111]">
+      <section className="py-24 px-5 lg:px-8 border-t border-border">
         <div className="max-w-7xl mx-auto">
           <div className="mb-12">
             <h2 className="text-4xl font-bold text-white tracking-tight">
               Loved by ML teams.
             </h2>
-            <p className="text-[15px] text-[#666] mt-3">
+            <p className="text-[15px] text-muted-foreground mt-3">
               What teams shipping AI products say about Synthmark.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="border border-[#1a1a1a] rounded-xl p-6 bg-[#0d0d0d]">
+            <div className="border border-border rounded-xl p-6 bg-card">
               <div className="flex items-center gap-0.5">
                 <FilledStar />
                 <FilledStar />
@@ -854,27 +854,27 @@ export default function HomePage() {
                 <FilledStar />
                 <FilledStar />
               </div>
-              <p className="text-[13.5px] text-[#666] leading-relaxed mt-3">
+              <p className="text-[13.5px] text-muted-foreground leading-relaxed mt-3">
                 "Synthmark cut our annotation time in half. The polygon tools
                 are incredibly precise and AI pre-labeling means our team spends
                 time on the hard cases, not the obvious ones."
               </p>
               <div className="flex items-center gap-3 mt-5">
-                <div className="bg-[#1a1a1a] border border-[#222] text-[#666] text-[11px] font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0">
+                <div className="bg-muted border border-border text-muted-foreground text-[11px] font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0">
                   SC
                 </div>
                 <div>
                   <p className="text-[13px] font-semibold text-white">
                     Sarah Chen
                   </p>
-                  <p className="text-[11px] text-[#555]">
+                  <p className="text-[11px] text-muted-foreground">
                     ML Lead, Orbital Vision
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="border border-[#1a1a1a] rounded-xl p-6 bg-[#0d0d0d]">
+            <div className="border border-border rounded-xl p-6 bg-card">
               <div className="flex items-center gap-0.5">
                 <FilledStar />
                 <FilledStar />
@@ -882,27 +882,27 @@ export default function HomePage() {
                 <FilledStar />
                 <FilledStar />
               </div>
-              <p className="text-[13.5px] text-[#666] leading-relaxed mt-3">
+              <p className="text-[13.5px] text-muted-foreground leading-relaxed mt-3">
                 "Role-based access was the feature that sold us. Our reviewers
                 catch annotation errors before they ever hit training — dataset
                 quality went up significantly."
               </p>
               <div className="flex items-center gap-3 mt-5">
-                <div className="bg-[#1a1a1a] border border-[#222] text-[#666] text-[11px] font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0">
+                <div className="bg-muted border border-border text-muted-foreground text-[11px] font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0">
                   MW
                 </div>
                 <div>
                   <p className="text-[13px] font-semibold text-white">
                     Marcus Webb
                   </p>
-                  <p className="text-[11px] text-[#555]">
+                  <p className="text-[11px] text-muted-foreground">
                     Director of AI, Luminary Health
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="border border-[#1a1a1a] rounded-xl p-6 bg-[#0d0d0d]">
+            <div className="border border-border rounded-xl p-6 bg-card">
               <div className="flex items-center gap-0.5">
                 <FilledStar />
                 <FilledStar />
@@ -910,20 +910,20 @@ export default function HomePage() {
                 <FilledStar />
                 <FilledStar />
               </div>
-              <p className="text-[13.5px] text-[#666] leading-relaxed mt-3">
+              <p className="text-[13.5px] text-muted-foreground leading-relaxed mt-3">
                 "We migrated from a competitor in a weekend. YOLO export works
                 perfectly and the real-time collaboration features have been
                 transformative for our distributed team."
               </p>
               <div className="flex items-center gap-3 mt-5">
-                <div className="bg-[#1a1a1a] border border-[#222] text-[#666] text-[11px] font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0">
+                <div className="bg-muted border border-border text-muted-foreground text-[11px] font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0">
                   PN
                 </div>
                 <div>
                   <p className="text-[13px] font-semibold text-white">
                     Priya Nair
                   </p>
-                  <p className="text-[11px] text-[#555]">
+                  <p className="text-[11px] text-muted-foreground">
                     Research Engineer, DeepSight Labs
                   </p>
                 </div>
@@ -934,7 +934,7 @@ export default function HomePage() {
       </section>
 
       {/* ─── 8. FAQ ──────────────────────────────────────────────────────── */}
-      <section id="faq" className="py-24 px-5 lg:px-8 border-t border-[#111]">
+      <section id="faq" className="py-24 px-5 lg:px-8 border-t border-border">
         <div className="max-w-xl mx-auto">
           <div className="mb-10">
             <h2 className="text-4xl font-bold text-white tracking-tight">
@@ -942,28 +942,28 @@ export default function HomePage() {
             </h2>
           </div>
 
-          <details className="group border-b border-[#111] py-4">
+          <details className="group border-b border-border py-4">
             <summary className="flex items-center justify-between cursor-pointer list-none">
               <span className="text-[14px] font-medium text-white">
                 What annotation file formats does Synthmark export?
               </span>
-              <ChevronDown className="h-4 w-4 text-[#555] shrink-0 ml-4 transition-transform duration-200 group-open:rotate-180" />
+              <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0 ml-4 transition-transform duration-200 group-open:rotate-180" />
             </summary>
-            <p className="text-[13px] text-[#555] leading-relaxed mt-3 pr-8">
+            <p className="text-[13px] text-muted-foreground leading-relaxed mt-3 pr-8">
               We support COCO JSON, YOLO v5–v10, Pascal VOC XML, TFRecord, and
               CSV. Export any dataset in one click — your existing pipeline
               keeps working without modification.
             </p>
           </details>
 
-          <details className="group border-b border-[#111] py-4">
+          <details className="group border-b border-border py-4">
             <summary className="flex items-center justify-between cursor-pointer list-none">
               <span className="text-[14px] font-medium text-white">
                 How does AI auto-labeling work?
               </span>
-              <ChevronDown className="h-4 w-4 text-[#555] shrink-0 ml-4 transition-transform duration-200 group-open:rotate-180" />
+              <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0 ml-4 transition-transform duration-200 group-open:rotate-180" />
             </summary>
-            <p className="text-[13px] text-[#555] leading-relaxed mt-3 pr-8">
+            <p className="text-[13px] text-muted-foreground leading-relaxed mt-3 pr-8">
               Upload images and click Auto-label. Our models pre-annotate
               objects using your selected label classes. You review, correct,
               and accept — typically 80%+ accurate, requiring only a fraction of
@@ -971,14 +971,14 @@ export default function HomePage() {
             </p>
           </details>
 
-          <details className="group border-b border-[#111] py-4">
+          <details className="group border-b border-border py-4">
             <summary className="flex items-center justify-between cursor-pointer list-none">
               <span className="text-[14px] font-medium text-white">
                 Can multiple annotators work on the same dataset simultaneously?
               </span>
-              <ChevronDown className="h-4 w-4 text-[#555] shrink-0 ml-4 transition-transform duration-200 group-open:rotate-180" />
+              <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0 ml-4 transition-transform duration-200 group-open:rotate-180" />
             </summary>
-            <p className="text-[13px] text-[#555] leading-relaxed mt-3 pr-8">
+            <p className="text-[13px] text-muted-foreground leading-relaxed mt-3 pr-8">
               Yes. Synthmark supports real-time collaborative annotation with
               presence indicators. Annotators are automatically assigned
               non-overlapping batches, and a conflict resolution system handles
@@ -986,28 +986,28 @@ export default function HomePage() {
             </p>
           </details>
 
-          <details className="group border-b border-[#111] py-4">
+          <details className="group border-b border-border py-4">
             <summary className="flex items-center justify-between cursor-pointer list-none">
               <span className="text-[14px] font-medium text-white">
                 Is there a free plan, and does it require a credit card?
               </span>
-              <ChevronDown className="h-4 w-4 text-[#555] shrink-0 ml-4 transition-transform duration-200 group-open:rotate-180" />
+              <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0 ml-4 transition-transform duration-200 group-open:rotate-180" />
             </summary>
-            <p className="text-[13px] text-[#555] leading-relaxed mt-3 pr-8">
+            <p className="text-[13px] text-muted-foreground leading-relaxed mt-3 pr-8">
               Yes. The Starter plan is free forever with 1 project, 5,000
               annotations per month, and all drawing tools included. No credit
               card required to sign up.
             </p>
           </details>
 
-          <details className="group border-b border-[#111] py-4">
+          <details className="group border-b border-border py-4">
             <summary className="flex items-center justify-between cursor-pointer list-none">
               <span className="text-[14px] font-medium text-white">
                 How does role-based access control work?
               </span>
-              <ChevronDown className="h-4 w-4 text-[#555] shrink-0 ml-4 transition-transform duration-200 group-open:rotate-180" />
+              <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0 ml-4 transition-transform duration-200 group-open:rotate-180" />
             </summary>
-            <p className="text-[13px] text-[#555] leading-relaxed mt-3 pr-8">
+            <p className="text-[13px] text-muted-foreground leading-relaxed mt-3 pr-8">
               Synthmark has five roles: Admin, Project Manager, Annotator,
               Reviewer, and Viewer. Each role has precisely scoped permissions —
               for example, Reviewers can accept or reject annotations but cannot
@@ -1018,25 +1018,25 @@ export default function HomePage() {
       </section>
 
       {/* ─── 9. FINAL CTA BANNER ─────────────────────────────────────────── */}
-      <section className="border-y border-[#111] py-24 px-5 lg:px-8 text-center">
+      <section className="border-y border-border py-24 px-5 lg:px-8 text-center">
         <div className="max-w-2xl mx-auto">
           <h2 className="text-4xl font-bold text-white tracking-tight">
             Start annotating today.
           </h2>
-          <p className="text-[16px] text-[#666] mt-4 leading-relaxed">
+          <p className="text-[16px] text-muted-foreground mt-4 leading-relaxed">
             Join 500+ ML teams building better training data with Synthmark.
             Free to start, scales with your team.
           </p>
           <div className="flex items-center justify-center gap-4 mt-9 flex-wrap">
             <Link
               href="/auth/sign-up"
-              className="bg-white text-black hover:bg-[#e8e8e8] px-7 py-3 rounded-lg font-semibold text-sm inline-flex items-center gap-1.5 transition-colors"
+              className="bg-white text-black hover:bg-muted px-7 py-3 rounded-lg font-semibold text-sm inline-flex items-center gap-1.5 transition-colors"
             >
               Get started free
             </Link>
             <a
               href="mailto:sales@synthmark.ai"
-              className="border border-[#1e1e1e] text-[#666] hover:text-white hover:border-[#333] px-7 py-3 rounded-lg text-sm font-semibold transition-colors"
+              className="border border-border text-muted-foreground hover:text-white hover:border-border px-7 py-3 rounded-lg text-sm font-semibold transition-colors"
             >
               Talk to sales
             </a>
@@ -1045,9 +1045,9 @@ export default function HomePage() {
       </section>
 
       {/* ─── 10. FOOTER ──────────────────────────────────────────────────── */}
-      <footer className="border-t border-[#111] bg-[#0a0a0a] px-5 lg:px-8 pt-16 pb-10">
+      <footer className="border-t border-border bg-background px-5 lg:px-8 pt-16 pb-10">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 lg:gap-16 pb-12 border-b border-[#111]">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 lg:gap-16 pb-12 border-b border-border">
             {/* Brand */}
             <div className="col-span-2 md:col-span-1">
               <div className="flex items-center gap-2 mb-4">
@@ -1055,10 +1055,10 @@ export default function HomePage() {
                   <Star className="h-3.5 w-3.5 text-white" />
                 </div>
                 <span className="font-bold text-sm tracking-tight text-white">
-                  synth<span className="text-[#4f8ef7]">mark</span>
+                  synth<span className="text-primary">mark</span>
                 </span>
               </div>
-              <p className="text-[13px] text-[#555] leading-relaxed max-w-[200px]">
+              <p className="text-[13px] text-muted-foreground leading-relaxed max-w-[200px]">
                 The professional data annotation platform for ML teams.
               </p>
               <div className="flex items-center gap-3 mt-5">
@@ -1066,7 +1066,7 @@ export default function HomePage() {
                   href="https://github.com/synthmark"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-8 h-8 rounded-lg border border-[#1e1e1e] flex items-center justify-center text-[#555] hover:text-white hover:border-[#333] transition-colors"
+                  className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-white hover:border-border transition-colors"
                   aria-label="GitHub"
                 >
                   <svg
@@ -1082,7 +1082,7 @@ export default function HomePage() {
                   href="https://twitter.com/synthmark_ai"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-8 h-8 rounded-lg border border-[#1e1e1e] flex items-center justify-center text-[#555] hover:text-white hover:border-[#333] transition-colors"
+                  className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-white hover:border-border transition-colors"
                   aria-label="X / Twitter"
                 >
                   <svg
@@ -1098,7 +1098,7 @@ export default function HomePage() {
                   href="https://linkedin.com/company/synthmark"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-8 h-8 rounded-lg border border-[#1e1e1e] flex items-center justify-center text-[#555] hover:text-white hover:border-[#333] transition-colors"
+                  className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-white hover:border-border transition-colors"
                   aria-label="LinkedIn"
                 >
                   <svg
@@ -1115,7 +1115,7 @@ export default function HomePage() {
 
             {/* Product */}
             <div>
-              <p className="text-[11px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-4">
+              <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground font-semibold mb-4">
                 Product
               </p>
               <ul className="space-y-2.5">
@@ -1130,7 +1130,7 @@ export default function HomePage() {
                   <li key={label}>
                     <a
                       href={href}
-                      className="text-[13px] text-[#555] hover:text-[#888] transition-colors"
+                      className="text-[13px] text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {label}
                     </a>
@@ -1141,7 +1141,7 @@ export default function HomePage() {
 
             {/* Company */}
             <div>
-              <p className="text-[11px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-4">
+              <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground font-semibold mb-4">
                 Company
               </p>
               <ul className="space-y-2.5">
@@ -1154,7 +1154,7 @@ export default function HomePage() {
                   <li key={label}>
                     <a
                       href={href}
-                      className="text-[13px] text-[#555] hover:text-[#888] transition-colors"
+                      className="text-[13px] text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {label}
                     </a>
@@ -1165,7 +1165,7 @@ export default function HomePage() {
 
             {/* Legal */}
             <div>
-              <p className="text-[11px] uppercase tracking-[0.12em] text-[#444] font-semibold mb-4">
+              <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground font-semibold mb-4">
                 Legal
               </p>
               <ul className="space-y-2.5">
@@ -1178,7 +1178,7 @@ export default function HomePage() {
                   <li key={label}>
                     <a
                       href={href}
-                      className="text-[13px] text-[#555] hover:text-[#888] transition-colors"
+                      className="text-[13px] text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {label}
                     </a>
@@ -1190,12 +1190,12 @@ export default function HomePage() {
 
           {/* Footer bottom */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8">
-            <p className="text-[12px] text-[#444]">
+            <p className="text-[12px] text-muted-foreground">
               © 2025 Synthmark, Inc. All rights reserved.
             </p>
-            <div className="flex items-center gap-2 bg-[#0e0e0e] border border-[#1a1a1a] rounded-full px-3 py-1.5">
+            <div className="flex items-center gap-2 bg-muted border border-border rounded-full px-3 py-1.5">
               <span className="bg-[#22C55E] rounded-full h-1.5 w-1.5 block" />
-              <span className="text-[11px] text-[#555]">
+              <span className="text-[11px] text-muted-foreground">
                 All systems operational
               </span>
             </div>
