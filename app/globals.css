@@ -170,6 +170,33 @@
     .status-indicator {
         @apply inline-flex items-center gap-1.5 text-xs font-medium;
     }
+
+    .glass-card {
+        @apply bg-card/60 backdrop-blur-xl border border-white/[0.08] shadow-2xl;
+    }
+
+    .glass-panel {
+        @apply bg-[#07070f]/80 backdrop-blur-2xl border border-white/[0.05];
+    }
+
+    .text-gradient {
+        @apply bg-clip-text text-transparent bg-gradient-to-br from-white via-white to-white/40;
+    }
+
+    .animate-glow {
+        animation: glow 8s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+        from {
+            opacity: 0.3;
+            transform: scale(1);
+        }
+        to {
+            opacity: 0.6;
+            transform: scale(1.2);
+        }
+    }
 }
 
 /* ── Custom driver.js Styles ─────────────────────────────────────────── */

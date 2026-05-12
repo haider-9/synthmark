@@ -52,20 +52,31 @@ export function useTimer(options?: TimerOptions) {
   useEffect(() => {
     startTimer();
 
+    const handlePause = () => {
+      if (persist) {
+        try {
+          localStorage.setItem(storageKey, String(elapsedRef.current));
+        } catch { /* noop */ }
+      }
+      stopTimer();
+      setIsRunning(false);
+    };
+
+    const handleResume = () => {
+      startTimer();
+      setIsRunning(true);
+    };
+
     const handleVisibility = () => {
       if (document.hidden) {
-        if (persist) {
-          try {
-            localStorage.setItem(storageKey, String(elapsedRef.current));
-          } catch { /* noop */ }
-        }
-        stopTimer();
-        setIsRunning(false);
+        handlePause();
       } else {
-        startTimer();
-        setIsRunning(true);
+        handleResume();
       }
     };
+
+    const handleBlur = () => handlePause();
+    const handleFocus = () => handleResume();
 
     const handleBeforeUnload = () => {
       if (!persist) return;
@@ -75,10 +86,15 @@ export function useTimer(options?: TimerOptions) {
     };
 
     document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("blur", handleBlur);
+    window.addEventListener("focus", handleFocus);
     window.addEventListener("beforeunload", handleBeforeUnload);
+
     return () => {
       stopTimer();
       document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("blur", handleBlur);
+      window.removeEventListener("focus", handleFocus);
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [startTimer, stopTimer, persist, storageKey]);
