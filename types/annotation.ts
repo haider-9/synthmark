@@ -1,4 +1,4 @@
-export type AnnotationType = 'box' | 'polygon' | 'keypoint' | 'line' | 'circle';
+export type AnnotationType = 'polygon' | 'keypoint' | 'line' | 'box' | 'circle';
 export type ActiveTool = AnnotationType | 'select' | 'pan' | 'erase' | 'merge' | 'lasso';
 
 export interface Point {
@@ -13,14 +13,6 @@ export interface AnnotationBase {
   isVisible: boolean;
   isLocked: boolean;
   metadata?: Record<string, any>;
-}
-
-export interface BoundingBox extends AnnotationBase {
-  type: 'box';
-  x: number;
-  y: number;
-  width: number;
-  height: number;
 }
 
 export interface Polygon extends AnnotationBase {
@@ -38,6 +30,14 @@ export interface LineAnnotation extends AnnotationBase {
   points: Point[];
 }
 
+export interface BoundingBox extends AnnotationBase {
+  type: 'box';
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface CircleAnnotation extends AnnotationBase {
   type: 'circle';
   x: number;
@@ -45,7 +45,7 @@ export interface CircleAnnotation extends AnnotationBase {
   radius: number;
 }
 
-export type Annotation = BoundingBox | Polygon | Keypoint | LineAnnotation | CircleAnnotation;
+export type Annotation = Polygon | Keypoint | LineAnnotation | BoundingBox | CircleAnnotation;
 
 export interface LabelClass {
   id: string;

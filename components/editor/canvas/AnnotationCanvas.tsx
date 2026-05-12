@@ -129,108 +129,6 @@ const EdgeMidpoint = React.memo(function EdgeMidpoint({
   );
 });
 
-// ─── Box annotation ───────────────────────────────────────────────────────────
-function BoxAnnotationComp({
-  ann,
-  isSelected,
-  color,
-  labelName,
-  zoom,
-  onSelect,
-  onDragEnd,
-}: {
-  ann: BoundingBox;
-  isSelected: boolean;
-  color: string;
-  labelName: string;
-  zoom: number;
-  onSelect: (e: Konva.KonvaEventObject<MouseEvent>) => void;
-  onDragEnd: (id: string, x: number, y: number) => void;
-}) {
-  const shapeRef = useRef<Konva.Rect>(null);
-  const trRef = useRef<Konva.Transformer>(null);
-
-  useEffect(() => {
-    if (isSelected && trRef.current && shapeRef.current) {
-      trRef.current.nodes([shapeRef.current]);
-      trRef.current.getLayer()?.batchDraw();
-    }
-  }, [isSelected]);
-
-  const tagW = Math.min(labelName.length * 6.8 + 12, 130) / zoom;
-  const tagH = 17 / zoom;
-
-  return (
-    <Group>
-      <Rect
-        ref={shapeRef}
-        x={ann.x}
-        y={ann.y}
-        width={ann.width}
-        height={ann.height}
-        stroke={isSelected ? "#ffffff" : color}
-        strokeWidth={(isSelected ? 2 : 1.5) / zoom}
-        fill={hexAlpha(color, isSelected ? 0.22 : 0.13)}
-        draggable={!ann.isLocked}
-        onClick={onSelect}
-        onDragEnd={(e) => onDragEnd(ann.id, e.target.x(), e.target.y())}
-        shadowColor={color}
-        shadowBlur={isSelected ? 12 / zoom : 0}
-        shadowOpacity={0.5}
-      />
-      {/* Label tag above box */}
-      <Group listening={false}>
-        <Rect
-          x={ann.x}
-          y={ann.y - tagH - 2 / zoom}
-          width={tagW}
-          height={tagH}
-          fill={color}
-          cornerRadius={3 / zoom}
-          shadowColor="rgba(0,0,0,0.4)"
-          shadowBlur={4 / zoom}
-          shadowOpacity={1}
-        />
-        <Text
-          x={ann.x + 5 / zoom}
-          y={ann.y - tagH}
-          text={labelName}
-          fontSize={10 / zoom}
-          fontFamily="'Plus Jakarta Sans', sans-serif"
-          fontStyle="600"
-          fill="#ffffff"
-        />
-      </Group>
-      {isSelected && (
-        <Transformer
-          ref={trRef}
-          rotateEnabled={false}
-          borderStroke={color}
-          borderStrokeWidth={1.5 / zoom}
-          anchorSize={8 / zoom}
-          anchorStroke={color}
-          anchorFill="#ffffff"
-          anchorCornerRadius={2}
-          keepRatio={false}
-          onTransformEnd={() => {
-            const node = shapeRef.current;
-            if (!node) return;
-            const sx = node.scaleX(), sy = node.scaleY();
-            node.scaleX(1);
-            node.scaleY(1);
-            useAnnotationStore.getState().updateAnnotation(ann.id, {
-              x: node.x(),
-              y: node.y(),
-              width: Math.max(5, node.width() * sx),
-              height: Math.max(5, node.height() * sy),
-            });
-          }}
-        />
-      )}
-    </Group>
-  );
-}
-const BoxAnnotationMemo = React.memo(BoxAnnotationComp);
 
 // ─── Polygon annotation ───────────────────────────────────────────────────────
 function PolygonAnnotationComp({
@@ -421,6 +319,108 @@ function KeypointAnnotationComp({
   );
 }
 const KeypointAnnotationMemo = React.memo(KeypointAnnotationComp);
+
+// ─── Box annotation ───────────────────────────────────────────────────────────
+function BoxAnnotationComp({
+  ann,
+  isSelected,
+  color,
+  labelName,
+  zoom,
+  onSelect,
+  onDragEnd,
+}: {
+  ann: BoundingBox;
+  isSelected: boolean;
+  color: string;
+  labelName: string;
+  zoom: number;
+  onSelect: (e: Konva.KonvaEventObject<MouseEvent>) => void;
+  onDragEnd: (id: string, x: number, y: number) => void;
+}) {
+  const shapeRef = useRef<Konva.Rect>(null);
+  const trRef = useRef<Konva.Transformer>(null);
+
+  useEffect(() => {
+    if (isSelected && trRef.current && shapeRef.current) {
+      trRef.current.nodes([shapeRef.current]);
+      trRef.current.getLayer()?.batchDraw();
+    }
+  }, [isSelected]);
+
+  const tagW = Math.min(labelName.length * 6.8 + 12, 130) / zoom;
+  const tagH = 17 / zoom;
+
+  return (
+    <Group>
+      <Rect
+        ref={shapeRef}
+        x={ann.x}
+        y={ann.y}
+        width={ann.width}
+        height={ann.height}
+        stroke={isSelected ? "#ffffff" : color}
+        strokeWidth={(isSelected ? 2 : 1.5) / zoom}
+        fill={hexAlpha(color, isSelected ? 0.22 : 0.13)}
+        draggable={!ann.isLocked}
+        onClick={onSelect}
+        onDragEnd={(e) => onDragEnd(ann.id, e.target.x(), e.target.y())}
+        shadowColor={color}
+        shadowBlur={isSelected ? 12 / zoom : 0}
+        shadowOpacity={0.5}
+      />
+      <Group listening={false}>
+        <Rect
+          x={ann.x}
+          y={ann.y - tagH - 2 / zoom}
+          width={tagW}
+          height={tagH}
+          fill={color}
+          cornerRadius={3 / zoom}
+          shadowColor="rgba(0,0,0,0.4)"
+          shadowBlur={4 / zoom}
+          shadowOpacity={1}
+        />
+        <Text
+          x={ann.x + 5 / zoom}
+          y={ann.y - tagH}
+          text={labelName}
+          fontSize={10 / zoom}
+          fontFamily="'Plus Jakarta Sans', sans-serif"
+          fontStyle="600"
+          fill="#ffffff"
+        />
+      </Group>
+      {isSelected && (
+        <Transformer
+          ref={trRef}
+          rotateEnabled={false}
+          borderStroke={color}
+          borderStrokeWidth={1.5 / zoom}
+          anchorSize={8 / zoom}
+          anchorStroke={color}
+          anchorFill="#ffffff"
+          anchorCornerRadius={2}
+          keepRatio={false}
+          onTransformEnd={() => {
+            const node = shapeRef.current;
+            if (!node) return;
+            const sx = node.scaleX(), sy = node.scaleY();
+            node.scaleX(1);
+            node.scaleY(1);
+            useAnnotationStore.getState().updateAnnotation(ann.id, {
+              x: node.x(),
+              y: node.y(),
+              width: Math.max(5, node.width() * sx),
+              height: Math.max(5, node.height() * sy),
+            });
+          }}
+        />
+      )}
+    </Group>
+  );
+}
+const BoxAnnotationMemo = React.memo(BoxAnnotationComp);
 
 // ─── Circle annotation ────────────────────────────────────────────────────────
 function CircleAnnotationComp({
@@ -698,7 +698,7 @@ export function AnnotationCanvas({
     [finalizePolygon, setSelectedAnnotationIds],
   );
 
-  // Mouse down — box + keypoint
+  // Mouse down
   const handleMouseDown = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
       const tool = activeToolRef.current;
@@ -895,40 +895,11 @@ export function AnnotationCanvas({
       const tool = activeToolRef.current;
 
       if (tool === "merge" || tool === "erase") {
-        const { annotations, selectedAnnotationIds } =
-          useAnnotationStore.getState();
-
+        const { annotations } = useAnnotationStore.getState();
         const clicked = annotations.find((a) => a.id === id);
         if (!clicked || clicked.type !== "polygon") return;
 
-        // First click in the operation — select it freely.
-        const selectedPolys = selectedAnnotationIds
-          .map((sid) => annotations.find((a) => a.id === sid))
-          .filter((a): a is Polygon => a?.type === "polygon");
-
-        if (selectedPolys.length === 0) {
-          // Nothing selected yet — anchor this polygon.
-          setSelectedAnnotationIds([id]);
-          return;
-        }
-
-        // Already selected — deselect (toggle off).
-        if (selectedAnnotationIds.includes(id)) {
-          toggleSelectedAnnotationId(id);
-          return;
-        }
-
-        // Only allow adding this polygon if it overlaps at least one
-        // already-selected polygon.
-        const clickedPoly = clicked as Polygon;
-        const overlapsAny = selectedPolys.some((sel) =>
-          polygonsOverlap(sel.points, clickedPoly.points),
-        );
-
-        if (overlapsAny) {
-          toggleSelectedAnnotationId(id);
-        }
-        // Silently ignore non-overlapping clicks — no selection change.
+        toggleSelectedAnnotationId(id);
         return;
       }
 

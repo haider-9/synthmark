@@ -49,59 +49,76 @@ function StatusBar({ cursorPosition }: { cursorPosition: { x: number; y: number 
   const selectedAnnotationIds = useAnnotationStore((s) => s.selectedAnnotationIds);
 
   return (
-    <div className="flex items-center justify-between w-full">
-      {/* Left: tool + selection */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-          <span className="font-medium">
+    <div className="flex items-center justify-between w-full px-4 text-[11px] font-medium text-muted-foreground/80">
+      {/* Left: Tool + Stats */}
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 px-2 py-0.5 rounded bg-primary/10 border border-primary/20 text-primary">
+          <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
+          <span className="uppercase tracking-wider font-bold text-[10px]">
             {TOOL_LABELS[activeTool] ?? activeTool}
           </span>
         </div>
-        <Separator orientation="vertical" className="h-3 opacity-40" />
-        <span className="tabular-nums">{annotations.length} objects</span>
-        {selectedAnnotationIds.length > 0 && (
-          <>
-            <Separator orientation="vertical" className="h-3 opacity-40" />
-            <span className="text-primary tabular-nums">
-              {selectedAnnotationIds.length} selected
-            </span>
-          </>
-        )}
+
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <span className="opacity-50">Objects:</span>
+            <span className="text-foreground font-bold tabular-nums">{annotations.length}</span>
+          </div>
+
+          {selectedAnnotationIds.length > 0 && (
+            <div className="flex items-center gap-1.5 animate-in fade-in slide-in-from-left-1">
+              <div className="w-1 h-1 rounded-full bg-blue-500" />
+              <span className="opacity-50">Selected:</span>
+              <span className="text-blue-500 font-bold tabular-nums">{selectedAnnotationIds.length}</span>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Right: cursor | zoom | timer */}
-      <div className="flex items-center gap-3">
-        <span className="font-mono tabular-nums opacity-60">
-          {Math.round(cursorPosition.x)}, {Math.round(cursorPosition.y)}
-        </span>
-        <Separator orientation="vertical" className="h-3 opacity-40" />
-        <div className="flex items-center gap-0.5 bg-muted/40 rounded-md p-0.5">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-5 w-5 text-muted-foreground hover:text-foreground"
-            onClick={() => setZoomLevel(zoomLevel / 1.25)}
-          >
-            <ZoomOut className="h-3 w-3" />
-          </Button>
-          <button
-            onClick={() => setZoomLevel(1)}
-            className="text-[11px] font-mono text-muted-foreground hover:text-foreground transition-colors px-1 min-w-[3rem] text-center tabular-nums"
-            title="Reset zoom"
-          >
-            {Math.round(zoomLevel * 100)}%
-          </button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-5 w-5 text-muted-foreground hover:text-foreground"
-            onClick={() => setZoomLevel(zoomLevel * 1.25)}
-          >
-            <ZoomIn className="h-3 w-3" />
-          </Button>
+      {/* Right: Canvas Info */}
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 font-mono tracking-tight">
+          <div className="flex items-center gap-1">
+            <span className="opacity-30">X</span>
+            <span className="text-foreground/60 w-8 text-right tabular-nums">{Math.round(cursorPosition.x)}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="opacity-30">Y</span>
+            <span className="text-foreground/60 w-8 text-right tabular-nums">{Math.round(cursorPosition.y)}</span>
+          </div>
         </div>
-        <Separator orientation="vertical" className="h-3 opacity-40" />
+
+        <div className="h-3 w-px bg-border/40" />
+
+        <div className="flex items-center gap-2">
+          <div className="flex items-center bg-muted/40 rounded border border-white/[0.03] p-0.5">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-5 w-5 text-muted-foreground hover:text-foreground hover:bg-white/5"
+              onClick={() => setZoomLevel(zoomLevel / 1.25)}
+            >
+              <ZoomOut className="h-3 w-3" />
+            </Button>
+            <button
+              onClick={() => setZoomLevel(1)}
+              className="px-2 font-mono text-[10px] hover:text-foreground transition-colors tabular-nums min-w-[3.5rem]"
+              title="Reset zoom"
+            >
+              {Math.round(zoomLevel * 100)}%
+            </button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-5 w-5 text-muted-foreground hover:text-foreground hover:bg-white/5"
+              onClick={() => setZoomLevel(zoomLevel * 1.25)}
+            >
+              <ZoomIn className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
+
+        <div className="h-3 w-px bg-border/40" />
         <TimerDisplay />
       </div>
     </div>

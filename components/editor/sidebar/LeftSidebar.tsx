@@ -97,36 +97,35 @@ function AnnotationRow({
     <div
       onClick={onSelect}
       className={`
-        group flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer
-        transition-all duration-100 text-xs
+        group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg cursor-pointer
+        transition-all duration-150 text-[11px] font-medium
         ${
           isSelected
-            ? "bg-primary/15 border border-primary/30 text-foreground"
-            : "border border-transparent hover:bg-accent/60 hover:border-border/40"
+            ? "bg-primary/10 text-foreground shadow-[inset_0_0_0_1px_rgba(var(--primary),0.2)]"
+            : "text-muted-foreground hover:bg-white/[0.03] hover:text-foreground"
         }
       `}
     >
-      {/* Drag handle */}
-      <GripVertical className="h-3 w-3 text-muted-foreground/30 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-
-      {/* Class color dot */}
-      <div
-        className="w-2 h-2 rounded-full flex-shrink-0 ring-1 ring-black/20"
-        style={{ backgroundColor: color }}
-      />
-
       {/* Type icon */}
-      <Icon className={`h-3 w-3 flex-shrink-0 ${typeColor}`} />
+      <div className={`p-1 rounded-md ${isSelected ? "bg-primary/20 text-primary" : "bg-white/5 text-muted-foreground/60 group-hover:text-muted-foreground"}`}>
+        <Icon className="h-3 w-3" />
+      </div>
 
       {/* Label */}
-      <div className="flex-1 min-w-0">
-        <span className="font-medium truncate">{labelName}</span>
-        <span className="text-muted-foreground/60 font-mono ml-1">
-          #{ann.id.slice(0, 5)}
+      <div className="flex-1 min-w-0 flex items-center gap-1.5">
+        <span className="truncate">{labelName}</span>
+        <span className="text-[9px] opacity-20 font-mono">
+          {ann.id.slice(0, 4)}
         </span>
       </div>
 
-      {/* Actions — visible on hover or when selected */}
+      {/* Class color dot */}
+      <div
+        className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+        style={{ backgroundColor: color }}
+      />
+
+      {/* Actions */}
       <div
         className={`flex items-center gap-0.5 flex-shrink-0 transition-opacity ${isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
       >
@@ -135,13 +134,12 @@ function AnnotationRow({
             e.stopPropagation();
             onToggleVisibility();
           }}
-          className="p-0.5 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-          title={ann.isVisible ? "Hide" : "Show"}
+          className="p-1 rounded-md hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors"
         >
           {ann.isVisible ? (
-            <Eye className="h-3 w-3" />
+            <Eye className="h-2.5 w-2.5" />
           ) : (
-            <EyeOff className="h-3 w-3 opacity-50" />
+            <EyeOff className="h-2.5 w-2.5 opacity-30" />
           )}
         </button>
         <button
@@ -149,13 +147,12 @@ function AnnotationRow({
             e.stopPropagation();
             onToggleLock();
           }}
-          className="p-0.5 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-          title={ann.isLocked ? "Unlock" : "Lock"}
+          className="p-1 rounded-md hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors"
         >
           {ann.isLocked ? (
-            <Lock className="h-3 w-3 opacity-50" />
+            <Lock className="h-2.5 w-2.5 opacity-50" />
           ) : (
-            <Unlock className="h-3 w-3" />
+            <Unlock className="h-2.5 w-2.5" />
           )}
         </button>
       </div>

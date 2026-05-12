@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
-import { Annotation, Point, LabelClass, ActiveTool, CircleAnnotation } from "../types/annotation";
+import { Annotation, Point, LabelClass, ActiveTool } from "../types/annotation";
 
 interface AnnotationState {
   annotations: Annotation[];
