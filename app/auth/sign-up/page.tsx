@@ -535,9 +535,13 @@ function StepAccount({
 
 export default function SignUpPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, checkSession } = useAuthStore();
   const [step, setStep] = useState<1 | 2>(1);
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
+
+  useEffect(() => {
+    checkSession();
+  }, [checkSession]);
 
   useEffect(() => {
     if (isAuthenticated) router.replace("/dashboard");

@@ -55,7 +55,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${plusJakarta.variable} ${firaCode.variable} h-full antialiased`}
+      className={`${plusJakarta.variable} ${firaCode.variable} h-full antialiased dark`}
     >
       <head>
         {/* Browser chrome / PWA */}

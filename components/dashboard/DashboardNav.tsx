@@ -25,8 +25,8 @@ export function DashboardNav() {
 
   const initials = user ? userInitials(user) : "";
 
-  function handleSignOut() {
-    signOut();
+  async function handleSignOut() {
+    await signOut();
     router.push("/auth/sign-in");
   }
 

@@ -2,7 +2,7 @@
 
 import { useAnnotationStore } from "@/stores/useAnnotationStore";
 import { Polygon, Point } from "@/types/annotation";
-import { subtractPolygons, unionPolygons } from "@/lib/polygon-utils";
+import { subtractPolygons } from "@/lib/polygon-utils";
 import { v4 as uuidv4 } from "uuid";
 
 /**
@@ -70,7 +70,7 @@ export function usePolygonOps() {
       const toPC = (pts: Point[]) => pts.map((p) => [p.x, p.y]);
       const fromPC = (coords: number[][]) => coords.map(([x, y]) => ({ x, y }));
       const allPC = polys.map((p) => [toPC(p.points)]);
-      // @ts-ignore
+      // @ts-expect-error polygon-clipping types are very incomplete
       const result = polygonClipping.union(...allPC);
 
       const newPolys: Polygon[] = result.map((poly: any) => ({

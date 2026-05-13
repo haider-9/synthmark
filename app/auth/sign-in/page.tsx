@@ -42,7 +42,7 @@ const INPUT_CLS =
 
 export default function SignInPage() {
   const router = useRouter();
-  const { signIn, isLoading, error, clearError, isAuthenticated } =
+  const { signIn, isLoading, error, clearError, isAuthenticated, checkSession } =
     useAuthStore();
 
   const [email, setEmail] = useState("");
@@ -52,6 +52,10 @@ export default function SignInPage() {
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [demoOpen, setDemoOpen] = useState(false);
+
+  useEffect(() => {
+    checkSession();
+  }, [checkSession]);
 
   useEffect(() => {
     if (isAuthenticated) router.replace("/dashboard");
@@ -82,7 +86,7 @@ export default function SignInPage() {
     setPasswordError("");
     clearError();
     if (!validate()) return;
-    const ok = await signIn(email.trim(), password);
+    const ok = await signIn(email.trim(), password, rememberMe);
     if (ok) {
       const name = useAuthStore.getState().user?.firstName ?? "there";
       toast.success(`Welcome back, ${name}!`);
