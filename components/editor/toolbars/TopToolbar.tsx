@@ -15,8 +15,6 @@ import {
   ChevronDown,
   Sparkles,
   FolderOpen,
-  Share2,
-  Play,
   Pencil,
   Square,
   CircleIcon,
@@ -32,27 +30,6 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useAnnotationStore } from "@/stores/useAnnotationStore";
 import { ExportDialog } from "@/components/editor/export/ExportDialog";
 import { TimerDisplay } from "@/components/editor/TimerDisplay";
-
-const TOOLS = [
-  {
-    value: "select",
-    icon: MousePointer2,
-    label: "Select",
-    key: "V",
-    group: "nav",
-  },
-  { value: "pan", icon: Hand, label: "Pan", key: "Space", group: "nav" },
-  {
-    value: "polygon",
-    icon: Hexagon,
-    label: "Polygon",
-    key: "P",
-    group: "draw",
-  },
-  { value: "keypoint", icon: Dot, label: "Keypoint", key: "K", group: "draw" },
-  { value: "erase", icon: Eraser, label: "Erase", key: "E", group: "ops" },
-  { value: "merge", icon: Merge, label: "Merge", key: "M", group: "ops" },
-] as const;
 
 export function TopToolbar() {
   const activeTool = useAnnotationStore((s) => s.activeTool);
@@ -91,9 +68,9 @@ export function TopToolbar() {
         {/* ── Center: Tool Palette ─────────────────────────────────────── */}
         <div className="flex items-center bg-muted/30 border border-white/[0.03] rounded-lg p-1 shadow-inner">
           <ToggleGroup
-            type="single"
-            value={activeTool}
-            onValueChange={(val) => {
+            value={[activeTool]}
+            onValueChange={(values) => {
+              const val = values[values.length - 1];
               if (val) setActiveTool(val as any);
             }}
             className="flex items-center gap-1"
@@ -124,7 +101,6 @@ export function TopToolbar() {
 
         {/* ── Right: History & Actions ──────────────────────────────────── */}
         <div className="flex items-center gap-3">
-          <TimerDisplay />
           
           <div className="h-4 w-px bg-border/40" />
 

@@ -27,7 +27,22 @@ const TOOL_LABELS: Record<string, string> = {
 };
 
 function TimerDisplay() {
+  const [mounted, setMounted] = React.useState(false);
   const timer = useTimer({ persist: true });
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <span className="flex items-center gap-1.5 opacity-0" aria-hidden="true">
+        <span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]" />
+        <span className="font-mono tabular-nums">00:00:00</span>
+      </span>
+    );
+  }
+
   return (
     <span className="flex items-center gap-1.5">
       <span

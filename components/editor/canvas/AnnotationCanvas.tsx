@@ -517,7 +517,7 @@ const CircleAnnotationMemo = React.memo(CircleAnnotationComp);
 
 // ─── Main Canvas ──────────────────────────────────────────────────────────────
 
-export function AnnotationCanvas({
+function AnnotationCanvasComp({
   onCursorMove,
 }: {
   onCursorMove?: (pos: { x: number; y: number }) => void;
@@ -528,6 +528,7 @@ export function AnnotationCanvas({
   const activeTool = useAnnotationStore((s) => s.activeTool);
   const zoomLevel = useAnnotationStore((s) => s.zoomLevel);
   const setZoomLevel = useAnnotationStore((s) => s.setZoomLevel);
+  const canvasOffset = useAnnotationStore((s) => s.canvasOffset);
   const setCanvasOffset = useAnnotationStore((s) => s.setCanvasOffset);
   const selectedAnnotationIds = useAnnotationStore((s) => s.selectedAnnotationIds);
   const setSelectedAnnotationIds = useAnnotationStore((s) => s.setSelectedAnnotationIds);
@@ -690,8 +691,7 @@ export function AnnotationCanvas({
         return;
       }
 
-      polyRef.current = [...current, { x: pos.x, y: pos.y }];
-      bumpPoly();
+      // No longer adding points here to prevent duplication with mousedown
       lastClickTimeRef.current = now;
       lastClickPosRef.current = pos;
     },
@@ -742,8 +742,17 @@ export function AnnotationCanvas({
         bumpPoly();
       }
       if (tool === "polygon" || tool === "erase") {
-        polyRef.current = [...polyRef.current, pos];
-        bumpPoly();
+        const current = polyRef.current;
+        // Check for snap to close
+        if (
+          current.length >= 3 &&
+          dist(pos, current[0]) < SNAP_RADIUS / zoomRef.current
+        ) {
+          finalizePolygon(current);
+        } else {
+          polyRef.current = [...current, { x: pos.x, y: pos.y }];
+          bumpPoly();
+        }
       }
       if (tool === "keypoint") {
         addAnnotation({
@@ -767,8 +776,14 @@ export function AnnotationCanvas({
       const pos = stage.getRelativePointerPosition();
       if (!pos) return;
 
-      onCursorMove?.({ x: Math.round(pos.x), y: Math.round(pos.y) });
-      setMousePos(pos);
+      // Throttle cursor updates to avoid 60fps re-render cascade if needed
+      // but for now just round to integers to reduce insignificant updates
+      const rx = Math.round(pos.x);
+      const ry = Math.round(pos.y);
+      if (rx !== mousePos.x || ry !== mousePos.y) {
+        onCursorMove?.({ x: rx, y: ry });
+        setMousePos({ x: rx, y: ry });
+      }
 
       const tool = activeToolRef.current;
       if (tool === "box" && newBoxRef.current) {
@@ -947,6 +962,8 @@ export function AnnotationCanvas({
         ref={stageRef}
         width={stageSize.width}
         height={stageSize.height}
+        x={canvasOffset.x}
+        y={canvasOffset.y}
         scaleX={zoomLevel}
         scaleY={zoomLevel}
         draggable={activeTool === "pan"}
@@ -1043,6 +1060,13 @@ export function AnnotationCanvas({
 
         {/* Layer 3: Interaction & UI (Active Drawing) */}
         <Layer id="interaction-layer">
+          {/* Global capture rect - listening=false so clicks pass through to annotations */}
+          <Rect
+            width={stageSize.width / (zoomLevel || 1)}
+            height={stageSize.height / (zoomLevel || 1)}
+            fill="transparent"
+            listening={false}
+          />
           {/* In-progress box */}
           {newBox && (
             <Rect
@@ -1130,3 +1154,4 @@ export function AnnotationCanvas({
     </div>
   );
 }
+export const AnnotationCanvas = React.memo(AnnotationCanvasComp);
