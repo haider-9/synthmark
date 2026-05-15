@@ -1,28 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, Fira_Code } from "next/font/google";
 import {
   buildMetadata,
   organizationJsonLd,
   webApplicationJsonLd,
   SITE,
 } from "@/lib/seo";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 // ─── Fonts ────────────────────────────────────────────────────────────────────
-
-const plusJakarta = Plus_Jakarta_Sans({
-  variable: "--font-sans",
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["300", "400", "500", "600", "700"],
-});
-
-const firaCode = Fira_Code({
-  variable: "--font-mono",
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["400", "500"],
-});
 
 // ─── Viewport (manages <meta name="viewport"> and theme-color) ────────────────
 
@@ -55,7 +41,11 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${plusJakarta.variable} ${firaCode.variable} h-full antialiased dark`}
+      className="h-full antialiased dark"
+      style={{
+        "--font-sans": '"Plus Jakarta Sans", Inter, ui-sans-serif, system-ui, sans-serif',
+        "--font-mono": '"Fira Code", "SFMono-Regular", Consolas, ui-monospace, monospace',
+      } as React.CSSProperties}
     >
       <head>
         {/* Browser chrome / PWA */}
@@ -67,8 +57,8 @@ export default function RootLayout({
         />
 
         {/* Icons */}
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="icon" href="/logo.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/logo.png" />
 
         {/* Structured data — Organization */}
         <script
@@ -86,7 +76,10 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <Toaster richColors closeButton position="top-right" />
+      </body>
     </html>
   );
 }

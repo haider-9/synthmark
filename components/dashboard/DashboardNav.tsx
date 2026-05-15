@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Sparkles, PenLine } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useAuthStore, userInitials } from "@/stores/useAuthStore";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 // ─── Nav links ────────────────────────────────────────────────────────────────
 
@@ -13,6 +14,7 @@ const NAV_LINKS = [
   { href: "/tasks", label: "Tasks" },
   { href: "/team", label: "Team" },
   { href: "/analytics", label: "Analytics" },
+  { href: "/profile", label: "Profile" },
 ] as const;
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -26,7 +28,13 @@ export function DashboardNav() {
   const initials = user ? userInitials(user) : "";
 
   async function handleSignOut() {
-    await signOut();
+    const promise = signOut();
+    toast.promise(promise, {
+      loading: "Signing out...",
+      success: "Signed out",
+      error: "Sign out failed",
+    });
+    await promise;
     router.push("/auth/sign-in");
   }
 
@@ -36,7 +44,7 @@ export function DashboardNav() {
       <div className="flex items-center gap-5">
         {/* Brand */}
         <Link href="/dashboard" className="flex items-center gap-2">
-          <Sparkles className="h-3.5 w-3.5 text-[#555]" />
+          <img src="/logo.png" alt="Synthmark" className="h-5 w-5 rounded object-cover" />
           <span className="text-[13px] font-semibold text-[#888] tracking-tight">
             synthmark
           </span>
@@ -72,11 +80,15 @@ export function DashboardNav() {
       {user && (
         <div className="flex items-center gap-3">
           {/* Avatar + name */}
-          <div className="flex items-center gap-2.5">
+          <Link href="/profile" className="flex items-center gap-2.5 rounded-md px-1.5 py-1 transition-colors hover:bg-[#161616]">
             <div className="h-6 w-6 rounded-full bg-[#1a1a1a] border border-[#272727] flex items-center justify-center shrink-0">
-              <span className="text-[9px] font-semibold text-[#666] leading-none">
-                {initials}
-              </span>
+              {user.avatar ? (
+                <img src={user.avatar} alt="" className="h-full w-full rounded-full object-cover" />
+              ) : (
+                <span className="text-[9px] font-semibold text-[#666] leading-none">
+                  {initials}
+                </span>
+              )}
             </div>
             <div>
               <p className="text-[13px] text-[#aaa] leading-none">
@@ -86,16 +98,8 @@ export function DashboardNav() {
                 {user.role.replace(/_/g, " ")}
               </p>
             </div>
-          </div>
-
-          {/* Open editor */}
-          <Link
-            href="/project/sample-project"
-            className="flex items-center gap-1.5 text-[12px] font-medium text-white bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#3a3a3a] hover:bg-[#222] px-3 py-1.5 rounded-lg transition-colors"
-          >
-            <PenLine className="h-3 w-3" />
-            Open Editor
           </Link>
+
 
           {/* Divider */}
           <div className="w-px h-4 bg-[#1e1e1e]" />

@@ -235,16 +235,29 @@ function StepAccount({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!validate()) return;
-    const ok = await signUp({
+    const promise = signUp({
       firstName: firstName.trim(),
       lastName: lastName.trim(),
       email: email.trim(),
       password,
       role: selectedRole,
       organization: org.trim() || undefined,
+    }).then((ok) => {
+      if (!ok) {
+        const message = useAuthStore.getState().error ?? "Sign up failed";
+        throw new Error(message);
+      }
+      return firstName.trim();
     });
+
+    toast.promise(promise, {
+      loading: "Creating account...",
+      success: (name) => `Welcome to Synthmark, ${name}!`,
+      error: (err) => err instanceof Error ? err.message : "Sign up failed",
+    });
+
+    const ok = await promise.then(() => true).catch(() => false);
     if (ok) {
-      toast.success(`Welcome to Synthmark, ${firstName}! 🎉`);
       router.push("/dashboard");
     }
   }

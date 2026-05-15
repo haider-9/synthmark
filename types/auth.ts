@@ -23,6 +23,7 @@ export interface User {
   lastName: string;
   role: UserRole;
   avatar?: string;
+  bannerImage?: string;
   organization?: string;
   createdAt: string;
   lastLoginAt: string;

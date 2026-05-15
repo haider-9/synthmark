@@ -31,7 +31,8 @@ interface SessionUser {
   firstName: string;
   lastName: string;
   organization: string | null;
-  avatar: string | null;
+  image: string | null;
+  bannerImage: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -54,7 +55,8 @@ function mapSessionUser(sessionUser: SessionUser | null): User | null {
     firstName: sessionUser.firstName ?? sessionUser.name?.split(" ")[0] ?? "",
     lastName: sessionUser.lastName ?? sessionUser.name?.split(" ").slice(1).join(" ") ?? "",
     role: (sessionUser.role as UserRole) ?? "annotator",
-    avatar: sessionUser.avatar ?? undefined,
+    avatar: sessionUser.image ?? undefined,
+    bannerImage: sessionUser.bannerImage ?? undefined,
     organization: sessionUser.organization ?? undefined,
     createdAt: sessionUser.createdAt ?? new Date().toISOString(),
     lastLoginAt: sessionUser.updatedAt ?? new Date().toISOString(),

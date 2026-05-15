@@ -38,8 +38,7 @@ export function CreateProjectDialog({ open, onOpenChange }: Props) {
     e.preventDefault();
     if (!name.trim()) return;
 
-    setLoading(true);
-    try {
+    const createProject = async () => {
       const res = await fetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -52,12 +51,24 @@ export function CreateProjectDialog({ open, onOpenChange }: Props) {
         throw new Error(data.error ?? "Failed to create project");
       }
 
-      toast.success(`Project "${data.project.name}" created`);
+      return data;
+    };
+
+    setLoading(true);
+    const promise = createProject();
+
+    toast.promise(promise, {
+      loading: "Creating project...",
+      success: (data) => `Project "${data.project.name}" created`,
+      error: (err) => err instanceof Error ? err.message : "Something went wrong",
+    });
+
+    try {
+      const data = await promise;
       onOpenChange(false);
       reset();
       router.push(`/project/${data.project.id}`);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Something went wrong");
       setLoading(false);
     }
   };

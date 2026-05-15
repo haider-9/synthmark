@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { projects, labelClasses, datasetItems } from "@/db/schema";
+import { annotations, projects, labelClasses, datasetItems } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { eq, and, count } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 
 export async function GET(
   _req: NextRequest,
@@ -32,7 +32,7 @@ export async function GET(
       .from(datasetItems)
       .where(eq(datasetItems.projectId, id));
 
-    return NextResponse.json({ project, labelClasses: classes, images });
+    return NextResponse.json({ ...project, project, labelClasses: classes, images });
   } catch (err) {
     console.error("[GET /api/projects/[id]]", err);
     return NextResponse.json({ error: "Failed to fetch project" }, { status: 500 });
@@ -49,9 +49,19 @@ export async function DELETE(
 
     const { id } = await params;
 
-    await db
-      .delete(projects)
-      .where(and(eq(projects.id, id), eq(projects.createdBy, session.user.id)));
+    const images = await db
+      .select({ id: datasetItems.id })
+      .from(datasetItems)
+      .where(eq(datasetItems.projectId, id));
+
+    const imageIds = images.map((image) => image.id);
+    if (imageIds.length > 0) {
+      await db.delete(annotations).where(inArray(annotations.datasetItemId, imageIds));
+    }
+
+    await db.delete(datasetItems).where(eq(datasetItems.projectId, id));
+    await db.delete(labelClasses).where(eq(labelClasses.projectId, id));
+    await db.delete(projects).where(and(eq(projects.id, id), eq(projects.createdBy, session.user.id)));
 
     return NextResponse.json({ success: true });
   } catch (err) {

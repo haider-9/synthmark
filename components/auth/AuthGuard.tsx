@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Loader2 } from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStore";
 import type { User, UserRole } from "@/types/auth";
+import { AppLoading } from "@/components/ui/app-loading";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -12,11 +12,13 @@ interface AuthGuardProps {
   redirectTo?: string;
 }
 
-function FullScreenSpinner() {
+function FullScreenLoading() {
   return (
-    <div className="h-screen w-screen flex items-center justify-center bg-background">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-    </div>
+    <AppLoading
+      fullScreen
+      title="Checking your session"
+      subtitle="Making sure your workspace is ready."
+    />
   );
 }
 
@@ -51,14 +53,14 @@ export function AuthGuard({
     }
   }, [mounted, isSessionReady, isAuthenticated, user, allowedRoles, redirectTo, pathname, router]);
 
-  if (!mounted || !isSessionReady) return <FullScreenSpinner />;
+  if (!mounted || !isSessionReady) return <FullScreenLoading />;
 
   const isAuthorized =
     isAuthenticated &&
     user !== null &&
     (!allowedRoles || allowedRoles.length === 0 || allowedRoles.includes(user.role));
 
-  if (!isAuthorized) return <FullScreenSpinner />;
+  if (!isAuthorized) return <FullScreenLoading />;
 
   return <>{children}</>;
 }

@@ -9,9 +9,6 @@ import {
   EyeOff,
   Loader2,
   AlertCircle,
-  ChevronDown,
-  ChevronUp,
-  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,22 +16,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/useAuthStore";
-
-const DEMO_ACCOUNTS = [
-  { role: "Admin", email: "admin@synthmark.ai", password: "Admin123!" },
-  {
-    role: "Project Manager",
-    email: "pm@synthmark.ai",
-    password: "Manager123!",
-  },
-  {
-    role: "Annotator",
-    email: "annotator@synthmark.ai",
-    password: "Annotate123!",
-  },
-  { role: "Reviewer", email: "reviewer@synthmark.ai", password: "Review123!" },
-  { role: "Viewer", email: "viewer@synthmark.ai", password: "Viewer123!" },
-] as const;
 
 // Shared input style — solid dark background, white text, clean border
 const INPUT_CLS =
@@ -51,7 +32,6 @@ export default function SignInPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
-  const [demoOpen, setDemoOpen] = useState(false);
 
   useEffect(() => {
     checkSession();
@@ -86,28 +66,31 @@ export default function SignInPage() {
     setPasswordError("");
     clearError();
     if (!validate()) return;
-    const ok = await signIn(email.trim(), password, rememberMe);
+    const promise = signIn(email.trim(), password, rememberMe).then((ok) => {
+      if (!ok) {
+        const message = useAuthStore.getState().error ?? "Sign in failed";
+        throw new Error(message);
+      }
+      return useAuthStore.getState().user?.firstName ?? "there";
+    });
+
+    toast.promise(promise, {
+      loading: "Signing in...",
+      success: (name) => `Welcome back, ${name}!`,
+      error: (err) => err instanceof Error ? err.message : "Sign in failed",
+    });
+
+    const ok = await promise.then(() => true).catch(() => false);
     if (ok) {
-      const name = useAuthStore.getState().user?.firstName ?? "there";
-      toast.success(`Welcome back, ${name}!`);
       router.push("/dashboard");
     }
-  }
-
-  function applyDemo(demoEmail: string, demoPassword: string) {
-    setEmail(demoEmail);
-    setPassword(demoPassword);
-    setEmailError("");
-    setPasswordError("");
-    clearError();
-    setDemoOpen(false);
   }
 
   return (
     <div className="w-full max-w-[380px] space-y-7">
       {/* Mobile brand */}
       <div className="flex items-center gap-2 lg:hidden">
-        <Sparkles className="h-4 w-4 text-[#4f8ef7]" />
+        <img src="/logo.png" alt="Synthmark" className="h-5 w-5 rounded object-cover" />
         <span className="font-bold text-base tracking-tight text-white">
           synth<span className="text-[#4f8ef7]">mark</span>
         </span>
@@ -130,53 +113,6 @@ export default function SignInPage() {
           {error}
         </div>
       )}
-
-      {/* Demo accounts */}
-      <div>
-        <button
-          type="button"
-          onClick={() => setDemoOpen((v) => !v)}
-          className="flex items-center gap-1.5 text-[12px] text-[#555] hover:text-[#888] transition-colors"
-        >
-          <span className="w-1 h-1 rounded-full bg-[#4f8ef7]" />
-          Demo accounts
-          {demoOpen ? (
-            <ChevronUp className="h-3 w-3" />
-          ) : (
-            <ChevronDown className="h-3 w-3" />
-          )}
-        </button>
-
-        {demoOpen && (
-          <div className="mt-2.5 rounded-lg border border-[#222] overflow-hidden">
-            {DEMO_ACCOUNTS.map((acc, i) => (
-              <div
-                key={acc.email}
-                className={cn(
-                  "flex items-center justify-between px-3 py-2.5",
-                  i < DEMO_ACCOUNTS.length - 1 && "border-b border-[#1e1e1e]",
-                )}
-              >
-                <div>
-                  <p className="text-[11px] font-medium text-[#888]">
-                    {acc.role}
-                  </p>
-                  <p className="text-[11px] font-mono text-[#555] mt-0.5">
-                    {acc.email}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => applyDemo(acc.email, acc.password)}
-                  className="text-[11px] text-[#4f8ef7] hover:text-blue-300 font-medium transition-colors"
-                >
-                  Use
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
       {/* Form */}
       <form onSubmit={handleSubmit} noValidate className="space-y-4">

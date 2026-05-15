@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { DashboardNav } from "@/components/dashboard/DashboardNav";
 import { CreateProjectDialog } from "@/components/projects/CreateProjectDialog";
-import { Loader2, FolderOpen, Plus, Calendar, ArrowRight } from "lucide-react";
+import { FolderOpen, Plus, Calendar, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Toaster } from "@/components/ui/sonner";
+import { AppLoading } from "@/components/ui/app-loading";
 
 interface Project {
   id: string;
@@ -55,9 +55,7 @@ function ProjectsContent() {
 
         {/* Content */}
         {loading ? (
-          <div className="flex items-center justify-center py-24">
-            <Loader2 className="h-6 w-6 animate-spin text-[#555]" />
-          </div>
+          <AppLoading title="Loading projects" subtitle="Fetching your annotation workspaces." />
         ) : projects.length === 0 ? (
           /* Empty state */
           <div className="bg-[#111] border border-[#1e1e1e] rounded-xl p-20 flex flex-col items-center justify-center text-center gap-4">
@@ -118,7 +116,6 @@ function ProjectsContent() {
       </main>
 
       <CreateProjectDialog open={dialogOpen} onOpenChange={setDialogOpen} />
-      <Toaster />
     </div>
   );
 }

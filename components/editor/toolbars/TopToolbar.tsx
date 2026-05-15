@@ -12,7 +12,6 @@ import {
   Hand,
   Eraser,
   Merge,
-  ChevronDown,
   Sparkles,
   FolderOpen,
   Pencil,
@@ -38,11 +37,11 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useAnnotationStore } from "@/stores/useAnnotationStore";
 import { ExportDialog } from "@/components/editor/export/ExportDialog";
-import { TimerDisplay } from "@/components/editor/TimerDisplay";
 import { toLabelStudioResult } from "@/lib/export";
+import type { ActiveTool } from "@/types/annotation";
 import { toast } from "sonner";
 
-export function TopToolbar() {
+export function TopToolbar({ projectId, projectName }: { projectId: string; projectName: string }) {
   const activeTool = useAnnotationStore((s) => s.activeTool);
   const setActiveTool = useAnnotationStore((s) => s.setActiveTool);
   const undo = useAnnotationStore((s) => s.undo);
@@ -53,6 +52,8 @@ export function TopToolbar() {
   const labelClasses = useAnnotationStore((s) => s.labelClasses);
   const images = useAnnotationStore((s) => s.images);
   const activeImageId = useAnnotationStore((s) => s.activeImageId);
+  const addAnnotation = useAnnotationStore((s) => s.addAnnotation);
+  const updateImageStatus = useAnnotationStore((s) => s.updateImageStatus);
 
   const [lsOpen, setLsOpen] = useState(false);
   const [lsJson, setLsJson] = useState("");
@@ -60,6 +61,64 @@ export function TopToolbar() {
 
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < history.length - 1;
+
+  const handleSave = async () => {
+    if (!activeImageId) {
+      toast.error("Upload or select an image before saving");
+      return;
+    }
+
+    const save = async () => {
+      const response = await fetch(
+        `/api/projects/${projectId}/images/${activeImageId}/annotations`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ annotations }),
+        },
+      );
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Save failed");
+      return data;
+    };
+
+    const promise = save();
+    toast.promise(promise, {
+      loading: "Saving annotations...",
+      success: "Annotations saved",
+      error: (err) => err instanceof Error ? err.message : "Save failed",
+    });
+
+    try {
+      const data = await promise;
+      updateImageStatus(activeImageId, data.status);
+    } catch (error) {
+      // toast.promise already presents the failure.
+    }
+  };
+
+  const handleAutoLabel = () => {
+    const activeImage = images.find((image) => image.id === activeImageId);
+    const activeLabel = labelClasses[0];
+    if (!activeImage || !activeLabel) {
+      toast.error("Select an image and create at least one class first");
+      return;
+    }
+
+    addAnnotation({
+      id: crypto.randomUUID(),
+      type: "box",
+      labelId: activeLabel.id,
+      x: Math.round(activeImage.width * 0.1),
+      y: Math.round(activeImage.height * 0.1),
+      width: Math.round(activeImage.width * 0.8),
+      height: Math.round(activeImage.height * 0.8),
+      isVisible: true,
+      isLocked: false,
+      metadata: { source: "auto-label" },
+    });
+    toast.success("Created a starter box. Adjust it, then save.");
+  };
 
   const handleCopyForLabelStudio = () => {
     const activeImage = images.find((i) => i.id === activeImageId);
@@ -88,6 +147,7 @@ export function TopToolbar() {
     if (!el) return;
     el.select();
     document.execCommand("copy");
+    toast.success("Copied to clipboard");
     setTextCopied(true);
     setTimeout(() => setTextCopied(false), 2000);
   };
@@ -98,8 +158,8 @@ export function TopToolbar() {
         {/* ── Left: Brand & Project ────────────────────────────────────── */}
         <div className="flex items-center gap-4">
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center transition-all group-hover:bg-primary/20">
-              <Sparkles className="h-4 w-4 text-primary" />
+            <div className="w-7 h-7 rounded-lg overflow-hidden border border-primary/20 transition-all group-hover:border-primary/40">
+              <img src="/logo.png" alt="Synthmark" className="w-full h-full object-cover" />
             </div>
             <span className="font-bold text-sm tracking-tight hidden sm:inline-block">
               synth<span className="text-primary/80">mark</span>
@@ -108,11 +168,15 @@ export function TopToolbar() {
 
           <div className="h-4 w-px bg-border/40" />
 
-          <button className="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-accent/50 transition-colors group">
+          <Link
+            href={`/project/${projectId}`}
+            className="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-accent/50 transition-colors group"
+          >
             <FolderOpen className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground" />
-            <span className="text-[13px] font-medium text-foreground/80 group-hover:text-foreground">Untitled Project</span>
-            <ChevronDown className="h-3 w-3 text-muted-foreground/50 group-hover:text-foreground/70" />
-          </button>
+            <span className="text-[13px] font-medium text-foreground/80 group-hover:text-foreground max-w-44 truncate">
+              {projectName}
+            </span>
+          </Link>
         </div>
 
         {/* ── Center: Tool Palette ─────────────────────────────────────── */}
@@ -121,7 +185,7 @@ export function TopToolbar() {
             value={[activeTool]}
             onValueChange={(values) => {
               const val = values[values.length - 1];
-              if (val) setActiveTool(val as any);
+              if (val) setActiveTool(val as ActiveTool);
             }}
             className="flex items-center gap-1"
           >
@@ -174,7 +238,7 @@ export function TopToolbar() {
           <div className="h-4 w-px bg-border/40" />
 
           <div className="flex items-center gap-1">
-            <ActionBtn icon={Save} label="Save" shortcut="Ctrl+S" />
+            <ActionBtn icon={Save} onClick={handleSave} label="Save" shortcut="Ctrl+S" />
             <ExportDialog />
             <Tooltip>
               <TooltipTrigger
@@ -195,7 +259,11 @@ export function TopToolbar() {
             </Tooltip>
           </div>
 
-          <Button size="sm" className="h-8 text-[12px] gap-2 px-4 font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all">
+          <Button
+            size="sm"
+            className="h-8 text-[12px] gap-2 px-4 font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all"
+            onClick={handleAutoLabel}
+          >
             <Sparkles className="h-3.5 w-3.5" />
             Auto-label
           </Button>

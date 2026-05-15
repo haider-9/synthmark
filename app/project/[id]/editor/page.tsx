@@ -5,15 +5,15 @@ import { MainLayout } from "@/components/editor/layout/MainLayout";
 import { TopToolbar } from "@/components/editor/toolbars/TopToolbar";
 import { RightSidebar } from "@/components/editor/sidebar/RightSidebar";
 import { AnnotationCanvas } from "@/components/editor/canvas/AnnotationCanvas";
-import { Toaster } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
-import { ZoomIn, ZoomOut, Loader2, AlertCircle } from "lucide-react";
+import { ZoomIn, ZoomOut, AlertCircle } from "lucide-react";
 import { useAnnotationStore } from "@/stores/useAnnotationStore";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useTimer } from "@/hooks/useTimer";
 import { OnboardingTour } from "@/components/editor/onboarding/OnboardingTour";
 import type { ProjectImage } from "@/stores/useAnnotationStore";
 import { LeftSidebar } from "@/components/editor/sidebar/LeftSidebar";
+import { AppLoading } from "@/components/ui/app-loading";
 
 const TOOL_LABELS: Record<string, string> = {
   select: "Select",
@@ -129,12 +129,11 @@ function StatusBar({ cursorPosition }: { cursorPosition: { x: number; y: number 
 // ─── Loading / error states ───────────────────────────────────────────────────
 function LoadingScreen() {
   return (
-    <div className="dark h-screen w-screen flex items-center justify-center bg-[oklch(0.12_0_0)]">
-      <div className="flex flex-col items-center gap-3">
-        <Loader2 className="h-8 w-8 text-primary animate-spin" />
-        <p className="text-sm text-muted-foreground">Loading project…</p>
-      </div>
-    </div>
+    <AppLoading
+      fullScreen
+      title="Loading annotation editor"
+      subtitle="Preparing canvas tools, label classes, and dataset images."
+    />
   );
 }
 
@@ -159,9 +158,12 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   useKeyboardShortcuts();
 
   const hydrateProject = useAnnotationStore((s) => s.hydrateProject);
+  const activeImageId = useAnnotationStore((s) => s.activeImageId);
+  const setAnnotations = useAnnotationStore((s) => s.setAnnotations);
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [projectName, setProjectName] = useState("Project");
 
   useEffect(() => {
     let cancelled = false;
@@ -179,6 +181,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
 
         const data = await res.json();
         if (cancelled) return;
+        setProjectName(data.project?.name ?? data.name ?? "Project");
 
         // Map DB rows → store shape
         const images: ProjectImage[] = (data.images ?? []).map((img: {
@@ -223,19 +226,37 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     return () => { cancelled = true; };
   }, [projectId, hydrateProject]);
 
+  useEffect(() => {
+    if (!activeImageId) return;
+    let cancelled = false;
+
+    async function loadAnnotations() {
+      try {
+        const res = await fetch(`/api/projects/${projectId}/images/${activeImageId}/annotations`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled) setAnnotations(data.annotations ?? []);
+      } catch {
+        if (!cancelled) setAnnotations([]);
+      }
+    }
+
+    loadAnnotations();
+    return () => { cancelled = true; };
+  }, [activeImageId, projectId, setAnnotations]);
+
   if (loading) return <LoadingScreen />;
   if (error) return <ErrorScreen message={error} />;
 
   return (
     <div className="dark h-screen w-screen overflow-hidden">
       <MainLayout
-        topToolbar={<TopToolbar />}
+        topToolbar={<TopToolbar projectId={projectId} projectName={projectName} />}
         leftSidebar={<LeftSidebar projectId={projectId} />}
         rightSidebar={<RightSidebar />}
         canvas={<AnnotationCanvas onCursorMove={setCursorPosition} />}
         bottomBar={<StatusBar cursorPosition={cursorPosition} />}
       />
-      <Toaster />
       <OnboardingTour />
     </div>
   );

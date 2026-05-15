@@ -33,22 +33,7 @@ export default function AuthLayout({
       <div className="hidden lg:flex lg:w-[52%] xl:w-[48%] flex-col justify-between border-r border-[#1f1f1f] bg-[#0a0a0a] p-12 shrink-0">
         {/* Brand */}
         <div className="flex items-center gap-2.5">
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 22 22"
-            fill="none"
-            aria-hidden="true"
-          >
-            <polygon
-              points="3,17 2,11 6,5 16,5.5 20,11 16,18 6.5,18"
-              fill="none"
-              stroke="white"
-              strokeWidth="1.5"
-              strokeLinejoin="round"
-            />
-            <circle cx="11" cy="11" r="2.5" fill="white" />
-          </svg>
+          <img src="/logo.png" alt="Synthmark" className="w-6 h-6 rounded object-cover" />
           <span className="text-white font-semibold text-base tracking-tight select-none">
             synth<span className="text-[#4f8ef7]">mark</span>
           </span>

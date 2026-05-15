@@ -44,8 +44,8 @@ export function LandingNav() {
 
           {/* Brand */}
           <Link href="/" className="flex items-center gap-2 shrink-0 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 via-blue-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-600/30 group-hover:scale-110 transition-transform duration-300">
-              <Sparkles className="h-4.5 w-4.5 text-white" />
+            <div className="w-9 h-9 rounded-xl overflow-hidden shadow-lg shadow-blue-600/30 group-hover:scale-110 transition-transform duration-300">
+              <img src="/logo.png" alt="Synthmark" className="w-full h-full object-cover" />
             </div>
             <span className="font-bold text-lg tracking-tight text-white">
               synth<span className="text-[#4f8ef7]">mark</span>

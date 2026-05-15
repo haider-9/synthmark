@@ -42,6 +42,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { prepareImageUpload } from "@/lib/client-image";
 
 export function LeftSidebar({ projectId }: { projectId: string }) {
   const [uploading, setUploading] = useState(false);
@@ -89,32 +90,18 @@ export function LeftSidebar({ projectId }: { projectId: string }) {
   const handleFileUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
 
-    setUploading(true);
+    const imageFiles = Array.from(files).filter((file) => {
+      const isImage = file.type.startsWith("image/");
+      if (!isImage) toast.error(`${file.name} is not an image file`);
+      return isImage;
+    });
 
-    try {
-      for (const file of Array.from(files)) {
-        if (!file.type.startsWith("image/")) {
-          toast.error(`${file.name} is not an image file`);
-          continue;
-        }
+    if (imageFiles.length === 0) return;
 
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("upload_preset", "unsigned_preset");
-
-        const cloudinaryResponse = await fetch(
-          "https://api.cloudinary.com/v1_1/dntncz9no/image/upload",
-          {
-            method: "POST",
-            body: formData,
-          }
-        );
-
-        if (!cloudinaryResponse.ok) {
-          throw new Error(`Failed to upload ${file.name} to Cloudinary`);
-        }
-
-        const cloudinaryData = await cloudinaryResponse.json();
+    const upload = async () => {
+      let count = 0;
+      for (const file of imageFiles) {
+        const prepared = await prepareImageUpload(file);
 
         const backendResponse = await fetch(
           `/api/projects/${projectId}/images`,
@@ -122,10 +109,10 @@ export function LeftSidebar({ projectId }: { projectId: string }) {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              imageUrl: cloudinaryData.secure_url,
-              fileName: cloudinaryData.original_filename || file.name,
-              width: cloudinaryData.width,
-              height: cloudinaryData.height,
+              imageUrl: prepared.imageUrl,
+              fileName: prepared.fileName,
+              width: prepared.width,
+              height: prepared.height,
             }),
           }
         );
@@ -138,18 +125,27 @@ export function LeftSidebar({ projectId }: { projectId: string }) {
 
         addImage({
           id: image.id,
-          url: cloudinaryData.secure_url,
-          name: cloudinaryData.original_filename || file.name,
-          width: cloudinaryData.width,
-          height: cloudinaryData.height,
+          url: image.imageUrl,
+          name: image.fileName,
+          width: image.width,
+          height: image.height,
         });
 
-        toast.success(`Uploaded ${cloudinaryData.original_filename || file.name}`);
+        count++;
       }
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Upload failed"
-      );
+      return count;
+    };
+
+    setUploading(true);
+    const promise = upload();
+    toast.promise(promise, {
+      loading: `Uploading ${imageFiles.length} image${imageFiles.length > 1 ? "s" : ""}...`,
+      success: (count) => `Uploaded ${count} image${count === 1 ? "" : "s"}`,
+      error: (error) => error instanceof Error ? error.message : "Upload failed",
+    });
+
+    try {
+      await promise;
     } finally {
       setUploading(false);
     }
@@ -161,7 +157,7 @@ export function LeftSidebar({ projectId }: { projectId: string }) {
       return;
     }
 
-    try {
+    const remove = async () => {
       const response = await fetch(
         `/api/projects/${projectId}/images/${imageId}`,
         { method: "DELETE" }
@@ -170,13 +166,20 @@ export function LeftSidebar({ projectId }: { projectId: string }) {
       if (!response.ok) {
         throw new Error("Failed to delete image");
       }
+    };
 
+    const promise = remove();
+    toast.promise(promise, {
+      loading: `Deleting ${imageName}...`,
+      success: `Deleted ${imageName}`,
+      error: (error) => error instanceof Error ? error.message : "Delete failed",
+    });
+
+    try {
+      await promise;
       removeImage(imageId);
-      toast.success(`Deleted ${imageName}`);
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Delete failed"
-      );
+      // toast.promise already presents the failure.
     }
   };
 
@@ -195,25 +198,41 @@ export function LeftSidebar({ projectId }: { projectId: string }) {
     handleFileUpload(e.dataTransfer.files);
   };
 
-  const handleAddClass = () => {
+  const handleAddClass = async () => {
     if (!newClassName.trim()) {
       toast.error("Class name cannot be empty");
       return;
     }
 
-    const newClass = {
-      id: crypto.randomUUID(),
-      name: newClassName.trim(),
-      color: newClassColor,
+    const createClass = async () => {
+      const response = await fetch(`/api/projects/${projectId}/labels`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newClassName.trim(), color: newClassColor }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Failed to add class");
+      return data.labelClass;
     };
 
-    addLabelClass(newClass);
-    setNewClassName("");
-    setNewClassColor("#3b82f6");
-    toast.success(`Added class "${newClass.name}"`);
+    const promise = createClass();
+    toast.promise(promise, {
+      loading: "Adding class...",
+      success: (labelClass) => `Added class "${labelClass.name}"`,
+      error: (error) => error instanceof Error ? error.message : "Failed to add class",
+    });
+
+    try {
+      const labelClass = await promise;
+      addLabelClass(labelClass);
+      setNewClassName("");
+      setNewClassColor("#3b82f6");
+    } catch (error) {
+      // toast.promise already presents the failure.
+    }
   };
 
-  const handleDeleteClass = (classId: string, className: string) => {
+  const handleDeleteClass = async (classId: string, className: string) => {
     const classAnnotations = annotations.filter((a) => a.labelId === classId);
     if (classAnnotations.length > 0) {
       toast.error(
@@ -222,11 +241,59 @@ export function LeftSidebar({ projectId }: { projectId: string }) {
       return;
     }
 
-    deleteLabelClass(classId);
-    if (activeLabelId === classId) {
-      setActiveLabelId(null);
+    const removeClass = async () => {
+      const response = await fetch(`/api/projects/${projectId}/labels/${classId}`, {
+        method: "DELETE",
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error ?? "Failed to delete class");
+    };
+
+    const promise = removeClass();
+    toast.promise(promise, {
+      loading: `Deleting class "${className}"...`,
+      success: `Deleted class "${className}"`,
+      error: (error) => error instanceof Error ? error.message : "Failed to delete class",
+    });
+
+    try {
+      await promise;
+      deleteLabelClass(classId);
+      if (activeLabelId === classId) {
+        setActiveLabelId(null);
+      }
+    } catch (error) {
+      // toast.promise already presents the failure.
     }
-    toast.success(`Deleted class "${className}"`);
+  };
+
+  const persistLabelClass = async (
+    classId: string,
+    updates: { name?: string; color?: string },
+  ) => {
+    const promise = (async () => {
+      const response = await fetch(`/api/projects/${projectId}/labels/${classId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error ?? "Failed to update class");
+      }
+    })();
+
+    toast.promise(promise, {
+      loading: "Saving class...",
+      success: "Class saved",
+      error: (error) => error instanceof Error ? error.message : "Failed to update class",
+    });
+
+    try {
+      await promise;
+    } catch (error) {
+      // toast.promise already presents the failure.
+    }
   };
 
   const handleSetActiveClass = (classId: string) => {
@@ -461,6 +528,9 @@ export function LeftSidebar({ projectId }: { projectId: string }) {
                             color: e.target.value,
                           })
                         }
+                        onBlur={(e) =>
+                          persistLabelClass(labelClass.id, { color: e.target.value })
+                        }
                         onClick={(e) => e.stopPropagation()}
                         className="h-6 w-6 rounded cursor-pointer border"
                       />
@@ -470,6 +540,9 @@ export function LeftSidebar({ projectId }: { projectId: string }) {
                           updateLabelClass(labelClass.id, {
                             name: e.target.value,
                           })
+                        }
+                        onBlur={(e) =>
+                          persistLabelClass(labelClass.id, { name: e.target.value })
                         }
                         onClick={(e) => e.stopPropagation()}
                         className="h-7 text-xs flex-1"

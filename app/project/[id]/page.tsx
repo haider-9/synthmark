@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { DashboardNav } from "@/components/dashboard/DashboardNav";
 import {
-  Loader2,
   AlertCircle,
   FolderOpen,
   Images,
@@ -18,8 +17,8 @@ import {
   Circle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Toaster } from "@/components/ui/sonner";
 import { ImageUploadZone } from "@/components/projects/ImageUploadZone";
+import { AppLoading } from "@/components/ui/app-loading";
 
 interface LabelClass {
   id: string;
@@ -78,8 +77,9 @@ function ProjectOverviewContent({ projectId }: { projectId: string }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-32">
-        <Loader2 className="h-6 w-6 animate-spin text-[#555]" />
+      <div className="dark min-h-screen bg-[#0d0d0d] text-white">
+        <DashboardNav />
+        <AppLoading title="Loading project" subtitle="Opening images, label classes, and progress." />
       </div>
     );
   }
@@ -259,8 +259,6 @@ function ProjectOverviewContent({ projectId }: { projectId: string }) {
           )}
         </div>
       </main>
-
-      <Toaster />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { prepareImageUpload } from "@/lib/client-image";
 
 interface UploadedImage {
   id: string;
@@ -28,38 +29,27 @@ export function ImageUploadZone({ projectId, onUploaded, className }: ImageUploa
   const uploadFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
 
-    setUploading(true);
-    let successCount = 0;
+    const imageFiles = Array.from(files).filter((file) => {
+      const isImage = file.type.startsWith("image/");
+      if (!isImage) toast.error(`${file.name} is not an image`);
+      return isImage;
+    });
 
-    try {
-      for (const file of Array.from(files)) {
-        if (!file.type.startsWith("image/")) {
-          toast.error(`${file.name} is not an image`);
-          continue;
-        }
+    if (imageFiles.length === 0) return;
 
-        // Upload to Cloudinary
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("upload_preset", "unsigned_preset");
+    const upload = async () => {
+      let successCount = 0;
+      for (const file of imageFiles) {
+        const prepared = await prepareImageUpload(file);
 
-        const cloudRes = await fetch(
-          "https://api.cloudinary.com/v1_1/dntncz9no/image/upload",
-          { method: "POST", body: formData }
-        );
-
-        if (!cloudRes.ok) throw new Error(`Failed to upload ${file.name}`);
-        const cloudData = await cloudRes.json();
-
-        // Save to backend
         const backendRes = await fetch(`/api/projects/${projectId}/images`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            imageUrl: cloudData.secure_url,
-            fileName: cloudData.original_filename || file.name,
-            width: cloudData.width,
-            height: cloudData.height,
+            imageUrl: prepared.imageUrl,
+            fileName: prepared.fileName,
+            width: prepared.width,
+            height: prepared.height,
           }),
         });
 
@@ -78,11 +68,20 @@ export function ImageUploadZone({ projectId, onUploaded, className }: ImageUploa
         successCount++;
       }
 
-      if (successCount > 0) {
-        toast.success(`Uploaded ${successCount} image${successCount > 1 ? "s" : ""}`);
-      }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Upload failed");
+      return successCount;
+    };
+
+    setUploading(true);
+    const promise = upload();
+
+    toast.promise(promise, {
+      loading: `Uploading ${imageFiles.length} image${imageFiles.length > 1 ? "s" : ""}...`,
+      success: (count) => `Uploaded ${count} image${count === 1 ? "" : "s"}`,
+      error: (err) => err instanceof Error ? err.message : "Upload failed",
+    });
+
+    try {
+      await promise;
     } finally {
       setUploading(false);
     }
