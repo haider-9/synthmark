@@ -75,7 +75,9 @@ export function TopToolbar() {
       return;
     }
 
-    setLsJson(JSON.stringify(result, null, 2));
+    // Build the full ready-to-run console command with JSON embedded
+    const json = JSON.stringify(result);
+    setLsJson(`window.Htx.annotationStore.selected.appendResults(${json})`);
     setLsOpen(true);
     setTextCopied(false);
   };
@@ -208,47 +210,32 @@ export function TopToolbar() {
           </DialogHeader>
 
           <div className="space-y-3">
-            {/* Step 1 */}
-            <div className="space-y-1.5">
-              <p className="text-[12px] text-muted-foreground">
-                <span className="text-foreground font-medium">Step 1</span> — Select all and copy the JSON below
-              </p>
-              <div className="relative">
-                <textarea
-                  id="ls-json-textarea"
-                  readOnly
-                  value={lsJson}
-                  className="w-full h-48 text-[11px] font-mono bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg p-3 text-[#aaa] resize-none focus:outline-none focus:border-primary/40 select-all"
-                  onClick={(e) => (e.target as HTMLTextAreaElement).select()}
-                />
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="absolute top-2 right-2 h-6 text-[11px] gap-1.5 border-[#2a2a2a] hover:border-[#444]"
-                  onClick={handleTextCopy}
-                >
-                  {textCopied ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
-                  {textCopied ? "Copied!" : "Copy all"}
-                </Button>
-              </div>
+            <p className="text-[12px] text-muted-foreground">
+              In NXUS, open the task → press <kbd className="text-[10px] bg-muted border border-border px-1 py-0.5 rounded font-mono">F12</kbd> → Console → paste and run this:
+            </p>
+
+            <div className="relative">
+              <textarea
+                id="ls-json-textarea"
+                readOnly
+                value={lsJson}
+                className="w-full h-36 text-[11px] font-mono bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg p-3 text-[#aaa] resize-none focus:outline-none focus:border-primary/40"
+                onClick={(e) => (e.target as HTMLTextAreaElement).select()}
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                className="absolute top-2 right-2 h-6 text-[11px] gap-1.5 border-[#2a2a2a] hover:border-[#444]"
+                onClick={handleTextCopy}
+              >
+                {textCopied ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
+                {textCopied ? "Copied!" : "Copy"}
+              </Button>
             </div>
 
-            {/* Step 2 */}
-            <div className="space-y-1.5">
-              <p className="text-[12px] text-muted-foreground">
-                <span className="text-foreground font-medium">Step 2</span> — In NXUS, open the task, press <kbd className="text-[10px] bg-muted border border-border px-1 py-0.5 rounded font-mono">F12</kbd>, go to Console and run:
-              </p>
-              <div className="relative bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg p-3">
-                <code className="text-[11px] font-mono text-primary break-all leading-relaxed">
-                  {"window.Htx.annotationStore.selected.appendResults("}
-                  <span className="text-amber-400">{"/* paste JSON here */"}</span>
-                  {")"}
-                </code>
-                <p className="text-[11px] text-muted-foreground mt-2">
-                  Replace <span className="text-amber-400 font-mono">{"/* paste JSON here */"}</span> with the copied JSON, then press Enter. Hit <span className="font-medium text-foreground">Submit</span> in NXUS when done.
-                </p>
-              </div>
-            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Click inside the box to select all, or use the Copy button. Then paste into the NXUS console and press Enter. Hit <span className="text-foreground font-medium">Submit</span> in NXUS when done.
+            </p>
           </div>
         </DialogContent>
       </Dialog>
