@@ -15,6 +15,8 @@ export function useKeyboardShortcuts() {
     annotations,
     activeVertex,
     deleteActiveVertex,
+    copyAnnotations,
+    pasteAnnotations,
   } = useAnnotationStore();
 
   const { handleMerge, handleSubtractSelected } = usePolygonOps();
@@ -63,6 +65,31 @@ export function useKeyboardShortcuts() {
         return;
       }
 
+      // Ctrl+C — copy selected
+      if (ctrl && !shift && e.key.toLowerCase() === "c") {
+        if (selectedAnnotationIds.length > 0) {
+          e.preventDefault();
+          copyAnnotations(selectedAnnotationIds);
+        }
+        return;
+      }
+
+      // Ctrl+V — paste
+      if (ctrl && !shift && e.key.toLowerCase() === "v") {
+        e.preventDefault();
+        pasteAnnotations();
+        return;
+      }
+
+      // Ctrl+D — duplicate selected (shortcut alternative)
+      if (ctrl && !shift && e.key.toLowerCase() === "d") {
+        if (selectedAnnotationIds.length > 0) {
+          e.preventDefault();
+          copyAnnotations(selectedAnnotationIds);
+          pasteAnnotations();
+        }
+        return;
+      }
       switch (e.key) {
         case "Enter": {
           // Confirm the pending merge or subtract-selected operation
@@ -162,5 +189,7 @@ export function useKeyboardShortcuts() {
     annotations,
     activeVertex,
     deleteActiveVertex,
+    copyAnnotations,
+    pasteAnnotations,
   ]);
 }

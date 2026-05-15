@@ -1,160 +1,275 @@
 "use client";
 
-import React, { useState } from "react";
-import { MainLayout } from "@/components/editor/layout/MainLayout";
-import { TopToolbar } from "@/components/editor/toolbars/TopToolbar";
-import { LeftSidebar } from "@/components/editor/sidebar/LeftSidebar";
-import { RightSidebar } from "@/components/editor/sidebar/RightSidebar";
-import { AnnotationCanvas } from "@/components/editor/canvas/AnnotationCanvas";
-import { Toaster } from "@/components/ui/sonner";
-import { Separator } from "@/components/ui/separator";
+import { useState, useEffect, use } from "react";
+import { useRouter } from "next/navigation";
+import { AuthGuard } from "@/components/auth/AuthGuard";
+import { DashboardNav } from "@/components/dashboard/DashboardNav";
+import {
+  Loader2,
+  AlertCircle,
+  FolderOpen,
+  Images,
+  Tag,
+  Pencil,
+  ArrowLeft,
+  CheckCircle2,
+  Clock,
+  SkipForward,
+  Circle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ZoomIn, ZoomOut } from "lucide-react";
-import { useAnnotationStore } from "@/stores/useAnnotationStore";
-import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
-import { useTimer } from "@/hooks/useTimer";
-import { OnboardingTour } from "@/components/editor/onboarding/OnboardingTour";
+import { Toaster } from "@/components/ui/sonner";
+import { ImageUploadZone } from "@/components/projects/ImageUploadZone";
 
-const TOOL_LABELS: Record<string, string> = {
-  select: "Select",
-  pan: "Pan",
-  box: "Box",
-  polygon: "Polygon",
-  keypoint: "Keypoint",
-  erase: "Erase",
-  merge: "Merge",
-  line: "Line",
-};
+interface LabelClass {
+  id: string;
+  name: string;
+  color: string;
+}
 
-function TimerDisplay() {
-  const [mounted, setMounted] = React.useState(false);
-  const timer = useTimer({ persist: true });
+interface ProjectImage {
+  id: string;
+  fileName: string;
+  imageUrl?: string;
+  status: "todo" | "in_progress" | "completed" | "skipped";
+  thumbnailUrl?: string;
+}
 
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
+interface ProjectDetail {
+  id: string;
+  name: string;
+  description: string | null;
+  createdAt: string;
+  images: ProjectImage[];
+  labelClasses: LabelClass[];
+}
 
-  if (!mounted) {
+const STATUS_CONFIG = {
+  todo: { label: "To do", icon: Circle, color: "text-[#555]" },
+  in_progress: { label: "In progress", icon: Clock, color: "text-amber-500" },
+  completed: { label: "Completed", icon: CheckCircle2, color: "text-emerald-500" },
+  skipped: { label: "Skipped", icon: SkipForward, color: "text-[#555]" },
+} as const;
+
+function ProjectOverviewContent({ projectId }: { projectId: string }) {
+  const router = useRouter();
+  const [project, setProject] = useState<ProjectDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleImageUploaded = (img: { id: string; fileName: string; imageUrl: string; width: number; height: number; status: "todo" }) => {
+    setProject((prev) =>
+      prev
+        ? { ...prev, images: [...prev.images, { id: img.id, fileName: img.fileName, imageUrl: img.imageUrl, status: img.status }] }
+        : prev
+    );
+  };
+
+  useEffect(() => {
+    fetch(`/api/projects/${projectId}`)
+      .then((r) => {
+        if (!r.ok) return r.json().then((b) => Promise.reject(b.error ?? `HTTP ${r.status}`));
+        return r.json();
+      })
+      .then((data) => setProject(data))
+      .catch((err) => setError(typeof err === "string" ? err : "Failed to load project"))
+      .finally(() => setLoading(false));
+  }, [projectId]);
+
+  if (loading) {
     return (
-      <span className="flex items-center gap-1.5 opacity-0" aria-hidden="true">
-        <span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]" />
-        <span className="font-mono tabular-nums">00:00:00</span>
-      </span>
+      <div className="flex items-center justify-center py-32">
+        <Loader2 className="h-6 w-6 animate-spin text-[#555]" />
+      </div>
     );
   }
 
-  return (
-    <span className="flex items-center gap-1.5">
-      <span
-        className={`w-1.5 h-1.5 rounded-full ${timer.isRunning ? "bg-[#22C55E]" : "bg-[#f59e0b]"}`}
-      />
-      <span className="font-mono tabular-nums">{timer.formatted}</span>
-      {!timer.isRunning && (
-        <span className="text-[10px] text-muted-foreground/60">paused</span>
-      )}
-    </span>
+  if (error || !project) {
+    return (
+      <div className="flex flex-col items-center justify-center py-32 gap-3 text-center">
+        <AlertCircle className="h-8 w-8 text-destructive" />
+        <p className="text-sm font-medium text-white">Failed to load project</p>
+        <p className="text-xs text-[#555]">{error}</p>
+        <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  const statusCounts = project.images.reduce(
+    (acc, img) => { acc[img.status] = (acc[img.status] ?? 0) + 1; return acc; },
+    {} as Record<string, number>
   );
-}
-
-function StatusBar({ cursorPosition }: { cursorPosition: { x: number; y: number } }) {
-  const zoomLevel = useAnnotationStore((s) => s.zoomLevel);
-  const setZoomLevel = useAnnotationStore((s) => s.setZoomLevel);
-  const activeTool = useAnnotationStore((s) => s.activeTool);
-  const annotations = useAnnotationStore((s) => s.annotations);
-  const selectedAnnotationIds = useAnnotationStore((s) => s.selectedAnnotationIds);
+  const totalImages = project.images.length;
+  const completedImages = statusCounts.completed ?? 0;
+  const progressPct = totalImages > 0 ? Math.round((completedImages / totalImages) * 100) : 0;
 
   return (
-    <div className="flex items-center justify-between w-full px-4 text-[11px] font-medium text-muted-foreground/80">
-      {/* Left: Tool + Stats */}
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 px-2 py-0.5 rounded bg-primary/10 border border-primary/20 text-primary">
-          <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
-          <span className="uppercase tracking-wider font-bold text-[10px]">
-            {TOOL_LABELS[activeTool] ?? activeTool}
-          </span>
+    <div className="dark min-h-screen bg-[#0d0d0d] text-white">
+      <DashboardNav />
+
+      <main className="max-w-4xl mx-auto px-6 py-10">
+        {/* Back + header */}
+        <div className="mb-8">
+          <button
+            onClick={() => router.push("/projects")}
+            className="flex items-center gap-1.5 text-[12px] text-[#555] hover:text-white transition-colors mb-4"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            All projects
+          </button>
+
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                <FolderOpen className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-xl font-semibold text-white">{project.name}</h1>
+                {project.description && (
+                  <p className="text-[13px] text-[#555] mt-0.5">{project.description}</p>
+                )}
+              </div>
+            </div>
+
+            <Button
+              onClick={() => router.push(`/project/${projectId}/editor`)}
+              className="gap-2 text-[13px] font-medium shrink-0"
+            >
+              <Pencil className="h-4 w-4" />
+              Open editor
+            </Button>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <span className="opacity-50">Objects:</span>
-            <span className="text-foreground font-bold tabular-nums">{annotations.length}</span>
+        {/* Stats row */}
+        <div className="grid grid-cols-3 gap-3 mb-8">
+          {[
+            { icon: Images, label: "Images", value: totalImages },
+            { icon: Tag, label: "Label classes", value: project.labelClasses.length },
+            { icon: CheckCircle2, label: "Completed", value: `${completedImages} / ${totalImages}` },
+          ].map(({ icon: Icon, label, value }) => (
+            <div
+              key={label}
+              className="bg-[#111] border border-[#1e1e1e] rounded-xl p-4 flex items-center gap-3"
+            >
+              <div className="w-8 h-8 rounded-lg bg-[#1a1a1a] border border-[#2a2a2a] flex items-center justify-center shrink-0">
+                <Icon className="h-4 w-4 text-[#555]" />
+              </div>
+              <div>
+                <p className="text-[11px] text-[#444] uppercase tracking-wider">{label}</p>
+                <p className="text-sm font-semibold text-white tabular-nums">{value}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Progress bar */}
+        {totalImages > 0 && (
+          <div className="bg-[#111] border border-[#1e1e1e] rounded-xl p-5 mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[13px] font-medium text-white">Annotation progress</p>
+              <span className="text-[12px] font-mono text-[#555]">{progressPct}%</span>
+            </div>
+            <div className="h-1.5 bg-[#1e1e1e] rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary rounded-full transition-all duration-500"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+            <div className="flex items-center gap-4 mt-3">
+              {(Object.entries(STATUS_CONFIG) as [keyof typeof STATUS_CONFIG, typeof STATUS_CONFIG[keyof typeof STATUS_CONFIG]][]).map(([key, cfg]) => {
+                const count = statusCounts[key] ?? 0;
+                if (count === 0) return null;
+                const Icon = cfg.icon;
+                return (
+                  <div key={key} className={`flex items-center gap-1.5 text-[11px] ${cfg.color}`}>
+                    <Icon className="h-3 w-3" />
+                    <span>{count} {cfg.label.toLowerCase()}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Label classes */}
+        {project.labelClasses.length > 0 && (
+          <div className="bg-[#111] border border-[#1e1e1e] rounded-xl p-5 mb-6">
+            <p className="text-[13px] font-medium text-white mb-3">Label classes</p>
+            <div className="flex flex-wrap gap-2">
+              {project.labelClasses.map((cls) => (
+                <div
+                  key={cls.id}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[12px] font-medium"
+                  style={{
+                    borderColor: cls.color + "40",
+                    backgroundColor: cls.color + "15",
+                    color: cls.color,
+                  }}
+                >
+                  <span
+                    className="w-2 h-2 rounded-full shrink-0"
+                    style={{ backgroundColor: cls.color }}
+                  />
+                  {cls.name}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Image list */}
+        <div className="bg-[#111] border border-[#1e1e1e] rounded-xl overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-[#1e1e1e] flex items-center justify-between">
+            <p className="text-[13px] font-medium text-white">Images</p>
+            <span className="text-[11px] text-[#444] tabular-nums">{project.images.length} total</span>
           </div>
 
-          {selectedAnnotationIds.length > 0 && (
-            <div className="flex items-center gap-1.5 animate-in fade-in slide-in-from-left-1">
-              <div className="w-1 h-1 rounded-full bg-blue-500" />
-              <span className="opacity-50">Selected:</span>
-              <span className="text-blue-500 font-bold tabular-nums">{selectedAnnotationIds.length}</span>
+          {/* Upload zone */}
+          <div className="p-4 border-b border-[#1e1e1e]">
+            <ImageUploadZone projectId={projectId} onUploaded={handleImageUploaded} />
+          </div>
+
+          {project.images.length > 0 && (
+            <div className="divide-y divide-[#1a1a1a]">
+              {project.images.slice(0, 20).map((img) => {
+                const cfg = STATUS_CONFIG[img.status];
+                const Icon = cfg.icon;
+                return (
+                  <div
+                    key={img.id}
+                    className="flex items-center justify-between px-5 py-3 hover:bg-[#141414] transition-colors"
+                  >
+                    <span className="text-[13px] text-[#888] truncate max-w-xs">{img.fileName}</span>
+                    <div className={`flex items-center gap-1.5 text-[11px] ${cfg.color}`}>
+                      <Icon className="h-3 w-3" />
+                      <span>{cfg.label}</span>
+                    </div>
+                  </div>
+                );
+              })}
+              {project.images.length > 20 && (
+                <div className="px-5 py-3 text-[12px] text-[#444]">
+                  +{project.images.length - 20} more images
+                </div>
+              )}
             </div>
           )}
         </div>
-      </div>
+      </main>
 
-      {/* Right: Canvas Info */}
-      <div className="flex items-center gap-6">
-        <div className="flex items-center gap-3 font-mono tracking-tight">
-          <div className="flex items-center gap-1">
-            <span className="opacity-30">X</span>
-            <span className="text-foreground/60 w-8 text-right tabular-nums">{Math.round(cursorPosition.x)}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="opacity-30">Y</span>
-            <span className="text-foreground/60 w-8 text-right tabular-nums">{Math.round(cursorPosition.y)}</span>
-          </div>
-        </div>
-
-        <div className="h-3 w-px bg-border/40" />
-
-        <div className="flex items-center gap-2">
-          <div className="flex items-center bg-muted/40 rounded border border-white/[0.03] p-0.5">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-5 w-5 text-muted-foreground hover:text-foreground hover:bg-white/5"
-              onClick={() => setZoomLevel(zoomLevel / 1.25)}
-            >
-              <ZoomOut className="h-3 w-3" />
-            </Button>
-            <button
-              onClick={() => setZoomLevel(1)}
-              className="px-2 font-mono text-[10px] hover:text-foreground transition-colors tabular-nums min-w-[3.5rem]"
-              title="Reset zoom"
-            >
-              {Math.round(zoomLevel * 100)}%
-            </button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-5 w-5 text-muted-foreground hover:text-foreground hover:bg-white/5"
-              onClick={() => setZoomLevel(zoomLevel * 1.25)}
-            >
-              <ZoomIn className="h-3 w-3" />
-            </Button>
-          </div>
-        </div>
-
-        <div className="h-3 w-px bg-border/40" />
-        <TimerDisplay />
-      </div>
+      <Toaster />
     </div>
   );
 }
 
-export default function ProjectPage() {
-  useKeyboardShortcuts();
-  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
-
+export default function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: projectId } = use(params);
   return (
-    <div className="dark h-screen w-screen overflow-hidden">
-      <MainLayout
-        topToolbar={<TopToolbar />}
-        leftSidebar={<LeftSidebar />}
-        rightSidebar={<RightSidebar />}
-        canvas={<AnnotationCanvas onCursorMove={setCursorPosition} />}
-        bottomBar={<StatusBar cursorPosition={cursorPosition} />}
-      />
-      <Toaster />
-      <OnboardingTour />
-    </div>
+    <AuthGuard>
+      <ProjectOverviewContent projectId={projectId} />
+    </AuthGuard>
   );
 }

@@ -1,531 +1,622 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { v4 as uuidv4 } from "uuid";
+import { useState } from "react";
+import { useAnnotationStore } from "@/stores/useAnnotationStore";
 import {
-  Layers,
-  Database,
-  Tag,
-  Eye,
-  EyeOff,
-  Lock,
-  Unlock,
-  Plus,
-  Square,
-  Hexagon,
-  Circle,
-  Minus,
-  Search,
-  ChevronDown,
-  MoreHorizontal,
-  GripVertical,
-  ImageIcon,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-} from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useAnnotationStore } from "@/stores/useAnnotationStore";
-import { Annotation } from "@/types/annotation";
+import {
+  Images,
+  Layers,
+  Tag,
+  Database,
+  Upload,
+  Trash2,
+  Eye,
+  EyeOff,
+  Lock,
+  Unlock,
+  Plus,
+  Search,
+  Square,
+  Hexagon,
+  Circle,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  ImageIcon,
+} from "lucide-react";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
-const TYPE_ICON: Record<string, React.ElementType> = {
-  box: Square,
-  polygon: Hexagon,
-  keypoint: Circle,
-  line: Minus,
-};
+export function LeftSidebar({ projectId }: { projectId: string }) {
+  const [uploading, setUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+  const [layersFilter, setLayersFilter] = useState("");
+  const [newClassName, setNewClassName] = useState("");
+  const [newClassColor, setNewClassColor] = useState("#3b82f6");
 
-const TYPE_COLOR: Record<string, string> = {
-  box: "text-blue-400",
-  polygon: "text-emerald-400",
-  keypoint: "text-amber-400",
-  line: "text-purple-400",
-};
-
-const DATASET_ITEMS = [
-  { id: 1, name: "frame_0001.jpg", status: "completed", count: 4 },
-  { id: 2, name: "frame_0002.jpg", status: "in_progress", count: 2 },
-  { id: 3, name: "frame_0003.jpg", status: "todo", count: 0 },
-  { id: 4, name: "frame_0004.jpg", status: "todo", count: 0 },
-  { id: 5, name: "frame_0005.jpg", status: "todo", count: 0 },
-  { id: 6, name: "frame_0006.jpg", status: "todo", count: 0 },
-];
-
-const STATUS_ICON: Record<string, React.ElementType> = {
-  completed: CheckCircle2,
-  in_progress: Clock,
-  todo: AlertCircle,
-};
-const STATUS_COLOR: Record<string, string> = {
-  completed: "text-emerald-400",
-  in_progress: "text-amber-400",
-  todo: "text-muted-foreground/50",
-};
-
-function AnnotationRow({
-  ann,
-  isSelected,
-  color,
-  labelName,
-  onSelect,
-  onToggleVisibility,
-  onToggleLock,
-}: {
-  ann: Annotation;
-  isSelected: boolean;
-  color: string;
-  labelName: string;
-  onSelect: (e: React.MouseEvent) => void;
-  onToggleVisibility: () => void;
-  onToggleLock: () => void;
-}) {
-  const Icon = TYPE_ICON[ann.type] ?? Square;
-  const typeColor = TYPE_COLOR[ann.type] ?? "text-muted-foreground";
-
-  return (
-    <div
-      onClick={onSelect}
-      className={`
-        group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg cursor-pointer
-        transition-all duration-150 text-[11px] font-medium
-        ${
-          isSelected
-            ? "bg-primary/10 text-foreground shadow-[inset_0_0_0_1px_rgba(var(--primary),0.2)]"
-            : "text-muted-foreground hover:bg-white/[0.03] hover:text-foreground"
-        }
-      `}
-    >
-      {/* Type icon */}
-      <div className={`p-1 rounded-md ${isSelected ? "bg-primary/20 text-primary" : "bg-white/5 text-muted-foreground/60 group-hover:text-muted-foreground"}`}>
-        <Icon className="h-3 w-3" />
-      </div>
-
-      {/* Label */}
-      <div className="flex-1 min-w-0 flex items-center gap-1.5">
-        <span className="truncate">{labelName}</span>
-        <span className="text-[9px] opacity-20 font-mono">
-          {ann.id.slice(0, 4)}
-        </span>
-      </div>
-
-      {/* Class color dot */}
-      <div
-        className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-        style={{ backgroundColor: color }}
-      />
-
-      {/* Actions */}
-      <div
-        className={`flex items-center gap-0.5 flex-shrink-0 transition-opacity ${isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
-      >
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleVisibility();
-          }}
-          className="p-1 rounded-md hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {ann.isVisible ? (
-            <Eye className="h-2.5 w-2.5" />
-          ) : (
-            <EyeOff className="h-2.5 w-2.5 opacity-30" />
-          )}
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleLock();
-          }}
-          className="p-1 rounded-md hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {ann.isLocked ? (
-            <Lock className="h-2.5 w-2.5 opacity-50" />
-          ) : (
-            <Unlock className="h-2.5 w-2.5" />
-          )}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-export function LeftSidebar() {
-  const annotations = useAnnotationStore((s) => s.annotations);
-  const updateAnnotation = useAnnotationStore((s) => s.updateAnnotation);
-  const selectedAnnotationIds = useAnnotationStore((s) => s.selectedAnnotationIds);
-  const setSelectedAnnotationIds = useAnnotationStore((s) => s.setSelectedAnnotationIds);
-  const toggleSelectedAnnotationId = useAnnotationStore((s) => s.toggleSelectedAnnotationId);
+  const images = useAnnotationStore((s) => s.images);
+  const activeImageId = useAnnotationStore((s) => s.activeImageId);
   const labelClasses = useAnnotationStore((s) => s.labelClasses);
+  const annotations = useAnnotationStore((s) => s.annotations);
+  const activeLabelId = useAnnotationStore((s) => s.activeLabelId);
+  const selectedAnnotationIds = useAnnotationStore(
+    (s) => s.selectedAnnotationIds
+  );
+
+  const setActiveImage = useAnnotationStore((s) => s.setActiveImage);
+  const addImage = useAnnotationStore((s) => s.addImage);
+  const removeImage = useAnnotationStore((s) => s.removeImage);
   const addLabelClass = useAnnotationStore((s) => s.addLabelClass);
   const updateLabelClass = useAnnotationStore((s) => s.updateLabelClass);
   const deleteLabelClass = useAnnotationStore((s) => s.deleteLabelClass);
-  const activeLabelId = useAnnotationStore((s) => s.activeLabelId);
   const setActiveLabelId = useAnnotationStore((s) => s.setActiveLabelId);
-
-  const [newClassName, setNewClassName] = useState("");
-  const [newClassColor, setNewClassColor] = useState("#6366f1");
-  const [filterText, setFilterText] = useState("");
-
-  const labelColorMap = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const c of labelClasses) map.set(c.id, c.color);
-    return map;
-  }, [labelClasses]);
-  const labelNameMap = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const c of labelClasses) map.set(c.id, c.name);
-    return map;
-  }, [labelClasses]);
-  const getColor = (labelId: string) => labelColorMap.get(labelId) ?? "#6366f1";
-  const getName = (labelId: string) => labelNameMap.get(labelId) ?? "Unknown";
-
-  const filtered = useMemo(
-    () =>
-      filterText
-        ? annotations.filter((a) => {
-            const name = labelNameMap.get(a.labelId) ?? "Unknown";
-            return (
-              a.type.includes(filterText.toLowerCase()) ||
-              name.toLowerCase().includes(filterText.toLowerCase()) ||
-              a.id.toLowerCase().includes(filterText.toLowerCase())
-            );
-          })
-        : annotations,
-    [annotations, filterText, labelNameMap],
+  const updateAnnotation = useAnnotationStore((s) => s.updateAnnotation);
+  const setSelectedAnnotationIds = useAnnotationStore(
+    (s) => s.setSelectedAnnotationIds
   );
 
-  const typeCounts = useMemo(
-    () =>
-      annotations.reduce(
-        (acc, a) => {
-          acc[a.type] = (acc[a.type] ?? 0) + 1;
-          return acc;
-        },
-        {} as Record<string, number>,
-      ),
-    [annotations],
-  );
+  const completedImages = images.filter((img) => img.status === "completed");
+  const inProgressImages = images.filter((img) => img.status === "in_progress");
 
-  const handleAddClass = () => {
-    if (!newClassName.trim()) return;
-    addLabelClass({
-      id: uuidv4(),
-      name: newClassName.trim(),
-      color: newClassColor,
-    });
-    setNewClassName("");
+  const filteredAnnotations = annotations.filter((ann) => {
+    if (!layersFilter) return true;
+    const label = labelClasses.find((lc) => lc.id === ann.labelId);
+    return label?.name.toLowerCase().includes(layersFilter.toLowerCase());
+  });
+
+  const annotationTypeCounts = {
+    box: annotations.filter((a) => a.type === "box").length,
+    polygon: annotations.filter((a) => a.type === "polygon").length,
+    keypoint: annotations.filter((a) => a.type === "keypoint").length,
   };
 
-  const handleSelect = (e: React.MouseEvent, id: string) => {
-    if (e.shiftKey || e.ctrlKey || e.metaKey) toggleSelectedAnnotationId(id);
-    else setSelectedAnnotationIds([id]);
+  const handleFileUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+
+    try {
+      for (const file of Array.from(files)) {
+        if (!file.type.startsWith("image/")) {
+          toast.error(`${file.name} is not an image file`);
+          continue;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", "unsigned_preset");
+
+        const cloudinaryResponse = await fetch(
+          "https://api.cloudinary.com/v1_1/dntncz9no/image/upload",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        if (!cloudinaryResponse.ok) {
+          throw new Error(`Failed to upload ${file.name} to Cloudinary`);
+        }
+
+        const cloudinaryData = await cloudinaryResponse.json();
+
+        const backendResponse = await fetch(
+          `/api/projects/${projectId}/images`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              imageUrl: cloudinaryData.secure_url,
+              fileName: cloudinaryData.original_filename || file.name,
+              width: cloudinaryData.width,
+              height: cloudinaryData.height,
+            }),
+          }
+        );
+
+        if (!backendResponse.ok) {
+          throw new Error(`Failed to save ${file.name} to backend`);
+        }
+
+        const { image } = await backendResponse.json();
+
+        addImage({
+          id: image.id,
+          url: cloudinaryData.secure_url,
+          name: cloudinaryData.original_filename || file.name,
+          width: cloudinaryData.width,
+          height: cloudinaryData.height,
+        });
+
+        toast.success(`Uploaded ${cloudinaryData.original_filename || file.name}`);
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Upload failed"
+      );
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleImageDelete = async (imageId: string, imageName: string) => {
+    if (images.length === 1) {
+      toast.error("Cannot delete the last image");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/projects/${projectId}/images/${imageId}`,
+        { method: "DELETE" }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete image");
+      }
+
+      removeImage(imageId);
+      toast.success(`Deleted ${imageName}`);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Delete failed"
+      );
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = () => {
+    setDragActive(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragActive(false);
+    handleFileUpload(e.dataTransfer.files);
+  };
+
+  const handleAddClass = () => {
+    if (!newClassName.trim()) {
+      toast.error("Class name cannot be empty");
+      return;
+    }
+
+    const newClass = {
+      id: crypto.randomUUID(),
+      name: newClassName.trim(),
+      color: newClassColor,
+    };
+
+    addLabelClass(newClass);
+    setNewClassName("");
+    setNewClassColor("#3b82f6");
+    toast.success(`Added class "${newClass.name}"`);
+  };
+
+  const handleDeleteClass = (classId: string, className: string) => {
+    const classAnnotations = annotations.filter((a) => a.labelId === classId);
+    if (classAnnotations.length > 0) {
+      toast.error(
+        `Cannot delete "${className}" - it has ${classAnnotations.length} annotation(s)`
+      );
+      return;
+    }
+
+    deleteLabelClass(classId);
+    if (activeLabelId === classId) {
+      setActiveLabelId(null);
+    }
+    toast.success(`Deleted class "${className}"`);
+  };
+
+  const handleSetActiveClass = (classId: string) => {
+    setActiveLabelId(classId);
+
+    if (selectedAnnotationIds.length > 0) {
+      selectedAnnotationIds.forEach((annId) => {
+        updateAnnotation(annId, { labelId: classId });
+      });
+      toast.success(
+        `Reclassified ${selectedAnnotationIds.length} annotation(s)`
+      );
+      setSelectedAnnotationIds([]);
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "completed":
+        return <CheckCircle2 className="h-3 w-3" />;
+      case "in_progress":
+        return <Clock className="h-3 w-3" />;
+      case "skipped":
+        return <AlertCircle className="h-3 w-3" />;
+      default:
+        return <ImageIcon className="h-3 w-3" />;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "bg-green-500/10 text-green-500 border-green-500/20";
+      case "in_progress":
+        return "bg-blue-500/10 text-blue-500 border-blue-500/20";
+      case "skipped":
+        return "bg-yellow-500/10 text-yellow-500 border-yellow-500/20";
+      default:
+        return "bg-gray-500/10 text-gray-500 border-gray-500/20";
+    }
+  };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case "box":
+        return <Square className="h-4 w-4" />;
+      case "polygon":
+        return <Hexagon className="h-4 w-4" />;
+      case "keypoint":
+        return <Circle className="h-4 w-4" />;
+      default:
+        return <Square className="h-4 w-4" />;
+    }
   };
 
   return (
-    <TooltipProvider>
-      <div className="flex flex-col h-full overflow-hidden">
-        <Tabs defaultValue="layers" className="flex flex-col h-full">
-          {/* Tab bar */}
-          <div className="px-2 pt-1.5 pb-0 flex-shrink-0">
-            <TabsList className="w-full h-7 grid grid-cols-3 bg-muted/50 p-0.5 rounded-md">
-              <TabsTrigger
-                value="layers"
-                className="text-[10px] h-6 rounded-sm data-[state=active]:bg-card data-[state=active]:shadow-sm"
-              >
-                <Layers className="h-3 w-3 mr-1" />
-                Layers
-              </TabsTrigger>
-              <TabsTrigger
-                value="classes"
-                className="text-[10px] h-6 rounded-sm data-[state=active]:bg-card data-[state=active]:shadow-sm"
-              >
-                <Tag className="h-3 w-3 mr-1" />
-                Classes
-              </TabsTrigger>
-              <TabsTrigger
-                value="dataset"
-                className="text-[10px] h-6 rounded-sm data-[state=active]:bg-card data-[state=active]:shadow-sm"
-              >
-                <Database className="h-3 w-3 mr-1" />
-                Dataset
-              </TabsTrigger>
-            </TabsList>
+    <div className="h-full flex flex-col bg-background border-r">
+      <Tabs defaultValue="layers" className="flex-1 flex flex-col">
+        <TabsList className="w-full grid grid-cols-3 h-7 rounded-none border-b">
+          <TabsTrigger value="layers" className="h-full gap-1.5 text-xs">
+            <Layers className="size-4" />
+            Layers
+          </TabsTrigger>
+          <TabsTrigger value="classes" className="h-full gap-1.5 text-xs">
+            <Tag className="h-3.5 w-3.5" />
+            Classes
+          </TabsTrigger>
+          <TabsTrigger value="dataset" className="h-full gap-1.5 text-xs">
+            <Database className="h-3.5 w-3.5" />
+            Dataset
+          </TabsTrigger>
+        </TabsList>
+
+       
+
+        <TabsContent value="layers" className="flex-1 flex flex-col mt-0 p-3 space-y-3">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-medium">
+                {annotations.length} Annotation{annotations.length !== 1 ? "s" : ""}
+              </div>
+            </div>
+
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                placeholder="Filter layers..."
+                value={layersFilter}
+                onChange={(e) => setLayersFilter(e.target.value)}
+                className="pl-8 h-8 text-xs"
+              />
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <Badge variant="secondary" className="text-xs">
+                <Square className="h-3 w-3 mr-1" />
+                {annotationTypeCounts.box}
+              </Badge>
+              <Badge variant="secondary" className="text-xs">
+                <Hexagon className="h-3 w-3 mr-1" />
+                {annotationTypeCounts.polygon}
+              </Badge>
+              <Badge variant="secondary" className="text-xs">
+                <Circle className="h-3 w-3 mr-1" />
+                {annotationTypeCounts.keypoint}
+              </Badge>
+            </div>
           </div>
 
-          {/* ── LAYERS ──────────────────────────────────────────────────── */}
-          <TabsContent
-            value="layers"
-            className="flex-1 overflow-hidden m-0 flex flex-col mt-0 pt-0"
-          >
-            {/* Summary chips */}
-            {annotations.length > 0 && (
-              <div className="px-2 py-1.5 flex items-center gap-1 flex-wrap flex-shrink-0">
-                {Object.entries(typeCounts).map(([type, count]) => {
-                  const Icon = TYPE_ICON[type] ?? Square;
+          <Separator />
+
+          <ScrollArea className="flex-1">
+            {filteredAnnotations.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Layers className="h-12 w-12 text-muted-foreground mb-3" />
+                <p className="text-sm font-medium mb-1">
+                  {annotations.length === 0 ? "No annotations yet" : "No matches"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {annotations.length === 0
+                    ? "Start drawing on the canvas"
+                    : "Try a different filter"}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-1 pr-3">
+                {filteredAnnotations.map((annotation) => {
+                  const label = labelClasses.find(
+                    (lc) => lc.id === annotation.labelId
+                  );
                   return (
                     <div
-                      key={type}
-                      className="flex items-center gap-1 bg-muted/60 rounded px-1.5 py-0.5 text-[10px] text-muted-foreground"
+                      key={annotation.id}
+                      className="flex items-center gap-2 p-2 rounded hover:bg-accent transition-colors"
                     >
-                      <Icon className={`h-2.5 w-2.5 ${TYPE_COLOR[type]}`} />
-                      <span className="font-medium tabular-nums">{count}</span>
+                      {getTypeIcon(annotation.type)}
+                      <div
+                        className="h-3 w-3 rounded-full border"
+                        style={{ backgroundColor: label?.color || "#999" }}
+                      />
+                      <span className="text-xs flex-1 truncate">
+                        {label?.name || "Unlabeled"}
+                      </span>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger
+                            className={buttonVariants({ size: "sm", variant: "ghost" }) + " h-6 w-6 p-0"}
+                            onClick={() =>
+                              updateAnnotation(annotation.id, {
+                                isVisible: !annotation.isVisible,
+                              })
+                            }
+                          >
+                            {annotation.isVisible ? (
+                              <Eye className="h-3.5 w-3.5" />
+                            ) : (
+                              <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
+                            )}
+                          </TooltipTrigger>
+                          <TooltipContent>Toggle visibility</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger
+                            className={buttonVariants({ size: "sm", variant: "ghost" }) + " h-6 w-6 p-0"}
+                            onClick={() =>
+                              updateAnnotation(annotation.id, {
+                                isLocked: !annotation.isLocked,
+                              })
+                            }
+                          >
+                            {annotation.isLocked ? (
+                              <Lock className="h-3.5 w-3.5" />
+                            ) : (
+                              <Unlock className="h-3.5 w-3.5 text-muted-foreground" />
+                            )}
+                          </TooltipTrigger>
+                          <TooltipContent>Toggle lock</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   );
                 })}
-                <div className="ml-auto text-[10px] text-muted-foreground/60 tabular-nums">
-                  {annotations.length} total
-                </div>
               </div>
             )}
+          </ScrollArea>
+        </TabsContent>
 
-            {/* Search */}
-            <div className="px-2 pb-1.5 flex-shrink-0">
-              <div className="relative">
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground/50" />
-                <Input
-                  placeholder="Filter layers..."
-                  className="h-7 text-xs pl-7 bg-muted/40 border-border/40 focus:border-primary/50"
-                  value={filterText}
-                  onChange={(e) => setFilterText(e.target.value)}
-                />
-              </div>
+        <TabsContent value="classes" className="flex-1 flex flex-col mt-0 p-3 space-y-3">
+          <div className="space-y-2">
+            <div className="text-sm font-medium">
+              {labelClasses.length} Class{labelClasses.length !== 1 ? "es" : ""}
             </div>
+          </div>
 
-            <ScrollArea className="flex-1 px-2">
-              <div className="space-y-0.5 pb-4">
-                {filtered.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-10 gap-2 text-center">
-                    <Layers className="h-8 w-8 text-muted-foreground/20" />
-                    <p className="text-xs text-muted-foreground/60">
-                      {annotations.length === 0
-                        ? "No annotations yet"
-                        : "No matches"}
-                    </p>
-                    {annotations.length === 0 && (
-                      <p className="text-[10px] text-muted-foreground/40">
-                        Use the toolbar to start annotating
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  filtered.map((ann) => (
-                    <AnnotationRow
-                      key={ann.id}
-                      ann={ann}
-                      isSelected={selectedAnnotationIds.includes(ann.id)}
-                      color={getColor(ann.labelId)}
-                      labelName={getName(ann.labelId)}
-                      onSelect={(e) => handleSelect(e, ann.id)}
-                      onToggleVisibility={() =>
-                        updateAnnotation(ann.id, { isVisible: !ann.isVisible })
-                      }
-                      onToggleLock={() =>
-                        updateAnnotation(ann.id, { isLocked: !ann.isLocked })
-                      }
-                    />
-                  ))
-                )}
+          <Separator />
+
+          <ScrollArea className="flex-1">
+            {labelClasses.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Tag className="h-12 w-12 text-muted-foreground mb-3" />
+                <p className="text-sm font-medium mb-1">No classes yet</p>
+                <p className="text-xs text-muted-foreground">
+                  Add a class below to start
+                </p>
               </div>
-            </ScrollArea>
-          </TabsContent>
-
-          {/* ── CLASSES ─────────────────────────────────────────────────── */}
-          <TabsContent
-            value="classes"
-            className="flex-1 overflow-hidden m-0 flex flex-col mt-0"
-          >
-            <div className="px-2 py-1.5 flex items-center justify-between flex-shrink-0">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                {labelClasses.length} classes
-              </span>
-            </div>
-
-            <ScrollArea className="flex-1 px-2">
-              <div className="space-y-0.5 pb-2">
-                {labelClasses.map((cls) => {
-                  const isActive = activeLabelId === cls.id;
-                  const count = annotations.filter(
-                    (a) => a.labelId === cls.id,
+            ) : (
+              <div className="space-y-1 pr-3 mb-3">
+                {labelClasses.map((labelClass) => {
+                  const usageCount = annotations.filter(
+                    (a) => a.labelId === labelClass.id
                   ).length;
+                  const isActive = labelClass.id === activeLabelId;
+
                   return (
                     <div
-                      key={cls.id}
-                      onClick={() => {
-                        setActiveLabelId(cls.id);
-                        // Also reclassify every selected annotation
-                        if (selectedAnnotationIds.length > 0) {
-                          selectedAnnotationIds.forEach((id) =>
-                            updateAnnotation(id, { labelId: cls.id }),
-                          );
-                        }
-                      }}
-                      className={`
-                        group flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer
-                        transition-all text-xs border
-                        ${
-                          isActive
-                            ? "bg-primary/10 border-primary/30"
-                            : "border-transparent hover:bg-accent/60 hover:border-border/40"
-                        }
-                      `}
+                      key={labelClass.id}
+                      className={cn(
+                        "flex items-center gap-2 p-2 rounded transition-colors cursor-pointer",
+                        isActive
+                          ? "bg-primary/10 hover:bg-primary/15"
+                          : "hover:bg-accent"
+                      )}
+                      onClick={() => handleSetActiveClass(labelClass.id)}
                     >
                       <input
                         type="color"
-                        value={cls.color}
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          updateLabelClass(cls.id, { color: e.target.value });
-                        }}
+                        value={labelClass.color}
+                        onChange={(e) =>
+                          updateLabelClass(labelClass.id, {
+                            color: e.target.value,
+                          })
+                        }
                         onClick={(e) => e.stopPropagation()}
-                        className="w-4 h-4 rounded cursor-pointer border-0 bg-transparent p-0 flex-shrink-0"
-                        title="Change color"
+                        className="h-6 w-6 rounded cursor-pointer border"
                       />
-                      <span className="flex-1 truncate font-medium">
-                        {cls.name}
-                      </span>
-                      {count > 0 && (
-                        <span className="text-[10px] text-muted-foreground/60 tabular-nums">
-                          {count}
-                        </span>
-                      )}
+                      <Input
+                        value={labelClass.name}
+                        onChange={(e) =>
+                          updateLabelClass(labelClass.id, {
+                            name: e.target.value,
+                          })
+                        }
+                        onClick={(e) => e.stopPropagation()}
+                        className="h-7 text-xs flex-1"
+                      />
+                      <Badge variant="secondary" className="text-xs">
+                        {usageCount}
+                      </Badge>
                       {isActive && (
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
+                        <div className="h-2 w-2 rounded-full bg-primary" />
                       )}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteLabelClass(cls.id);
-                        }}
-                        className="opacity-0 group-hover:opacity-100 p-0.5 hover:text-destructive transition-all rounded"
-                        title="Delete class"
-                      >
-                        <Minus className="h-3 w-3" />
-                      </button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger
+                            className={buttonVariants({ size: "sm", variant: "ghost" }) + " h-6 w-6 p-0"}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteClass(
+                                labelClass.id,
+                                labelClass.name
+                              );
+                            }}
+                          >
+                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                          </TooltipTrigger>
+                          <TooltipContent>Delete class</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   );
                 })}
               </div>
-            </ScrollArea>
+            )}
+          </ScrollArea>
 
-            <Separator className="opacity-50" />
-            <div className="p-2 space-y-1.5 flex-shrink-0">
-              <div className="flex gap-1.5">
-                <input
-                  type="color"
-                  value={newClassColor}
-                  onChange={(e) => setNewClassColor(e.target.value)}
-                  className="w-7 h-7 rounded border border-border/60 cursor-pointer bg-transparent p-0.5 flex-shrink-0"
-                />
-                <Input
-                  placeholder="Class name..."
-                  className="h-7 text-xs flex-1 bg-muted/40 border-border/40"
-                  value={newClassName}
-                  onChange={(e) => setNewClassName(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleAddClass()}
-                />
-              </div>
+          <div className="space-y-2 pt-2 border-t">
+            <div className="text-xs font-medium text-muted-foreground">
+              Add New Class
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={newClassColor}
+                onChange={(e) => setNewClassColor(e.target.value)}
+                className="h-8 w-8 rounded cursor-pointer border"
+              />
+              <Input
+                placeholder="Class name..."
+                value={newClassName}
+                onChange={(e) => setNewClassName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleAddClass();
+                  }
+                }}
+                className="h-8 text-xs flex-1"
+              />
               <Button
                 size="sm"
-                variant="outline"
-                className="w-full h-7 text-xs border-dashed border-border/60 hover:border-primary/50 hover:text-primary"
                 onClick={handleAddClass}
                 disabled={!newClassName.trim()}
+                className="h-8"
               >
-                <Plus className="h-3 w-3 mr-1" />
-                Add Class
+                <Plus className="h-3.5 w-3.5" />
               </Button>
             </div>
-          </TabsContent>
+          </div>
+        </TabsContent>
 
-          {/* ── DATASET ─────────────────────────────────────────────────── */}
-          <TabsContent
-            value="dataset"
-            className="flex-1 overflow-hidden m-0 flex flex-col mt-0"
-          >
-            <div className="px-2 py-1.5 flex items-center justify-between flex-shrink-0">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                6 images
-              </span>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-6 text-[10px] px-2 border-border/60"
-              >
-                <Plus className="h-3 w-3 mr-1" />
-                Import
-              </Button>
+        <TabsContent value="dataset" className="flex-1 flex flex-col mt-0 p-3 space-y-3">
+          <div className="space-y-2">
+            <div className="text-sm font-medium">
+              {images.length} {images.length === 1 ? "Image" : "Images"}
             </div>
 
-            {/* Progress bar */}
-            <div className="px-2 pb-2 flex-shrink-0">
-              <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
-                <span>Progress</span>
-                <span className="tabular-nums">1 / 6</span>
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>Completion</span>
+                <span>
+                  {completedImages.length} / {images.length}
+                </span>
               </div>
-              <div className="h-1 bg-muted rounded-full overflow-hidden">
+              <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-primary rounded-full"
-                  style={{ width: "16.6%" }}
+                  className="h-full bg-primary transition-all"
+                  style={{
+                    width: `${
+                      images.length > 0
+                        ? (completedImages.length / images.length) * 100
+                        : 0
+                    }%`,
+                  }}
                 />
               </div>
             </div>
+          </div>
 
-            <ScrollArea className="flex-1 px-2">
-              <div className="space-y-0.5 pb-4">
-                {DATASET_ITEMS.map((item) => {
-                  const StatusIcon = STATUS_ICON[item.status];
-                  const isActive = item.id === 1;
-                  return (
-                    <div
-                      key={item.id}
-                      className={`
-                        group flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer
-                        transition-all text-xs border
-                        ${
-                          isActive
-                            ? "bg-primary/10 border-primary/30"
-                            : "border-transparent hover:bg-accent/60 hover:border-border/40"
-                        }
-                      `}
-                    >
-                      <div className="w-8 h-8 rounded bg-muted/60 flex items-center justify-center flex-shrink-0 overflow-hidden border border-border/40">
-                        <ImageIcon className="h-3.5 w-3.5 text-muted-foreground/40" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium truncate">{item.name}</div>
-                        <div className="flex items-center gap-1 mt-0.5">
-                          <StatusIcon
-                            className={`h-2.5 w-2.5 ${STATUS_COLOR[item.status]}`}
-                          />
-                          <span className="text-[10px] text-muted-foreground/60 capitalize">
-                            {item.status.replace("_", " ")}
-                          </span>
-                          {item.count > 0 && (
-                            <span className="text-[10px] text-muted-foreground/40 ml-auto tabular-nums">
-                              {item.count} ann
-                            </span>
+          <Separator />
+
+          <ScrollArea className="flex-1">
+            {images.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Database className="h-12 w-12 text-muted-foreground mb-3" />
+                <p className="text-sm font-medium mb-1">No images in dataset</p>
+                <p className="text-xs text-muted-foreground">
+                  Upload images to build your dataset
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-1 pr-3">
+                {images.map((image) => (
+                  <div
+                    key={image.id}
+                    className="flex items-center gap-2 p-2 rounded hover:bg-accent transition-colors cursor-pointer"
+                    onClick={() => setActiveImage(image.id)}
+                  >
+                    <div className="h-10 w-14 rounded overflow-hidden bg-secondary flex-shrink-0">
+                      <img
+                        src={image.url}
+                        alt={image.name}
+                        loading="lazy"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium truncate">
+                        {image.name}
+                      </p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "text-[10px] px-1 h-4 gap-0.5",
+                            getStatusColor(image.status)
                           )}
-                        </div>
+                        >
+                          {getStatusIcon(image.status)}
+                          {image.status.replace("_", " ")}
+                        </Badge>
                       </div>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
-            </ScrollArea>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </TooltipProvider>
+            )}
+          </ScrollArea>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }

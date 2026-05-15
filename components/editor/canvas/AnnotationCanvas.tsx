@@ -17,7 +17,7 @@ import Konva from "konva";
 import { useAnnotationStore } from "@/stores/useAnnotationStore";
 import { useCanvasInteractions } from "@/hooks/useCanvasInteractions";
 import { usePolygonOps } from "@/hooks/usePolygonOps";
-import { BoundingBox, Polygon, Keypoint, Point, CircleAnnotation } from "@/types/annotation";
+import { BoundingBox, Polygon, Keypoint, Point, CircleAnnotation, Annotation } from "@/types/annotation";
 import { polygonsOverlap } from "@/lib/polygon-utils";
 import { v4 as uuidv4 } from "uuid";
 
@@ -537,6 +537,7 @@ function AnnotationCanvasComp({
   const activeLabelId = useAnnotationStore((s) => s.activeLabelId);
   const activeVertex = useAnnotationStore((s) => s.activeVertex);
   const setActiveVertex = useAnnotationStore((s) => s.setActiveVertex);
+  const imageUrl = useAnnotationStore((s) => s.imageUrl) ?? "";
 
   const { handleVertexDragMove, handleEdgeClick, handleVertexDragEnd } =
     useCanvasInteractions();
@@ -559,6 +560,13 @@ function AnnotationCanvasComp({
   const [newCircle, setNewCircle] = useState<CircleAnnotation | null>(null);
   const newCircleRef = useRef<CircleAnnotation | null>(null);
   const isLassoDrawingRef = useRef(false);
+
+  // Marquee selection state
+  const [marquee, setMarquee] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  const marqueeRef = useRef<{ x: number; y: number; w: number; h: number } | null>(null);
+  const marqueeOriginRef = useRef<Point | null>(null);
+  const isMarqueeRef = useRef(false);
+  const [isMarqueeActive, setIsMarqueeActive] = useState(false);
 
   const activeToolRef = useRef(activeTool);
   const activeLabelIdRef = useRef(activeLabelId);
@@ -592,14 +600,18 @@ function AnnotationCanvasComp({
     return () => ro.disconnect();
   }, []);
 
-  // Load image
+  // Load image — reacts to active image changes
   useEffect(() => {
+    if (!imageUrl) {
+      setImage(null);
+      return;
+    }
     const img = new window.Image();
     img.crossOrigin = "anonymous";
-    img.src =
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&q=80&w=2000";
+    img.src = imageUrl;
     img.onload = () => setImage(img);
-  }, []);
+    img.onerror = () => setImage(null);
+  }, [imageUrl]);
 
   const labelColorMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -707,6 +719,21 @@ function AnnotationCanvasComp({
       const pos = stage.getRelativePointerPosition();
       if (!pos) return;
 
+      if (tool === "select") {
+        const isEmptyTarget =
+          e.target === stage || e.target.hasName("background-image");
+        if (isEmptyTarget) {
+          // Start marquee
+          isMarqueeRef.current = true;
+          setIsMarqueeActive(true);
+          marqueeOriginRef.current = pos;
+          const m = { x: pos.x, y: pos.y, w: 0, h: 0 };
+          marqueeRef.current = m;
+          setMarquee(m);
+        }
+        return;
+      }
+
       if (tool === "box") {
         const box: BoundingBox = {
           id: uuidv4(),
@@ -786,6 +813,17 @@ function AnnotationCanvasComp({
       }
 
       const tool = activeToolRef.current;
+      if (tool === "select" && isMarqueeRef.current && marqueeOriginRef.current) {
+        const origin = marqueeOriginRef.current;
+        const m = {
+          x: Math.min(pos.x, origin.x),
+          y: Math.min(pos.y, origin.y),
+          w: Math.abs(pos.x - origin.x),
+          h: Math.abs(pos.y - origin.y),
+        };
+        marqueeRef.current = m;
+        setMarquee(m);
+      }
       if (tool === "box" && newBoxRef.current) {
         const updated = {
           ...newBoxRef.current,
@@ -824,9 +862,64 @@ function AnnotationCanvasComp({
     [onCursorMove],
   );
 
-  // Mouse up — commit box / circle / lasso
+  // Helper: get annotation bounding rect for marquee hit-test
+  const getAnnotationBounds = useCallback((ann: Annotation): { x: number; y: number; w: number; h: number } | null => {
+    if (ann.type === "box") {
+      const b = ann as BoundingBox;
+      return { x: b.x, y: b.y, w: b.width, h: b.height };
+    }
+    if (ann.type === "circle") {
+      const c = ann as CircleAnnotation;
+      return { x: c.x - c.radius, y: c.y - c.radius, w: c.radius * 2, h: c.radius * 2 };
+    }
+    if (ann.type === "polygon") {
+      const p = ann as Polygon;
+      const xs = p.points.map((pt) => pt.x);
+      const ys = p.points.map((pt) => pt.y);
+      const minX = Math.min(...xs), maxX = Math.max(...xs);
+      const minY = Math.min(...ys), maxY = Math.max(...ys);
+      return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+    }
+    if (ann.type === "keypoint") {
+      const k = ann as Keypoint;
+      return { x: k.point.x - 6, y: k.point.y - 6, w: 12, h: 12 };
+    }
+    return null;
+  }, []);
+
+  // Mouse up — commit box / circle / lasso / marquee
   const handleMouseUp = useCallback(() => {
     const tool = activeToolRef.current;
+
+    if (tool === "select" && isMarqueeRef.current) {
+      isMarqueeRef.current = false;
+      setIsMarqueeActive(false);
+      const m = marqueeRef.current;
+      marqueeRef.current = null;
+      setMarquee(null);
+      marqueeOriginRef.current = null;
+
+      if (m && (m.w > 4 || m.h > 4)) {
+        const { annotations } = useAnnotationStore.getState();
+        const hit = annotations
+          .filter((ann) => ann.isVisible)
+          .filter((ann) => {
+            const b = getAnnotationBounds(ann);
+            if (!b) return false;
+            // Intersect test
+            return (
+              b.x < m.x + m.w &&
+              b.x + b.w > m.x &&
+              b.y < m.y + m.h &&
+              b.y + b.h > m.y
+            );
+          })
+          .map((ann) => ann.id);
+        setSelectedAnnotationIds(hit);
+      }
+      return;
+    }
+
     if (tool === "pan") {
       const stage = stageRef.current;
       if (stage) setCanvasOffset({ x: stage.x(), y: stage.y() });
@@ -956,7 +1049,7 @@ function AnnotationCanvasComp({
     <div
       ref={containerRef}
       className="w-full h-full overflow-hidden"
-      style={{ cursor: TOOL_CURSORS[activeTool] ?? "default" }}
+      style={{ cursor: isMarqueeActive ? "crosshair" : (TOOL_CURSORS[activeTool] ?? "default") }}
     >
       <Stage
         ref={stageRef}
@@ -1067,6 +1160,21 @@ function AnnotationCanvasComp({
             fill="transparent"
             listening={false}
           />
+          {/* Marquee selection rect */}
+          {marquee && marquee.w > 2 && marquee.h > 2 && (
+            <Rect
+              x={marquee.x}
+              y={marquee.y}
+              width={marquee.w}
+              height={marquee.h}
+              stroke="rgba(99,102,241,0.9)"
+              strokeWidth={1 / zoomLevel}
+              dash={[5 / zoomLevel, 3 / zoomLevel]}
+              fill="rgba(99,102,241,0.08)"
+              listening={false}
+            />
+          )}
+
           {/* In-progress box */}
           {newBox && (
             <Rect

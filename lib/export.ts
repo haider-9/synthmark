@@ -1,6 +1,6 @@
 import { Annotation, LabelClass } from "@/types/annotation";
 
-export type ExportFormat = "coco" | "yolo" | "pascal-voc";
+export type ExportFormat = "coco" | "yolo" | "pascal-voc" | "label-studio";
 
 interface ExportOptions {
   annotations: Annotation[];
@@ -181,6 +181,83 @@ function escapeXml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 }
 
+// ─── Label Studio JSON ───────────────────────────────────────────────────────
+// Produces the `result` array for a single task annotation.
+// Points are expressed as percentages (0–100) of image dimensions.
+
+export function toLabelStudioResult(
+  { annotations, labelClasses, imageWidth = 1920, imageHeight = 1080 }: ExportOptions
+): object[] {
+  const clsMap = new Map(labelClasses.map((cls) => [cls.id, cls.name]));
+
+  const results: object[] = [];
+
+  for (const ann of annotations) {
+    if (!ann.isVisible) continue;
+    const labelName = clsMap.get(ann.labelId) ?? "unknown";
+    const id = ann.id.replace(/-/g, "").slice(0, 10);
+
+    if (ann.type === "polygon" && ann.points.length >= 3) {
+      results.push({
+        id,
+        type: "polygonlabels",
+        origin: "manual",
+        to_name: "image",
+        from_name: "label",
+        original_width: imageWidth,
+        original_height: imageHeight,
+        value: {
+          points: ann.points.map((p) => [
+            parseFloat(((p.x / imageWidth) * 100).toFixed(4)),
+            parseFloat(((p.y / imageHeight) * 100).toFixed(4)),
+          ]),
+          polygonlabels: [labelName],
+        },
+      });
+    } else if (ann.type === "box") {
+      results.push({
+        id,
+        type: "rectanglelabels",
+        origin: "manual",
+        to_name: "image",
+        from_name: "label",
+        original_width: imageWidth,
+        original_height: imageHeight,
+        value: {
+          x: parseFloat(((ann.x / imageWidth) * 100).toFixed(4)),
+          y: parseFloat(((ann.y / imageHeight) * 100).toFixed(4)),
+          width: parseFloat(((ann.width / imageWidth) * 100).toFixed(4)),
+          height: parseFloat(((ann.height / imageHeight) * 100).toFixed(4)),
+          rotation: 0,
+          rectanglelabels: [labelName],
+        },
+      });
+    } else if (ann.type === "keypoint") {
+      results.push({
+        id,
+        type: "keypointlabels",
+        origin: "manual",
+        to_name: "image",
+        from_name: "label",
+        original_width: imageWidth,
+        original_height: imageHeight,
+        value: {
+          x: parseFloat(((ann.point.x / imageWidth) * 100).toFixed(4)),
+          y: parseFloat(((ann.point.y / imageHeight) * 100).toFixed(4)),
+          width: 0.5,
+          keypointlabels: [labelName],
+        },
+      });
+    }
+  }
+
+  return results;
+}
+
+function toLabelStudioFull(options: ExportOptions): string {
+  return JSON.stringify(toLabelStudioResult(options), null, 2);
+}
+
 // ─── Public API ──────────────────────────────────────────────────────────────────
 
 export function exportAnnotations(format: ExportFormat, options: ExportOptions): { content: string; filename: string; mime: string } {
@@ -196,6 +273,10 @@ export function exportAnnotations(format: ExportFormat, options: ExportOptions):
     case "pascal-voc": {
       const content = toPascalVOC(options);
       return { content, filename: "annotations_pascal.xml", mime: "application/xml" };
+    }
+    case "label-studio": {
+      const content = toLabelStudioFull(options);
+      return { content, filename: "annotations_label_studio.json", mime: "application/json" };
     }
   }
 }

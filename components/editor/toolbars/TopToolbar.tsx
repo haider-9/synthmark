@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import {
   MousePointer2,
@@ -18,6 +18,9 @@ import {
   Pencil,
   Square,
   CircleIcon,
+  Clipboard,
+  Copy,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,10 +29,18 @@ import {
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useAnnotationStore } from "@/stores/useAnnotationStore";
 import { ExportDialog } from "@/components/editor/export/ExportDialog";
 import { TimerDisplay } from "@/components/editor/TimerDisplay";
+import { toLabelStudioResult } from "@/lib/export";
+import { toast } from "sonner";
 
 export function TopToolbar() {
   const activeTool = useAnnotationStore((s) => s.activeTool);
@@ -38,9 +49,46 @@ export function TopToolbar() {
   const redo = useAnnotationStore((s) => s.redo);
   const historyIndex = useAnnotationStore((s) => s.historyIndex);
   const history = useAnnotationStore((s) => s.history);
+  const annotations = useAnnotationStore((s) => s.annotations);
+  const labelClasses = useAnnotationStore((s) => s.labelClasses);
+  const images = useAnnotationStore((s) => s.images);
+  const activeImageId = useAnnotationStore((s) => s.activeImageId);
+
+  const [lsOpen, setLsOpen] = useState(false);
+  const [lsJson, setLsJson] = useState("");
+  const [textCopied, setTextCopied] = useState(false);
 
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < history.length - 1;
+
+  const handleCopyForLabelStudio = () => {
+    const activeImage = images.find((i) => i.id === activeImageId);
+    const result = toLabelStudioResult({
+      annotations,
+      labelClasses,
+      imageWidth: activeImage?.width ?? 1920,
+      imageHeight: activeImage?.height ?? 1080,
+    });
+
+    if (result.length === 0) {
+      toast.error("No visible annotations to copy");
+      return;
+    }
+
+    setLsJson(JSON.stringify(result, null, 2));
+    setLsOpen(true);
+    setTextCopied(false);
+  };
+
+  const handleTextCopy = () => {
+    // Select all + copy via execCommand — works regardless of focus/permissions
+    const el = document.getElementById("ls-json-textarea") as HTMLTextAreaElement | null;
+    if (!el) return;
+    el.select();
+    document.execCommand("copy");
+    setTextCopied(true);
+    setTimeout(() => setTextCopied(false), 2000);
+  };
 
   return (
     <TooltipProvider>
@@ -126,6 +174,23 @@ export function TopToolbar() {
           <div className="flex items-center gap-1">
             <ActionBtn icon={Save} label="Save" shortcut="Ctrl+S" />
             <ExportDialog />
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-muted-foreground hover:text-foreground transition-colors"
+                    onClick={handleCopyForLabelStudio}
+                  >
+                    <Clipboard className="h-3.5 w-3.5" />
+                  </Button>
+                }
+              />
+              <TooltipContent side="bottom" className="text-xs">
+                Copy for NXUS / Label Studio
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           <Button size="sm" className="h-8 text-[12px] gap-2 px-4 font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all">
@@ -134,6 +199,59 @@ export function TopToolbar() {
           </Button>
         </div>
       </div>
+
+      {/* ── Label Studio JSON modal ───────────────────────────────────── */}
+      <Dialog open={lsOpen} onOpenChange={setLsOpen}>
+        <DialogContent className="sm:max-w-2xl dark">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-semibold">Copy for NXUS / Label Studio</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            {/* Step 1 */}
+            <div className="space-y-1.5">
+              <p className="text-[12px] text-muted-foreground">
+                <span className="text-foreground font-medium">Step 1</span> — Select all and copy the JSON below
+              </p>
+              <div className="relative">
+                <textarea
+                  id="ls-json-textarea"
+                  readOnly
+                  value={lsJson}
+                  className="w-full h-48 text-[11px] font-mono bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg p-3 text-[#aaa] resize-none focus:outline-none focus:border-primary/40 select-all"
+                  onClick={(e) => (e.target as HTMLTextAreaElement).select()}
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="absolute top-2 right-2 h-6 text-[11px] gap-1.5 border-[#2a2a2a] hover:border-[#444]"
+                  onClick={handleTextCopy}
+                >
+                  {textCopied ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
+                  {textCopied ? "Copied!" : "Copy all"}
+                </Button>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="space-y-1.5">
+              <p className="text-[12px] text-muted-foreground">
+                <span className="text-foreground font-medium">Step 2</span> — In NXUS, open the task, press <kbd className="text-[10px] bg-muted border border-border px-1 py-0.5 rounded font-mono">F12</kbd>, go to Console and run:
+              </p>
+              <div className="relative bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg p-3">
+                <code className="text-[11px] font-mono text-primary break-all leading-relaxed">
+                  {"window.Htx.annotationStore.selected.appendResults("}
+                  <span className="text-amber-400">{"/* paste JSON here */"}</span>
+                  {")"}
+                </code>
+                <p className="text-[11px] text-muted-foreground mt-2">
+                  Replace <span className="text-amber-400 font-mono">{"/* paste JSON here */"}</span> with the copied JSON, then press Enter. Hit <span className="font-medium text-foreground">Submit</span> in NXUS when done.
+                </p>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </TooltipProvider>
   );
 }
