@@ -534,9 +534,10 @@ function AnnotationCanvasComp({
   const setSelectedAnnotationIds = useAnnotationStore((s) => s.setSelectedAnnotationIds);
   const toggleSelectedAnnotationId = useAnnotationStore((s) => s.toggleSelectedAnnotationId);
   const labelClasses = useAnnotationStore((s) => s.labelClasses);
-  const activeLabelId = useAnnotationStore((s) => s.activeLabelId);
+  const activeLabelId = useAnnotationStore ((s) => s.activeLabelId);
   const activeVertex = useAnnotationStore((s) => s.activeVertex);
   const setActiveVertex = useAnnotationStore((s) => s.setActiveVertex);
+  const imageUrl = useAnnotationStore((s) => s.imageUrl);
 
   const { handleVertexDragMove, handleEdgeClick, handleVertexDragEnd } =
     useCanvasInteractions();
@@ -547,9 +548,14 @@ function AnnotationCanvasComp({
   const [stageSize, setStageSize] = useState({ width: 800, height: 600 });
   const [image, setImage] = useState<HTMLImageElement | null>(null);
 
+  // tempPoints drives rendering; polyRef is the synchronous accumulator used
+  // inside event handlers (avoids stale-closure issues). They are always kept
+  // in sync: every mutation to polyRef is immediately mirrored into state.
+  const [tempPoints, setTempPoints] = useState<Point[]>([]);
   const polyRef = useRef<Point[]>([]);
-  const [, setPolyVersion] = useState(0);
-  const bumpPoly = () => setPolyVersion((v) => v + 1);
+  const bumpPoly = useCallback(() => {
+    setTempPoints([...polyRef.current]);
+  }, []);
 
   const [mousePos, setMousePos] = useState<Point>({ x: 0, y: 0 });
   const [snapPoint, setSnapPoint] = useState<Point | null>(null);
@@ -596,10 +602,9 @@ function AnnotationCanvasComp({
   useEffect(() => {
     const img = new window.Image();
     img.crossOrigin = "anonymous";
-    img.src =
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&q=80&w=2000";
+    img.src = imageUrl;
     img.onload = () => setImage(img);
-  }, []);
+  }, [imageUrl]);
 
   const labelColorMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -945,7 +950,6 @@ function AnnotationCanvasComp({
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const tempPoints = polyRef.current;
   const effectiveMouse = snapPoint ?? mousePos;
   const drawColor =
     activeTool === "erase"

@@ -51,6 +51,7 @@ export interface LabelClass {
   id: string;
   name: string;
   color: string;
+  shortcut?: string;
 }
 
 export interface Project {

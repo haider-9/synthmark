@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useAnnotationStore } from "@/stores/useAnnotationStore";
 import { usePolygonOps } from "@/hooks/usePolygonOps";
+import { toast } from "sonner";
 
 export function useKeyboardShortcuts() {
   const {
@@ -15,6 +16,8 @@ export function useKeyboardShortcuts() {
     annotations,
     activeVertex,
     deleteActiveVertex,
+    copyAnnotations,
+    pasteAnnotations,
   } = useAnnotationStore();
 
   const { handleMerge, handleSubtractSelected } = usePolygonOps();
@@ -40,6 +43,23 @@ export function useKeyboardShortcuts() {
 
       const ctrl = e.ctrlKey || e.metaKey;
       const shift = e.shiftKey;
+
+      // Ctrl+C — copy
+      if (ctrl && e.key.toLowerCase() === "c") {
+        e.preventDefault();
+        if (selectedAnnotationIds.length > 0) {
+          copyAnnotations(selectedAnnotationIds);
+          toast.success(`Copied ${selectedAnnotationIds.length} annotation${selectedAnnotationIds.length > 1 ? "s" : ""}`);
+        }
+        return;
+      }
+
+      // Ctrl+V — paste
+      if (ctrl && e.key.toLowerCase() === "v") {
+        e.preventDefault();
+        pasteAnnotations();
+        return;
+      }
 
       if (ctrl && !shift && e.key.toLowerCase() === "z") {
         e.preventDefault();
@@ -162,5 +182,7 @@ export function useKeyboardShortcuts() {
     annotations,
     activeVertex,
     deleteActiveVertex,
+    copyAnnotations,
+    pasteAnnotations,
   ]);
 }
