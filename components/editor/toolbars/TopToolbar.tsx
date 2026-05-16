@@ -21,6 +21,7 @@ import {
   Copy,
   Check,
   Upload,
+  FileDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,6 +42,84 @@ import { ExportDialog } from "@/components/editor/export/ExportDialog";
 import { fromLabelStudioResult, toLabelStudioResult } from "@/lib/export";
 import type { ActiveTool } from "@/types/annotation";
 import { toast } from "sonner";
+
+const NXUS_POLYGON_EXTRACT_SCRIPT = `(() => {
+  const selected = window.Htx?.annotationStore?.selected;
+  const serialized = selected?.serializeAnnotation?.();
+  const toArray = (value) => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    if (typeof value.values === "function") return Array.from(value.values());
+    if (typeof value.toJSON === "function") return toArray(value.toJSON());
+    if (typeof value === "object") return Object.values(value);
+    return [];
+  };
+  const read = (value) => {
+    if (!value) return value;
+    if (typeof value.toJSON === "function") return value.toJSON();
+    if (typeof value.serialize === "function") return value.serialize();
+    return value;
+  };
+  const sources = [
+    serialized?.result,
+    selected?.results,
+    selected?.annotation?.result,
+    selected?.regions,
+    selected?.regionStore?.regions,
+    selected?.regionStore?._regions,
+    selected?.regionStore?.children,
+    selected?.regionStore?.asArray?.(),
+    selected?.regionStore?.toJSON?.(),
+  ];
+  const originalWidth =
+    selected?.task?.dataObj?.width ??
+    selected?.task?.data?.width ??
+    serialized?.original_width;
+  const originalHeight =
+    selected?.task?.dataObj?.height ??
+    selected?.task?.data?.height ??
+    serialized?.original_height;
+  const seen = new Set();
+  const candidates = sources.flatMap((source) => toArray(source).map(read)).filter(Boolean);
+  const polygons = candidates.flatMap((result) => {
+    const value = result.value ?? result;
+    const points = value.points ?? result.points;
+    const labels =
+      value.polygonlabels ??
+      result.polygonlabels ??
+      value.labels ??
+      result.labels ??
+      result.labeling?.value ??
+      [];
+    if (!Array.isArray(points) || points.length < 3) return [];
+    const key = JSON.stringify(points);
+    if (seen.has(key)) return [];
+    seen.add(key);
+    return [{
+      id: result.id,
+      type: "polygonlabels",
+      origin: result.origin ?? "manual",
+      to_name: result.to_name ?? "image",
+      from_name: result.from_name ?? "label",
+      original_width: result.original_width ?? originalWidth,
+      original_height: result.original_height ?? originalHeight,
+      value: {
+        points,
+        polygonlabels: Array.isArray(labels) ? labels : [labels].filter(Boolean),
+      },
+    }];
+  });
+  const json = JSON.stringify(polygons);
+  if (typeof copy === "function") {
+    copy(json);
+  } else {
+    navigator.clipboard?.writeText(json);
+  }
+  console.log("Checked " + candidates.length + " NXUS result/region candidate(s).");
+  console.log(\`Copied \${polygons.length} polygon(s) for Synthmark import.\`);
+  console.log(json);
+  return polygons;
+})()`;
 
 export function TopToolbar({ projectId, projectName }: { projectId: string; projectName: string }) {
   const activeTool = useAnnotationStore((s) => s.activeTool);
@@ -63,6 +142,7 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
   const [textCopied, setTextCopied] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [importText, setImportText] = useState("");
+  const [extractScriptCopied, setExtractScriptCopied] = useState(false);
 
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < history.length - 1;
@@ -155,6 +235,16 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
     toast.success("Copied to clipboard");
     setTextCopied(true);
     setTimeout(() => setTextCopied(false), 2000);
+  };
+
+  const handleExtractScriptCopy = () => {
+    const el = document.getElementById("nxus-extract-script-textarea") as HTMLTextAreaElement | null;
+    if (!el) return;
+    el.select();
+    document.execCommand("copy");
+    toast.success("NXUS extractor script copied");
+    setExtractScriptCopied(true);
+    setTimeout(() => setExtractScriptCopied(false), 2000);
   };
 
   const handleImportFromLabelStudio = () => {
@@ -284,8 +374,28 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
                   </Button>
                 }
               />
+            <TooltipContent side="bottom" className="text-xs">
+              Copy for NXUS / Label Studio
+            </TooltipContent>
+          </Tooltip>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-muted-foreground hover:text-foreground transition-colors"
+                    onClick={() => {
+                      setImportOpen(true);
+                      setExtractScriptCopied(false);
+                    }}
+                  >
+                    <FileDown className="h-3.5 w-3.5" />
+                  </Button>
+                }
+              />
               <TooltipContent side="bottom" className="text-xs">
-                Copy for NXUS / Label Studio
+                Export polygons from NXUS
               </TooltipContent>
             </Tooltip>
             <Tooltip>
@@ -359,7 +469,7 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
       <Dialog open={importOpen} onOpenChange={setImportOpen}>
         <DialogContent className="sm:max-w-2xl dark">
           <DialogHeader>
-            <DialogTitle className="text-sm font-semibold">Import from NXUS / Label Studio</DialogTitle>
+            <DialogTitle className="text-sm font-semibold">Export polygons from NXUS</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-3">
@@ -367,15 +477,27 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
               In NXUS, open the task â†’ press <kbd className="text-[10px] bg-muted border border-border px-1 py-0.5 rounded font-mono">F12</kbd> â†’ Console â†’ paste and run this:
             </p>
 
-            <textarea
-              readOnly
-              value={"copy(JSON.stringify(window.Htx?.annotationStore?.selected?.serializeAnnotation?.()?.result ?? window.Htx?.annotationStore?.selected?.results ?? []))"}
-              className="w-full h-20 text-[11px] font-mono bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg p-3 text-[#aaa] resize-none focus:outline-none focus:border-primary/40"
-              onClick={(e) => (e.target as HTMLTextAreaElement).select()}
-            />
+            <div className="relative">
+              <textarea
+                id="nxus-extract-script-textarea"
+                readOnly
+                value={NXUS_POLYGON_EXTRACT_SCRIPT}
+                className="w-full h-40 text-[11px] font-mono bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg p-3 pr-20 text-[#aaa] resize-none focus:outline-none focus:border-primary/40"
+                onClick={(e) => (e.target as HTMLTextAreaElement).select()}
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                className="absolute top-2 right-2 h-6 text-[11px] gap-1.5 border-[#2a2a2a] hover:border-[#444]"
+                onClick={handleExtractScriptCopy}
+              >
+                {extractScriptCopied ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
+                {extractScriptCopied ? "Copied!" : "Copy"}
+              </Button>
+            </div>
 
             <p className="text-[12px] text-muted-foreground">
-              Then paste the copied JSON here:
+              The script copies only NXUS polygons. Paste the copied JSON here:
             </p>
 
             <textarea

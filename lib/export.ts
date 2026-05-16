@@ -329,11 +329,15 @@ export function fromLabelStudioResult({
 
     if (result.type === "polygonlabels" && Array.isArray(result.value.points)) {
       const points = result.value.points
-        .filter((point: unknown) => Array.isArray(point) && point.length >= 2)
-        .map(([x, y]: [number, number]) => ({
-          x: (Number(x) / 100) * originalWidth * scaleX,
-          y: (Number(y) / 100) * originalHeight * scaleY,
-        }));
+        .map((point: unknown) => {
+          const x = Array.isArray(point) ? point[0] : (point as { x?: unknown })?.x;
+          const y = Array.isArray(point) ? point[1] : (point as { y?: unknown })?.y;
+          return {
+            x: (Number(x) / 100) * originalWidth * scaleX,
+            y: (Number(y) / 100) * originalHeight * scaleY,
+          };
+        })
+        .filter((point: { x: number; y: number }) => Number.isFinite(point.x) && Number.isFinite(point.y));
 
       if (points.length < 3) return [];
       return [{
