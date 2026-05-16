@@ -44,7 +44,7 @@ export function DashboardNav() {
       <div className="flex items-center gap-5">
         {/* Brand */}
         <Link href="/dashboard" className="flex items-center gap-2">
-          <img src="/logo.png" alt="Synthmark" className="h-5 w-5 rounded object-cover" />
+          <img src="/logo.png" alt="Synthmark" className="h-5 w-5 object-cover" />
           <span className="text-[13px] font-semibold text-[#888] tracking-tight">
             synthmark
           </span>

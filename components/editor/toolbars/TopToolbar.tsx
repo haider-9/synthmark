@@ -20,6 +20,7 @@ import {
   Clipboard,
   Copy,
   Check,
+  Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,7 +38,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useAnnotationStore } from "@/stores/useAnnotationStore";
 import { ExportDialog } from "@/components/editor/export/ExportDialog";
-import { toLabelStudioResult } from "@/lib/export";
+import { fromLabelStudioResult, toLabelStudioResult } from "@/lib/export";
 import type { ActiveTool } from "@/types/annotation";
 import { toast } from "sonner";
 
@@ -53,11 +54,15 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
   const images = useAnnotationStore((s) => s.images);
   const activeImageId = useAnnotationStore((s) => s.activeImageId);
   const addAnnotation = useAnnotationStore((s) => s.addAnnotation);
+  const replaceAnnotations = useAnnotationStore((s) => s.replaceAnnotations);
   const updateImageStatus = useAnnotationStore((s) => s.updateImageStatus);
+  const activeLabelId = useAnnotationStore((s) => s.activeLabelId);
 
   const [lsOpen, setLsOpen] = useState(false);
   const [lsJson, setLsJson] = useState("");
   const [textCopied, setTextCopied] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importText, setImportText] = useState("");
 
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < history.length - 1;
@@ -150,6 +155,32 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
     toast.success("Copied to clipboard");
     setTextCopied(true);
     setTimeout(() => setTextCopied(false), 2000);
+  };
+
+  const handleImportFromLabelStudio = () => {
+    const activeImage = images.find((i) => i.id === activeImageId);
+
+    try {
+      const imported = fromLabelStudioResult({
+        input: importText,
+        labelClasses,
+        imageWidth: activeImage?.width ?? 1920,
+        imageHeight: activeImage?.height ?? 1080,
+        fallbackLabelId: activeLabelId,
+      });
+
+      if (imported.length === 0) {
+        toast.error("No supported NXUS annotations found");
+        return;
+      }
+
+      replaceAnnotations([], imported);
+      setImportOpen(false);
+      setImportText("");
+      toast.success(`Imported ${imported.length} annotation${imported.length === 1 ? "" : "s"}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Import failed");
+    }
   };
 
   return (
@@ -257,6 +288,23 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
                 Copy for NXUS / Label Studio
               </TooltipContent>
             </Tooltip>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-muted-foreground hover:text-foreground transition-colors"
+                    onClick={() => setImportOpen(true)}
+                  >
+                    <Upload className="h-3.5 w-3.5" />
+                  </Button>
+                }
+              />
+              <TooltipContent side="bottom" className="text-xs">
+                Import from NXUS / Label Studio
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           <Button
@@ -304,6 +352,47 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
             <p className="text-[11px] text-muted-foreground">
               Click inside the box to select all, or use the Copy button. Then paste into the NXUS console and press Enter. Hit <span className="text-foreground font-medium">Submit</span> in NXUS when done.
             </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={importOpen} onOpenChange={setImportOpen}>
+        <DialogContent className="sm:max-w-2xl dark">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-semibold">Import from NXUS / Label Studio</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            <p className="text-[12px] text-muted-foreground">
+              In NXUS, open the task â†’ press <kbd className="text-[10px] bg-muted border border-border px-1 py-0.5 rounded font-mono">F12</kbd> â†’ Console â†’ paste and run this:
+            </p>
+
+            <textarea
+              readOnly
+              value={"copy(JSON.stringify(window.Htx?.annotationStore?.selected?.serializeAnnotation?.()?.result ?? window.Htx?.annotationStore?.selected?.results ?? []))"}
+              className="w-full h-20 text-[11px] font-mono bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg p-3 text-[#aaa] resize-none focus:outline-none focus:border-primary/40"
+              onClick={(e) => (e.target as HTMLTextAreaElement).select()}
+            />
+
+            <p className="text-[12px] text-muted-foreground">
+              Then paste the copied JSON here:
+            </p>
+
+            <textarea
+              value={importText}
+              onChange={(e) => setImportText(e.target.value)}
+              placeholder='[{"type":"polygonlabels","value":{"points":[[10,20],[30,40],[20,60]],"polygonlabels":["Class"]}}]'
+              className="w-full h-36 text-[11px] font-mono bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg p-3 text-[#ddd] resize-none focus:outline-none focus:border-primary/40"
+            />
+
+            <div className="flex items-center justify-end gap-2">
+              <Button variant="outline" size="sm" onClick={() => setImportOpen(false)}>
+                Cancel
+              </Button>
+              <Button size="sm" onClick={handleImportFromLabelStudio} disabled={importText.trim().length === 0}>
+                Import
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { BadgeCheck, Calendar, Camera, IdCard, ImageIcon, Loader2, Mail, Save, Shield, Trash2, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { AuthGuard } from "@/components/auth/AuthGuard";
@@ -8,7 +8,7 @@ import { DashboardNav } from "@/components/dashboard/DashboardNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ROLE_CONFIG } from "@/types/auth";
+import { ROLE_CONFIG, type User } from "@/types/auth";
 import { useAuthStore, userInitials } from "@/stores/useAuthStore";
 import { prepareImageUpload } from "@/lib/client-image";
 
@@ -34,30 +34,24 @@ function DetailRow({
   );
 }
 
-function ProfileContent() {
-  const user = useAuthStore((state) => state.user);
-  const updateUser = useAuthStore((state) => state.updateUser);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [organization, setOrganization] = useState("");
-  const [avatar, setAvatar] = useState<string | undefined>();
-  const [bannerImage, setBannerImage] = useState<string | undefined>();
+function ProfileForm({
+  user,
+  updateUser,
+}: {
+  user: User;
+  updateUser: (updates: Partial<User>) => void;
+}) {
+  const [firstName, setFirstName] = useState(() => user.firstName);
+  const [lastName, setLastName] = useState(() => user.lastName);
+  const [organization, setOrganization] = useState(() => user.organization ?? "");
+  const [avatar, setAvatar] = useState<string | undefined>(() => user.avatar);
+  const [bannerImage, setBannerImage] = useState<string | undefined>(() => user.bannerImage);
   const [saving, setSaving] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (!user) return;
-    setFirstName(user.firstName);
-    setLastName(user.lastName);
-    setOrganization(user.organization ?? "");
-    setAvatar(user.avatar);
-    setBannerImage(user.bannerImage);
-  }, [user]);
-
-  const roleConfig = user ? ROLE_CONFIG[user.role] : null;
+  const roleConfig = ROLE_CONFIG[user.role];
   const hasChanges = useMemo(() => {
-    if (!user) return false;
     return (
       firstName.trim() !== user.firstName ||
       lastName.trim() !== user.lastName ||
@@ -66,8 +60,6 @@ function ProfileContent() {
       (bannerImage ?? "") !== (user.bannerImage ?? "")
     );
   }, [avatar, bannerImage, firstName, lastName, organization, user]);
-
-  if (!user || !roleConfig) return null;
 
   const handleImagePick = async (
     file: File | undefined,
@@ -293,6 +285,15 @@ function ProfileContent() {
       </main>
     </div>
   );
+}
+
+function ProfileContent() {
+  const user = useAuthStore((state) => state.user);
+  const updateUser = useAuthStore((state) => state.updateUser);
+
+  if (!user) return null;
+
+  return <ProfileForm key={user.id} user={user} updateUser={updateUser} />;
 }
 
 export default function ProfilePage() {

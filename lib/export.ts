@@ -10,6 +10,14 @@ interface ExportOptions {
   imageName?: string;
 }
 
+interface ImportOptions {
+  input: string;
+  labelClasses: LabelClass[];
+  imageWidth?: number;
+  imageHeight?: number;
+  fallbackLabelId?: string | null;
+}
+
 function classById(classes: LabelClass[], id: string): LabelClass | undefined {
   return classes.find((c) => c.id === id);
 }
@@ -256,6 +264,128 @@ export function toLabelStudioResult(
 
 function toLabelStudioFull(options: ExportOptions): string {
   return JSON.stringify(toLabelStudioResult(options), null, 2);
+}
+
+function parseLabelStudioInput(input: string): unknown {
+  const trimmed = input.trim();
+  if (!trimmed) return [];
+
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    const appendMatch = trimmed.match(/appendResults\s*\(([\s\S]*)\)\s*;?\s*$/);
+    if (appendMatch?.[1]) {
+      return JSON.parse(appendMatch[1]);
+    }
+    throw new Error("Paste Label Studio/NXUS JSON, or the appendResults(...) command.");
+  }
+}
+
+function labelIdForResult(
+  result: any,
+  labelClasses: LabelClass[],
+  fallbackLabelId?: string | null,
+): string | null {
+  const labelName =
+    result?.value?.polygonlabels?.[0] ??
+    result?.value?.rectanglelabels?.[0] ??
+    result?.value?.keypointlabels?.[0];
+
+  if (typeof labelName === "string") {
+    const match = labelClasses.find((cls) => cls.name === labelName);
+    if (match) return match.id;
+  }
+
+  return fallbackLabelId ?? labelClasses[0]?.id ?? null;
+}
+
+function resultArrayFromParsed(parsed: any): any[] {
+  if (Array.isArray(parsed)) return parsed;
+  if (Array.isArray(parsed?.result)) return parsed.result;
+  if (Array.isArray(parsed?.annotations?.[0]?.result)) return parsed.annotations[0].result;
+  return [];
+}
+
+// Converts Label Studio/NXUS result JSON back into Synthmark pixel annotations.
+export function fromLabelStudioResult({
+  input,
+  labelClasses,
+  imageWidth = 1920,
+  imageHeight = 1080,
+  fallbackLabelId,
+}: ImportOptions): Annotation[] {
+  const parsed = parseLabelStudioInput(input);
+  const results = resultArrayFromParsed(parsed);
+
+  return results.flatMap((result): Annotation[] => {
+    const labelId = labelIdForResult(result, labelClasses, fallbackLabelId);
+    if (!labelId || !result?.value) return [];
+
+    const originalWidth = Number(result.original_width) || imageWidth;
+    const originalHeight = Number(result.original_height) || imageHeight;
+    const scaleX = imageWidth / originalWidth;
+    const scaleY = imageHeight / originalHeight;
+    const id = crypto.randomUUID();
+
+    if (result.type === "polygonlabels" && Array.isArray(result.value.points)) {
+      const points = result.value.points
+        .filter((point: unknown) => Array.isArray(point) && point.length >= 2)
+        .map(([x, y]: [number, number]) => ({
+          x: (Number(x) / 100) * originalWidth * scaleX,
+          y: (Number(y) / 100) * originalHeight * scaleY,
+        }));
+
+      if (points.length < 3) return [];
+      return [{
+        id,
+        type: "polygon",
+        labelId,
+        points,
+        isVisible: true,
+        isLocked: false,
+        metadata: { source: "label-studio-import" },
+      }];
+    }
+
+    if (result.type === "rectanglelabels") {
+      const x = (Number(result.value.x) / 100) * originalWidth * scaleX;
+      const y = (Number(result.value.y) / 100) * originalHeight * scaleY;
+      const width = (Number(result.value.width) / 100) * originalWidth * scaleX;
+      const height = (Number(result.value.height) / 100) * originalHeight * scaleY;
+      if (![x, y, width, height].every(Number.isFinite)) return [];
+
+      return [{
+        id,
+        type: "box",
+        labelId,
+        x,
+        y,
+        width,
+        height,
+        isVisible: true,
+        isLocked: false,
+        metadata: { source: "label-studio-import" },
+      }];
+    }
+
+    if (result.type === "keypointlabels") {
+      const x = (Number(result.value.x) / 100) * originalWidth * scaleX;
+      const y = (Number(result.value.y) / 100) * originalHeight * scaleY;
+      if (![x, y].every(Number.isFinite)) return [];
+
+      return [{
+        id,
+        type: "keypoint",
+        labelId,
+        point: { x, y },
+        isVisible: true,
+        isLocked: false,
+        metadata: { source: "label-studio-import" },
+      }];
+    }
+
+    return [];
+  });
 }
 
 // ─── Public API ──────────────────────────────────────────────────────────────────

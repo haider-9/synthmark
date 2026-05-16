@@ -25,7 +25,7 @@ export function AppLoading({
       )}
     >
       <div className="w-full max-w-sm px-6">
-        <div className="relative mx-auto mb-6 flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl border border-[#252525] bg-[#131313] shadow-2xl shadow-black/40">
+        <div className="relative mx-auto mb-6 flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-[#131313] shadow-2xl shadow-black/40">
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/80 to-transparent" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(99,102,241,0.20),transparent_58%)]" />
           <img src="/logo.png" alt="" className="relative h-8 w-8 rounded object-cover" />
