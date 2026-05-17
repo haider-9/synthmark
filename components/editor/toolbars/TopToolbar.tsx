@@ -301,7 +301,7 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
         </div>
 
         {/* ── Center: Tool Palette ─────────────────────────────────────── */}
-        <div className="flex items-center bg-muted/30 border border-white/[0.03] rounded-lg p-1 shadow-inner">
+        <div className="flex items-center bg-muted/30 border border-primary/[0.03] rounded-lg p-1 shadow-inner">
           <ToggleGroup
             value={[activeTool]}
             onValueChange={(values) => {
@@ -445,13 +445,13 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
                 id="ls-json-textarea"
                 readOnly
                 value={lsJson}
-                className="w-full h-36 text-[11px] font-mono bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg p-3 text-[#aaa] resize-none focus:outline-none focus:border-primary/40"
+                className="w-full h-36 text-[11px] font-mono bg-background border border-border rounded-lg p-3 text-muted-foreground resize-none focus:outline-none focus:border-primary/40"
                 onClick={(e) => (e.target as HTMLTextAreaElement).select()}
               />
               <Button
                 size="sm"
                 variant="outline"
-                className="absolute top-2 right-2 h-6 text-[11px] gap-1.5 border-[#2a2a2a] hover:border-[#444]"
+                className="absolute top-2 right-2 h-6 text-[11px] gap-1.5 border-border hover:border-border"
                 onClick={handleTextCopy}
               >
                 {textCopied ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
@@ -482,13 +482,13 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
                 id="nxus-extract-script-textarea"
                 readOnly
                 value={NXUS_POLYGON_EXTRACT_SCRIPT}
-                className="w-full h-40 text-[11px] font-mono bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg p-3 pr-20 text-[#aaa] resize-none focus:outline-none focus:border-primary/40"
+                className="w-full h-40 text-[11px] font-mono bg-background border border-border rounded-lg p-3 pr-20 text-muted-foreground resize-none focus:outline-none focus:border-primary/40"
                 onClick={(e) => (e.target as HTMLTextAreaElement).select()}
               />
               <Button
                 size="sm"
                 variant="outline"
-                className="absolute top-2 right-2 h-6 text-[11px] gap-1.5 border-[#2a2a2a] hover:border-[#444]"
+                className="absolute top-2 right-2 h-6 text-[11px] gap-1.5 border-border hover:border-border"
                 onClick={handleExtractScriptCopy}
               >
                 {extractScriptCopied ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
@@ -504,7 +504,7 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
               value={importText}
               onChange={(e) => setImportText(e.target.value)}
               placeholder='[{"type":"polygonlabels","value":{"points":[[10,20],[30,40],[20,60]],"polygonlabels":["Class"]}}]'
-              className="w-full h-36 text-[11px] font-mono bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg p-3 text-[#ddd] resize-none focus:outline-none focus:border-primary/40"
+              className="w-full h-36 text-[11px] font-mono bg-background border border-border rounded-lg p-3 text-foreground resize-none focus:outline-none focus:border-primary/40"
             />
 
             <div className="flex items-center justify-end gap-2">

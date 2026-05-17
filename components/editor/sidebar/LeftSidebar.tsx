@@ -49,7 +49,7 @@ export function LeftSidebar({ projectId }: { projectId: string }) {
   const [dragActive, setDragActive] = useState(false);
   const [layersFilter, setLayersFilter] = useState("");
   const [newClassName, setNewClassName] = useState("");
-  const [newClassColor, setNewClassColor] = useState("#3b82f6");
+  const [newClassColor, setNewClassColor] = useState("var(--primary)");
 
   const images = useAnnotationStore((s) => s.images);
   const activeImageId = useAnnotationStore((s) => s.activeImageId);
@@ -226,7 +226,7 @@ export function LeftSidebar({ projectId }: { projectId: string }) {
       const labelClass = await promise;
       addLabelClass(labelClass);
       setNewClassName("");
-      setNewClassColor("#3b82f6");
+      setNewClassColor("var(--primary)");
     } catch (error) {
       // toast.promise already presents the failure.
     }
@@ -432,7 +432,7 @@ export function LeftSidebar({ projectId }: { projectId: string }) {
                       {getTypeIcon(annotation.type)}
                       <div
                         className="h-3 w-3 rounded-full border"
-                        style={{ backgroundColor: label?.color || "#999" }}
+                        style={{ backgroundColor: label?.color || "var(--muted-foreground)" }}
                       />
                       <span className="text-xs flex-1 truncate">
                         {label?.name || "Unlabeled"}

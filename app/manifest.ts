@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'AI data annotation platform for ML teams',
     start_url: '/',
     display: 'standalone',
-    background_color: '#0a0a0a',
-    theme_color: '#4f8ef7',
+    background_color: 'oklch(0.2166 0.0215 292.8474)',
+    theme_color: 'oklch(0.6104 0.0767 299.7335)',
     icons: [
       { src: '/logo.png', sizes: 'any', type: 'image/png' },
     ],

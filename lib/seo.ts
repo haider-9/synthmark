@@ -11,7 +11,7 @@ export const SITE = {
   twitterHandle: "@synthmark_ai",
   /** Resolved at runtime by Next.js from app/opengraph-image.tsx */
   ogImage: "/opengraph-image.png",
-  themeColor: "#4f8ef7",
+  themeColor: "oklch(0.6104 0.0767 299.7335)",
   locale: "en_US",
   founded: "2024",
   email: "hello@synthmark.ai",

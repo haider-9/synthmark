@@ -96,10 +96,10 @@ function StatusBar({ cursorPosition }: { cursorPosition: { x: number; y: number 
           </div>
         </div>
         <div className="h-3 w-px bg-border/40" />
-        <div className="flex items-center bg-muted/40 rounded border border-white/3 p-0.5">
+        <div className="flex items-center bg-muted/40 rounded border border-primary/3 p-0.5">
           <Button
             variant="ghost" size="icon"
-            className="h-5 w-5 text-muted-foreground hover:text-foreground hover:bg-white/5"
+            className="h-5 w-5 text-muted-foreground hover:text-foreground hover:bg-primary/5"
             onClick={() => setZoomLevel(zoomLevel / 1.25)}
           >
             <ZoomOut className="h-3 w-3" />
@@ -113,7 +113,7 @@ function StatusBar({ cursorPosition }: { cursorPosition: { x: number; y: number 
           </button>
           <Button
             variant="ghost" size="icon"
-            className="h-5 w-5 text-muted-foreground hover:text-foreground hover:bg-white/5"
+            className="h-5 w-5 text-muted-foreground hover:text-foreground hover:bg-primary/5"
             onClick={() => setZoomLevel(zoomLevel * 1.25)}
           >
             <ZoomIn className="h-3 w-3" />

@@ -6,6 +6,7 @@ import {
   SITE,
 } from "@/lib/seo";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 // ─── Fonts ────────────────────────────────────────────────────────────────────
@@ -17,7 +18,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: SITE.themeColor,
-  colorScheme: "dark",
+  colorScheme: "light dark",
 };
 
 // ─── Root metadata ────────────────────────────────────────────────────────────
@@ -41,16 +42,12 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className="h-full antialiased dark"
-      style={{
-        "--font-sans": '"Plus Jakarta Sans", Inter, ui-sans-serif, system-ui, sans-serif',
-        "--font-mono": '"Fira Code", "SFMono-Regular", Consolas, ui-monospace, monospace',
-      } as React.CSSProperties}
+      className="h-full antialiased"
     >
       <head>
         {/* Browser chrome / PWA */}
         <meta name="theme-color" content={SITE.themeColor} />
-        <meta name="color-scheme" content="dark" />
+        <meta name="color-scheme" content="light dark" />
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, viewport-fit=cover"
@@ -77,8 +74,10 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
-        {children}
-        <Toaster richColors closeButton position="top-right" />
+        <ThemeProvider>
+          {children}
+          <Toaster richColors closeButton position="top-right" />
+        </ThemeProvider>
       </body>
     </html>
   );

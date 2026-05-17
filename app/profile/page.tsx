@@ -22,13 +22,13 @@ function DetailRow({
   value: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-[#1e1e1e] bg-[#101010] px-4 py-3">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#272727] bg-[#171717]">
-        <Icon className="h-4 w-4 text-[#666]" />
+    <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-muted">
+        <Icon className="h-4 w-4 text-muted-foreground" />
       </div>
       <div className="min-w-0">
-        <p className="text-[11px] uppercase tracking-wider text-[#444]">{label}</p>
-        <p className="truncate text-[13px] text-[#aaa]">{value}</p>
+        <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</p>
+        <p className="truncate text-[13px] text-muted-foreground">{value}</p>
       </div>
     </div>
   );
@@ -137,17 +137,17 @@ function ProfileForm({
   };
 
   return (
-    <div className="dark min-h-screen bg-[#0d0d0d] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <DashboardNav />
 
       <main className="mx-auto max-w-5xl px-6 py-10">
-        <div className="mb-8 overflow-hidden rounded-xl border border-[#1e1e1e] bg-[#111]">
-          <div className="relative h-50 bg-[#141414]">
+        <div className="mb-8 overflow-hidden rounded-xl border border-border bg-card">
+          <div className="relative h-50 bg-card">
             {bannerImage ? (
               <img src={bannerImage} alt="" className="h-full w-full object-cover" />
             ) : (
-              <div className="flex h-full items-center justify-center bg-[linear-gradient(135deg,#111,#1b1b1b_45%,#101010)]">
-                <ImageIcon className="h-6 w-6 text-[#333]" />
+              <div className="flex h-full items-center justify-center bg-muted">
+                <ImageIcon className="h-6 w-6 text-muted-foreground" />
               </div>
             )}
             <div className="absolute right-4 top-4 flex gap-2">
@@ -165,27 +165,27 @@ function ProfileForm({
 
           <div className="flex items-end gap-4 px-5 pb-5">
             <div className="-mt-10">
-              <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-[#111] bg-[#171717]">
+              <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-card bg-muted">
                 {avatar ? (
                   <img src={avatar} alt={`${user.firstName} ${user.lastName}`} className="h-full w-full object-cover" />
                 ) : (
-                  <span className="text-lg font-bold text-[#777]">{userInitials(user)}</span>
+                  <span className="text-lg font-bold text-muted-foreground">{userInitials(user)}</span>
                 )}
               </div>
             </div>
             <div className="min-w-0 flex-1 pt-4">
-              <h1 className="text-xl font-semibold text-white">Profile</h1>
-              <p className="mt-1 text-[13px] text-[#555]">
+              <h1 className="text-xl font-semibold text-foreground">Profile</h1>
+              <p className="mt-1 text-[13px] text-muted-foreground">
                 Manage your account identity and workspace details.
               </p>
             </div>
             <div className="flex gap-2 pb-0.5">
-              <Button type="button" size="sm" variant="outline" className="gap-2 border-[#2a2a2a]" onClick={() => avatarInputRef.current?.click()}>
+              <Button type="button" size="sm" variant="outline" className="gap-2 border-border" onClick={() => avatarInputRef.current?.click()}>
                 <Camera className="h-3.5 w-3.5" />
                 Picture
               </Button>
               {avatar && (
-                <Button type="button" size="icon" variant="outline" className="h-8 w-8 border-[#2a2a2a]" onClick={() => removeImage("profile picture", () => setAvatar(undefined))}>
+                <Button type="button" size="icon" variant="outline" className="h-8 w-8 border-border" onClick={() => removeImage("profile picture", () => setAvatar(undefined))}>
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               )}
@@ -209,11 +209,11 @@ function ProfileForm({
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
-          <form onSubmit={handleSubmit} className="rounded-xl border border-[#1e1e1e] bg-[#111] p-5">
+          <form onSubmit={handleSubmit} className="rounded-xl border border-border bg-card p-5">
             <div className="mb-5 flex items-center justify-between gap-4">
               <div>
-                <h2 className="text-sm font-semibold text-white">Account Details</h2>
-                <p className="mt-1 text-[12px] text-[#555]">Changes are saved to your Synthmark account.</p>
+                <h2 className="text-sm font-semibold text-foreground">Account Details</h2>
+                <p className="mt-1 text-[12px] text-muted-foreground">Changes are saved to your Synthmark account.</p>
               </div>
               <Button type="submit" size="sm" disabled={!hasChanges || saving} className="gap-2">
                 {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
@@ -223,48 +223,48 @@ function ProfileForm({
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label htmlFor="firstName" className="text-xs text-[#888]">First name</Label>
+                <Label htmlFor="firstName" className="text-xs text-muted-foreground">First name</Label>
                 <Input
                   id="firstName"
                   value={firstName}
                   onChange={(event) => setFirstName(event.target.value)}
-                  className="h-9 border-[#2a2a2a] bg-[#0d0d0d]"
+                  className="h-9 border-border bg-background"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="lastName" className="text-xs text-[#888]">Last name</Label>
+                <Label htmlFor="lastName" className="text-xs text-muted-foreground">Last name</Label>
                 <Input
                   id="lastName"
                   value={lastName}
                   onChange={(event) => setLastName(event.target.value)}
-                  className="h-9 border-[#2a2a2a] bg-[#0d0d0d]"
+                  className="h-9 border-border bg-background"
                 />
               </div>
               <div className="space-y-1.5 sm:col-span-2">
-                <Label htmlFor="organization" className="text-xs text-[#888]">Organization</Label>
+                <Label htmlFor="organization" className="text-xs text-muted-foreground">Organization</Label>
                 <Input
                   id="organization"
                   value={organization}
                   onChange={(event) => setOrganization(event.target.value)}
                   placeholder="Personal workspace"
-                  className="h-9 border-[#2a2a2a] bg-[#0d0d0d]"
+                  className="h-9 border-border bg-background"
                 />
               </div>
             </div>
           </form>
 
           <aside className="space-y-4">
-            <div className="rounded-xl border border-[#1e1e1e] bg-[#111] p-5">
+            <div className="rounded-xl border border-border bg-card p-5">
               <div className="mb-4 flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#272727] bg-[#171717]">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-muted">
                   <Shield className="h-4 w-4" style={{ color: roleConfig.color }} />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-white">{roleConfig.label}</p>
-                  <p className="text-[12px] text-[#555]">{roleConfig.tagline}</p>
+                  <p className="text-sm font-semibold text-foreground">{roleConfig.label}</p>
+                  <p className="text-[12px] text-muted-foreground">{roleConfig.tagline}</p>
                 </div>
               </div>
-              <p className="text-[12px] leading-5 text-[#666]">{roleConfig.description}</p>
+              <p className="text-[12px] leading-5 text-muted-foreground">{roleConfig.description}</p>
             </div>
 
             <DetailRow icon={Mail} label="Email" value={user.email} />

@@ -19,7 +19,7 @@ import { useAuthStore } from "@/stores/useAuthStore";
 
 // Shared input style — solid dark background, white text, clean border
 const INPUT_CLS =
-  "h-10 bg-[#1a1a1a] border-[#2e2e2e] text-white placeholder:text-[#444] focus-visible:border-[#444] focus-visible:ring-0 rounded-lg";
+  "h-10 bg-muted border-border text-foreground placeholder:text-muted-foreground focus-visible:border-border focus-visible:ring-0 rounded-lg";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -91,17 +91,17 @@ export default function SignInPage() {
       {/* Mobile brand */}
       <div className="flex items-center gap-2 lg:hidden">
         <img src="/logo.png" alt="Synthmark" className="h-5 w-5 rounded object-cover" />
-        <span className="font-bold text-base tracking-tight text-white">
-          synth<span className="text-[#4f8ef7]">mark</span>
+        <span className="font-bold text-base tracking-tight text-foreground">
+          synth<span className="text-primary">mark</span>
         </span>
       </div>
 
       {/* Heading */}
       <div className="space-y-1.5">
-        <h1 className="text-[22px] font-bold text-white tracking-tight">
+        <h1 className="text-[22px] font-bold text-foreground tracking-tight">
           Sign in
         </h1>
-        <p className="text-sm text-[#666]">
+        <p className="text-sm text-muted-foreground">
           Enter your credentials to access your workspace.
         </p>
       </div>
@@ -120,7 +120,7 @@ export default function SignInPage() {
         <div className="space-y-1.5">
           <Label
             htmlFor="email"
-            className="text-[13px] text-[#999] font-normal"
+            className="text-[13px] text-muted-foreground font-normal"
           >
             Email address
           </Label>
@@ -146,7 +146,7 @@ export default function SignInPage() {
         <div className="space-y-1.5">
           <Label
             htmlFor="password"
-            className="text-[13px] text-[#999] font-normal"
+            className="text-[13px] text-muted-foreground font-normal"
           >
             Password
           </Label>
@@ -167,7 +167,7 @@ export default function SignInPage() {
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="absolute right-0 top-0 flex h-full w-10 items-center justify-center text-[#444] hover:text-[#888] transition-colors"
+              className="absolute right-0 top-0 flex h-full w-10 items-center justify-center text-muted-foreground hover:text-muted-foreground transition-colors"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? (
@@ -192,14 +192,14 @@ export default function SignInPage() {
             />
             <Label
               htmlFor="remember"
-              className="text-[13px] text-[#666] font-normal cursor-pointer"
+              className="text-[13px] text-muted-foreground font-normal cursor-pointer"
             >
               Remember me
             </Label>
           </div>
           <Link
             href="/auth/forgot-password"
-            className="text-[12px] text-[#555] hover:text-[#888] transition-colors"
+            className="text-[12px] text-muted-foreground hover:text-muted-foreground transition-colors"
           >
             Forgot password?
           </Link>
@@ -209,7 +209,7 @@ export default function SignInPage() {
         <Button
           type="submit"
           disabled={isLoading}
-          className="h-10 w-full bg-white text-black hover:bg-[#e8e8e8] font-semibold text-sm rounded-lg transition-colors"
+          className="h-10 w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-sm rounded-lg transition-colors"
         >
           {isLoading ? (
             <>
@@ -224,9 +224,9 @@ export default function SignInPage() {
 
       {/* Divider */}
       <div className="flex items-center gap-3">
-        <div className="flex-1 h-px bg-[#1e1e1e]" />
-        <span className="text-[11px] text-[#444]">or</span>
-        <div className="flex-1 h-px bg-[#1e1e1e]" />
+        <div className="flex-1 h-px bg-muted" />
+        <span className="text-[11px] text-muted-foreground">or</span>
+        <div className="flex-1 h-px bg-muted" />
       </div>
 
       {/* Social */}
@@ -271,7 +271,7 @@ export default function SignInPage() {
             key={label}
             type="button"
             onClick={() => toast.info("Coming soon")}
-            className="flex items-center justify-center gap-2 h-10 rounded-lg border border-[#2a2a2a] bg-[#141414] text-[13px] font-medium text-[#888] hover:bg-[#1e1e1e] hover:text-white transition-colors"
+            className="flex items-center justify-center gap-2 h-10 rounded-lg border border-border bg-card text-[13px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             {icon}
             {label}
@@ -280,22 +280,22 @@ export default function SignInPage() {
       </div>
 
       {/* Footer links */}
-      <p className="text-center text-[13px] text-[#555]">
+      <p className="text-center text-[13px] text-muted-foreground">
         Don&apos;t have an account?{" "}
         <Link
           href="/auth/sign-up"
-          className="text-white hover:text-[#ccc] transition-colors font-medium"
+          className="text-foreground hover:text-foreground transition-colors font-medium"
         >
           Create one
         </Link>
       </p>
-      <p className="text-center text-[11px] text-[#3a3a3a]">
+      <p className="text-center text-[11px] text-muted-foreground">
         By signing in you agree to our{" "}
-        <Link href="/terms" className="hover:text-[#666] transition-colors">
+        <Link href="/terms" className="hover:text-muted-foreground transition-colors">
           Terms
         </Link>{" "}
         and{" "}
-        <Link href="/privacy" className="hover:text-[#666] transition-colors">
+        <Link href="/privacy" className="hover:text-muted-foreground transition-colors">
           Privacy Policy
         </Link>
         .

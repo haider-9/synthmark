@@ -16,7 +16,7 @@ export default async function Image() {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        backgroundColor: "#0a0a0a",
+        backgroundColor: "oklch(0.2166 0.0215 292.8474)",
         padding: "60px",
         fontFamily: "system-ui",
       }}
@@ -55,7 +55,7 @@ export default async function Image() {
           </div>
           <div
             style={{
-              color: "#4f8ef7",
+              color: "oklch(0.6104 0.0767 299.7335)",
               fontSize: 22,
               fontWeight: 700,
               lineHeight: 1,
@@ -103,7 +103,7 @@ export default async function Image() {
         <div
           style={{
             fontSize: 22,
-            color: "#666",
+            color: "oklch(0.6974 0.0282 300.0614)",
             marginTop: 20,
           }}
         >
@@ -121,51 +121,51 @@ export default async function Image() {
         }}
       >
         {/* Bottom-left: domain */}
-        <div style={{ fontSize: 14, color: "#333" }}>synthmark.ai</div>
+        <div style={{ fontSize: 14, color: "oklch(0.6974 0.0282 300.0614)" }}>synthmark.ai</div>
 
         {/* Stat pills */}
         <div style={{ display: "flex", flexDirection: "row", gap: "12px" }}>
           <div
             style={{
-              border: "1px solid #1e1e1e",
-              backgroundColor: "#111",
+              border: "1px solid oklch(0.3063 0.0359 293.3367)",
+              backgroundColor: "oklch(0.2544 0.0301 292.7315)",
               paddingTop: 8,
               paddingBottom: 8,
               paddingLeft: 16,
               paddingRight: 16,
               borderRadius: 8,
               fontSize: 14,
-              color: "#888",
+              color: "oklch(0.6974 0.0282 300.0614)",
             }}
           >
             1.2M+ Annotations
           </div>
           <div
             style={{
-              border: "1px solid #1e1e1e",
-              backgroundColor: "#111",
+              border: "1px solid oklch(0.3063 0.0359 293.3367)",
+              backgroundColor: "oklch(0.2544 0.0301 292.7315)",
               paddingTop: 8,
               paddingBottom: 8,
               paddingLeft: 16,
               paddingRight: 16,
               borderRadius: 8,
               fontSize: 14,
-              color: "#888",
+              color: "oklch(0.6974 0.0282 300.0614)",
             }}
           >
             500+ Teams
           </div>
           <div
             style={{
-              border: "1px solid #1e1e1e",
-              backgroundColor: "#111",
+              border: "1px solid oklch(0.3063 0.0359 293.3367)",
+              backgroundColor: "oklch(0.2544 0.0301 292.7315)",
               paddingTop: 8,
               paddingBottom: 8,
               paddingLeft: 16,
               paddingRight: 16,
               borderRadius: 8,
               fontSize: 14,
-              color: "#888",
+              color: "oklch(0.6974 0.0282 300.0614)",
             }}
           >
             99.9% Uptime

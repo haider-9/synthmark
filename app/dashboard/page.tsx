@@ -37,17 +37,17 @@ function greeting() {
 
 function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="bg-[#111] border border-[#1e1e1e] rounded-xl p-5">
-      <p className="text-[12px] text-[#555] mb-2">{label}</p>
-      <p className="text-2xl font-bold text-white tabular-nums">{value}</p>
-      {sub && <p className="text-[11px] text-[#444] mt-1">{sub}</p>}
+    <div className="bg-card border border-border rounded-xl p-5">
+      <p className="text-[12px] text-muted-foreground mb-2">{label}</p>
+      <p className="text-2xl font-bold text-foreground tabular-nums">{value}</p>
+      {sub && <p className="text-[11px] text-muted-foreground mt-1">{sub}</p>}
     </div>
   );
 }
 
 function SectionTitle({ children }: { children: string }) {
   return (
-    <h2 className="text-[11px] font-medium text-[#555] uppercase tracking-wider mb-3">
+    <h2 className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-3">
       {children}
     </h2>
   );
@@ -57,13 +57,13 @@ function ProjectRow({ name, tasks, progress }: { name: string; tasks: number; pr
   return (
     <div className="px-5 py-3 flex items-center justify-between gap-4">
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] text-white truncate">{name}</p>
-        <p className="text-[11px] text-[#555] mt-0.5">{tasks.toLocaleString()} images</p>
+        <p className="text-[13px] text-foreground truncate">{name}</p>
+        <p className="text-[11px] text-muted-foreground mt-0.5">{tasks.toLocaleString()} images</p>
       </div>
       <div className="flex items-center gap-3 shrink-0">
-        <span className="text-[12px] text-[#555] tabular-nums w-8 text-right">{progress}%</span>
-        <div className="h-1 w-28 bg-[#1a1a1a] rounded-full overflow-hidden">
-          <div className="h-full bg-[#333] rounded-full" style={{ width: `${progress}%` }} />
+        <span className="text-[12px] text-muted-foreground tabular-nums w-8 text-right">{progress}%</span>
+        <div className="h-1 w-28 bg-muted rounded-full overflow-hidden">
+          <div className="h-full bg-primary rounded-full" style={{ width: `${progress}%` }} />
         </div>
       </div>
     </div>
@@ -72,8 +72,8 @@ function ProjectRow({ name, tasks, progress }: { name: string; tasks: number; pr
 
 function EmptyState({ title, href, cta }: { title: string; href: string; cta: string }) {
   return (
-    <div className="bg-[#111] border border-[#1e1e1e] rounded-xl p-10 text-center">
-      <p className="text-[13px] text-[#555]">{title}</p>
+    <div className="bg-card border border-border rounded-xl p-10 text-center">
+      <p className="text-[13px] text-muted-foreground">{title}</p>
       <Link href={href} className="inline-flex mt-4 text-[12px] text-primary hover:text-primary/80">
         {cta}
       </Link>
@@ -104,16 +104,16 @@ function Dashboard() {
   const stats = data?.stats;
 
   return (
-    <div className="dark min-h-screen bg-[#0d0d0d] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <DashboardNav />
       <main className="max-w-5xl mx-auto px-6 py-10">
         <div className="flex items-start gap-3 mb-8">
-          <div className="h-8 w-8 rounded-full bg-[#1a1a1a] border border-[#272727] flex items-center justify-center shrink-0 mt-0.5">
-            <span className="text-[10px] font-semibold text-[#666] leading-none">{userInitials(user)}</span>
+          <div className="h-8 w-8 rounded-full bg-muted border border-border flex items-center justify-center shrink-0 mt-0.5">
+            <span className="text-[10px] font-semibold text-muted-foreground leading-none">{userInitials(user)}</span>
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-white">{greeting()}, {user.firstName}.</h1>
-            <p className="text-[13px] text-[#555] mt-0.5">{cfg.label}</p>
+            <h1 className="text-xl font-semibold text-foreground">{greeting()}, {user.firstName}.</h1>
+            <p className="text-[13px] text-muted-foreground mt-0.5">{cfg.label}</p>
           </div>
         </div>
 
@@ -134,7 +134,7 @@ function Dashboard() {
               <div>
                 <SectionTitle>Projects</SectionTitle>
                 {data.projects.length ? (
-                  <div className="bg-[#111] border border-[#1e1e1e] rounded-xl divide-y divide-[#1a1a1a]">
+                  <div className="bg-card border border-border rounded-xl divide-y divide-border">
                     {data.projects.map((project) => <ProjectRow key={project.name} {...project} />)}
                   </div>
                 ) : (
@@ -144,34 +144,34 @@ function Dashboard() {
 
               <div>
                 <SectionTitle>Work Queue</SectionTitle>
-                <div className="bg-[#111] border border-[#1e1e1e] rounded-xl divide-y divide-[#1a1a1a]">
+                <div className="bg-card border border-border rounded-xl divide-y divide-border">
                   {data.tasks.length ? data.tasks.map((task) => (
-                    <Link key={task.id} href="/tasks" className="px-5 py-3 flex items-center justify-between gap-4 hover:bg-[#161616]">
+                    <Link key={task.id} href="/tasks" className="px-5 py-3 flex items-center justify-between gap-4 hover:bg-muted">
                       <div className="min-w-0">
-                        <p className="text-[13px] text-white truncate">{task.title}</p>
-                        <p className="text-[11px] text-[#555] mt-0.5">{task.projectName ?? "Project"}</p>
+                        <p className="text-[13px] text-foreground truncate">{task.title}</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">{task.projectName ?? "Project"}</p>
                       </div>
-                      <span className="text-[11px] text-[#555] capitalize">{task.status.replace("_", " ")}</span>
+                      <span className="text-[11px] text-muted-foreground capitalize">{task.status.replace("_", " ")}</span>
                     </Link>
                   )) : (
-                    <div className="px-5 py-8 text-center text-[13px] text-[#555]">No assigned tasks.</div>
+                    <div className="px-5 py-8 text-center text-[13px] text-muted-foreground">No assigned tasks.</div>
                   )}
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Link href="/projects" className="bg-[#111] border border-[#1e1e1e] hover:border-[#333] rounded-xl p-4 flex items-center gap-3">
-                <FolderOpen className="h-4 w-4 text-[#777]" />
-                <span className="text-[13px] text-white">Manage projects</span>
+              <Link href="/projects" className="bg-card border border-border hover:border-border rounded-xl p-4 flex items-center gap-3">
+                <FolderOpen className="h-4 w-4 text-muted-foreground" />
+                <span className="text-[13px] text-foreground">Manage projects</span>
               </Link>
-              <Link href="/tasks" className="bg-[#111] border border-[#1e1e1e] hover:border-[#333] rounded-xl p-4 flex items-center gap-3">
-                <ClipboardList className="h-4 w-4 text-[#777]" />
-                <span className="text-[13px] text-white">{stats.assignedTasks} assigned tasks</span>
+              <Link href="/tasks" className="bg-card border border-border hover:border-border rounded-xl p-4 flex items-center gap-3">
+                <ClipboardList className="h-4 w-4 text-muted-foreground" />
+                <span className="text-[13px] text-foreground">{stats.assignedTasks} assigned tasks</span>
               </Link>
-              <Link href="/analytics" className="bg-[#111] border border-[#1e1e1e] hover:border-[#333] rounded-xl p-4 flex items-center gap-3">
-                <BarChart3 className="h-4 w-4 text-[#777]" />
-                <span className="text-[13px] text-white">{stats.pendingReviews} pending reviews</span>
+              <Link href="/analytics" className="bg-card border border-border hover:border-border rounded-xl p-4 flex items-center gap-3">
+                <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                <span className="text-[13px] text-foreground">{stats.pendingReviews} pending reviews</span>
               </Link>
             </div>
           </div>

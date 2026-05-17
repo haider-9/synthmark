@@ -93,7 +93,7 @@ export function ImageUploadZone({ projectId, onUploaded, className }: ImageUploa
         "relative border-2 border-dashed rounded-xl transition-colors cursor-pointer",
         dragActive
           ? "border-primary bg-primary/5"
-          : "border-[#2a2a2a] hover:border-[#3a3a3a] hover:bg-[#141414]",
+          : "border-border hover:border-primary/50 hover:bg-card",
         uploading && "pointer-events-none opacity-60",
         className
       )}
@@ -119,18 +119,18 @@ export function ImageUploadZone({ projectId, onUploaded, className }: ImageUploa
         {uploading ? (
           <>
             <Loader2 className="h-6 w-6 text-primary animate-spin" />
-            <p className="text-[13px] text-[#555]">Uploading…</p>
+            <p className="text-[13px] text-muted-foreground">Uploading…</p>
           </>
         ) : (
           <>
-            <div className="w-10 h-10 rounded-xl bg-[#1a1a1a] border border-[#2a2a2a] flex items-center justify-center">
-              <Upload className="h-5 w-5 text-[#555]" />
+            <div className="w-10 h-10 rounded-xl bg-muted border border-border flex items-center justify-center">
+              <Upload className="h-5 w-5 text-muted-foreground" />
             </div>
             <div>
-              <p className="text-[13px] font-medium text-[#888]">
+              <p className="text-[13px] font-medium text-muted-foreground">
                 Drop images here or <span className="text-primary">browse</span>
               </p>
-              <p className="text-[11px] text-[#444] mt-0.5">PNG, JPG, WEBP supported</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">PNG, JPG, WEBP supported</p>
             </div>
           </>
         )}

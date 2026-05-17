@@ -21,10 +21,10 @@ export function TimerDisplay() {
   }
 
   return (
-    <span className="flex items-center gap-1.5 px-2 py-1 bg-muted/30 rounded-md border border-white/5 shadow-inner">
+    <span className="flex items-center gap-1.5 px-2 py-1 bg-muted/30 rounded-md border border-primary/5 shadow-inner">
       <span
         className={`w-1.5 h-1.5 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.3)] ${
-          timer.isRunning ? "bg-[#22C55E] animate-pulse" : "bg-[#f59e0b]"
+          timer.isRunning ? "bg-chart-3 animate-pulse" : "bg-chart-4"
         }`}
       />
       <span className="font-mono tabular-nums text-xs font-bold text-foreground/90">

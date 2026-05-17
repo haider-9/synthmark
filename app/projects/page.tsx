@@ -32,15 +32,15 @@ function ProjectsContent() {
   }, [dialogOpen]); // refetch after dialog closes (new project may have been created)
 
   return (
-    <div className="dark min-h-screen bg-[#0d0d0d] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <DashboardNav />
 
       <main className="max-w-5xl mx-auto px-6 py-10">
         {/* Page header */}
         <div className="flex items-start justify-between mb-8">
           <div>
-            <h1 className="text-xl font-semibold text-white">Projects</h1>
-            <p className="text-[13px] text-[#555] mt-1">
+            <h1 className="text-xl font-semibold text-foreground">Projects</h1>
+            <p className="text-[13px] text-muted-foreground mt-1">
               {loading ? "Loading…" : `${projects.length} project${projects.length !== 1 ? "s" : ""}`}
             </p>
           </div>
@@ -58,18 +58,18 @@ function ProjectsContent() {
           <AppLoading title="Loading projects" subtitle="Fetching your annotation workspaces." />
         ) : projects.length === 0 ? (
           /* Empty state */
-          <div className="bg-[#111] border border-[#1e1e1e] rounded-xl p-20 flex flex-col items-center justify-center text-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-[#1a1a1a] border border-[#2a2a2a] flex items-center justify-center">
-              <FolderOpen className="h-6 w-6 text-[#444]" />
+          <div className="bg-card border border-border rounded-xl p-20 flex flex-col items-center justify-center text-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-muted border border-border flex items-center justify-center">
+              <FolderOpen className="h-6 w-6 text-muted-foreground" />
             </div>
             <div>
-              <p className="text-sm font-medium text-[#888]">No projects yet</p>
-              <p className="text-[13px] text-[#444] mt-1">Create your first project to get started.</p>
+              <p className="text-sm font-medium text-muted-foreground">No projects yet</p>
+              <p className="text-[13px] text-muted-foreground mt-1">Create your first project to get started.</p>
             </div>
             <Button
               variant="outline"
               size="sm"
-              className="gap-2 mt-2 border-[#2a2a2a] text-[#888] hover:text-white hover:border-[#444]"
+              className="gap-2 mt-2 border-border text-muted-foreground hover:text-foreground hover:border-border"
               onClick={() => setDialogOpen(true)}
             >
               <Plus className="h-3.5 w-3.5" />
@@ -83,23 +83,23 @@ function ProjectsContent() {
               <button
                 key={project.id}
                 onClick={() => router.push(`/project/${project.id}`)}
-                className="group text-left bg-[#111] border border-[#1e1e1e] hover:border-[#333] rounded-xl p-5 transition-all duration-150 hover:bg-[#141414]"
+                className="group text-left bg-card border border-border hover:border-border rounded-xl p-5 transition-all duration-150 hover:bg-card"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
                     <FolderOpen className="h-4 w-4 text-primary" />
                   </div>
-                  <ArrowRight className="h-4 w-4 text-[#333] group-hover:text-[#666] transition-colors mt-1" />
+                  <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-muted-foreground transition-colors mt-1" />
                 </div>
-                <h3 className="text-sm font-semibold text-white truncate mb-1">
+                <h3 className="text-sm font-semibold text-foreground truncate mb-1">
                   {project.name}
                 </h3>
                 {project.description && (
-                  <p className="text-[12px] text-[#555] line-clamp-2 mb-3">
+                  <p className="text-[12px] text-muted-foreground line-clamp-2 mb-3">
                     {project.description}
                   </p>
                 )}
-                <div className="flex items-center gap-1.5 text-[11px] text-[#444] mt-auto">
+                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-auto">
                   <Calendar className="h-3 w-3" />
                   <span>
                     {new Date(project.createdAt).toLocaleDateString("en-US", {

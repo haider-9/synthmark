@@ -1,43 +1,30 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
-  Hexagon,
-  Zap,
-  Users,
-  Shield,
-  GitBranch,
-  Check,
-  ChevronDown,
-  PenTool,
-  Briefcase,
-  CheckSquare,
-  Eye,
-  Star,
   ArrowRight,
-  Sparkles,
-  Layers,
-  Database,
-  Cpu,
-  Globe,
-  Lock,
-  Workflow,
+  BadgeCheck,
+  Check,
+  ChevronRight,
+  CircleDot,
+  Clock3,
+  Eye,
+  FileJson,
+  Hexagon,
+  Layers3,
   MousePointer2,
-  Dot,
-  Pencil,
-  Eraser,
-  Hand,
-  Square,
-  CircleIcon,
-  Circle,
+  PenTool,
+  ShieldCheck,
+  SquareDashedMousePointer,
+  UsersRound,
 } from "lucide-react";
 import { LandingNav } from "@/components/landing/LandingNav";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Precision Data Annotation for Elite ML Teams",
-  titleTemplate: "Synthmark — Label smarter. Ship AI faster.",
+  title: "Synthmark | Computer Vision Annotation Workspace",
+  titleTemplate: "Synthmark - Label, review, and ship vision datasets",
   description:
-    "The professional-grade data annotation platform. High-performance canvas, AI-assisted labeling, and enterprise-level workflows for modern computer vision teams.",
+    "A focused annotation workspace for computer vision teams that need precise labels, reviewer control, and ML-ready dataset exports.",
   path: "/",
   keywords: [
     "annotation platform",
@@ -49,534 +36,522 @@ export const metadata: Metadata = buildMetadata({
   ],
 });
 
-function EditorPreview() {
-  return (
-    <div className="relative group perspective-1000">
-      <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+const HERO_IMAGE =
+  "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1800&q=85";
 
-      <div className="relative rounded-2xl border border-white/[0.08] bg-[#09090f]/80 backdrop-blur-3xl overflow-hidden shadow-2xl transition-all duration-700 hover:scale-[1.01] rotate-y-n2 rotate-x-1">
-        <div className="flex items-center justify-between px-4 h-10 border-b border-white/[0.05] bg-white/[0.02]">
+const LAB_IMAGE =
+  "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1400&q=85";
+
+const WORKFLOW_IMAGE =
+  "https://images.unsplash.com/photo-1581090700227-1e37b190418e?auto=format&fit=crop&w=1400&q=85";
+
+const TRUSTED_BY = ["Northstar Labs", "VeloCity", "Datum Works", "Orbit Farm", "Foundry ML"];
+
+const TOOLBAR = [
+  { icon: MousePointer2, label: "Select" },
+  { icon: SquareDashedMousePointer, label: "Box" },
+  { icon: Hexagon, label: "Polygon" },
+  { icon: PenTool, label: "Brush" },
+  { icon: CircleDot, label: "Point" },
+];
+
+const FEATURES = [
+  {
+    icon: Layers3,
+    title: "Annotation tools that stay out of the way",
+    text: "Polygon, box, point, and classification workflows share one editor with predictable shortcuts and clear object history.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Review built into the dataset",
+    text: "Queue assignments, compare label versions, and keep acceptance criteria visible before work reaches training.",
+  },
+  {
+    icon: FileJson,
+    title: "Exports your pipeline can actually use",
+    text: "COCO, YOLO, VOC, and custom JSON mappings are shaped for training jobs instead of one-off hand cleanup.",
+  },
+  {
+    icon: UsersRound,
+    title: "Made for production teams",
+    text: "Role controls, project activity, and performance views make it easier to coordinate labelers, reviewers, and ML leads.",
+  },
+];
+
+const WORKFLOW_STEPS = [
+  "Import images and label schemas",
+  "Assign batches to specialists",
+  "Review edge cases with context",
+  "Export versioned training sets",
+];
+
+const ROLES = [
+  {
+    title: "Labeling Teams",
+    description: "Fast keyboard-led tools, visible instructions, and fewer mode surprises during long sessions.",
+    stat: "42%",
+    statLabel: "less correction time",
+  },
+  {
+    title: "Review Leads",
+    description: "Spot drift, compare revisions, and send focused feedback without leaving the project view.",
+    stat: "3.8x",
+    statLabel: "review throughput",
+  },
+  {
+    title: "ML Engineers",
+    description: "Traceable versions, clean exports, and dataset metrics that make training runs easier to explain.",
+    stat: "0",
+    statLabel: "format rewrites",
+  },
+];
+
+const FAQ = [
+  {
+    question: "Can Synthmark handle polygon segmentation and boxes in the same project?",
+    answer:
+      "Yes. Projects can combine annotation types with shared classes, attributes, review status, and export rules.",
+  },
+  {
+    question: "Does the platform include AI-assisted labeling?",
+    answer:
+      "Yes, but it is treated as an assistant inside a controlled workflow. Review states and human edits remain first-class.",
+  },
+  {
+    question: "Which export formats are supported?",
+    answer:
+      "Synthmark supports COCO, YOLO, VOC, and custom JSON exports for teams with internal training pipelines.",
+  },
+];
+
+function AnnotationFrame() {
+  return (
+    <div className="relative mx-auto w-full max-w-6xl overflow-hidden rounded-lg border border-primary-foreground/20 bg-card/80 shadow-2xl backdrop-blur">
+      <div className="flex min-h-[360px] flex-col md:min-h-[500px]">
+        <div className="flex h-11 items-center justify-between border-b border-border bg-card/90 px-3 text-card-foreground">
           <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]/80" />
-            <div className="w-2.5 h-2.5 rounded-full bg-[#febc2e]/80" />
-            <div className="w-2.5 h-2.5 rounded-full bg-[#28c840]/80" />
+            <span className="h-2.5 w-2.5 rounded-full bg-destructive" />
+            <span className="h-2.5 w-2.5 rounded-full bg-chart-4" />
+            <span className="h-2.5 w-2.5 rounded-full bg-chart-3" />
           </div>
-          <div className="flex-1 flex justify-center">
-            <div className="bg-white/5 text-white/30 text-[10px] font-mono px-3 py-0.5 rounded-md">
-              synthmark.ai/p/autonomous-driving
-            </div>
+          <span className="hidden text-xs font-medium text-muted-foreground sm:block">
+            city-run-0427 / review pass 03
+          </span>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Clock3 className="h-3.5 w-3.5" />
+            18:24
           </div>
         </div>
 
-        <div className="flex h-[400px]">
-          <div className="w-14 border-r border-white/[0.05] flex flex-col items-center py-4 gap-4 bg-white/[0.01]">
-            {[MousePointer2, Hexagon, Dot, Pencil, Eraser].map((Icon, i) => (
-              <div
-                key={i}
-                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${i === 1 ? "bg-primary/20 text-primary border border-primary/20" : "text-white/20 hover:text-white/50 hover:bg-white/[0.03]"}`}
+        <div className="grid flex-1 grid-cols-[48px_1fr] md:grid-cols-[56px_1fr_220px]">
+          <div className="flex flex-col items-center gap-2 border-r border-border bg-muted/80 py-3">
+            {TOOLBAR.map((tool, index) => (
+              <button
+                key={tool.label}
+                aria-label={tool.label}
+                className={`flex h-9 w-9 items-center justify-center rounded-md border transition ${
+                  index === 2
+                    ? "border-primary/50 bg-primary text-primary-foreground"
+                    : "border-border bg-card/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+                type="button"
               >
-                <Icon className="h-4 w-4" />
-              </div>
+                <tool.icon className="h-4 w-4" />
+              </button>
             ))}
           </div>
 
-          <div className="flex-1 relative overflow-hidden bg-black/40">
-            <svg viewBox="0 0 600 400" className="w-full h-full">
-              <defs>
-                <pattern
-                  id="grid-p"
-                  width="30"
-                  height="30"
-                  patternUnits="userSpaceOnUse"
-                >
-                  <path
-                    d="M 30 0 L 0 0 0 30"
-                    fill="none"
-                    stroke="white"
-                    strokeWidth="0.5"
-                    opacity="0.05"
-                  />
-                </pattern>
-                <linearGradient
-                  id="poly-grad"
-                  x1="0%"
-                  y1="0%"
-                  x2="100%"
-                  y2="100%"
-                >
-                  <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2" />
-                  <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.05" />
-                </linearGradient>
-              </defs>
-              <rect width="100%" height="100%" fill="url(#grid-p)" />
-
+          <div className="relative min-h-[318px] overflow-hidden bg-muted">
+            <img
+              alt="Autonomous vehicle street used as an annotation sample"
+              className="h-full min-h-[318px] w-full object-cover opacity-90"
+              src={HERO_IMAGE}
+            />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,10,7,0.42),transparent_34%,rgba(7,10,7,0.22))]" />
+            <svg className="absolute inset-0 h-full w-full" viewBox="0 0 760 500">
               <polygon
-                points="180,80 260,60 320,100 340,200 300,300 200,320 150,220"
-                fill="url(#poly-grad)"
-                stroke="#3b82f6"
-                strokeWidth="2"
-                className="animate-pulse"
-                style={{ animationDuration: "4s" }}
+                points="394,184 493,170 568,205 586,304 530,354 423,342 370,276"
+                className="fill-primary/20 stroke-primary"
+                strokeWidth="2.5"
               />
-
-              {[
-                [180, 80],
-                [260, 60],
-                [320, 100],
-                [340, 200],
-                [300, 300],
-                [200, 320],
-                [150, 220],
-              ].map(([x, y], i) => (
-                <g key={i}>
-                  <circle
-                    cx={x}
-                    cy={y}
-                    r="3"
-                    fill={i === 0 ? "white" : "#3b82f6"}
-                  />
-                  {i === 0 && (
-                    <circle
-                      cx={x}
-                      cy={y}
-                      r="8"
-                      fill="none"
-                      stroke="white"
-                      strokeWidth="1"
-                      strokeDasharray="2 2"
-                      className="animate-spin-slow"
-                    />
-                  )}
-                </g>
-              ))}
-
-              <g transform="translate(140, 210)">
-                <rect width="70" height="18" rx="4" fill="#3b82f6" />
-                <text
-                  x="35"
-                  y="12"
-                  fill="white"
-                  fontSize="9"
-                  fontWeight="bold"
-                  textAnchor="middle"
-                  fontFamily="monospace"
-                >
-                  pedestrian_01
-                </text>
-              </g>
-
-              <foreignObject x="400" y="20" width="160" height="60">
-                <div className="bg-black/60 backdrop-blur-md border border-white/10 rounded-xl p-3 flex flex-col gap-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[8px] font-black uppercase tracking-widest text-white/40">
-                      AI Conf.
-                    </span>
-                    <span className="text-[10px] font-bold text-emerald-400">
-                      98.2%
-                    </span>
-                  </div>
-                  <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                    <div className="h-full bg-emerald-500 w-[98%] shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                  </div>
-                </div>
-              </foreignObject>
+              <polyline
+                points="128,293 240,269 310,297 302,356 154,368"
+                className="fill-none stroke-destructive"
+                strokeDasharray="7 7"
+                strokeWidth="2.5"
+              />
+              <rect
+                x="560"
+                y="218"
+                width="82"
+                height="118"
+                rx="3"
+                className="fill-chart-5/15 stroke-chart-5"
+                strokeWidth="2"
+              />
+              {[394, 493, 568, 586, 530, 423, 370].map((x, index) => {
+                const y = [184, 170, 205, 304, 354, 342, 276][index];
+                return <circle key={x} cx={x} cy={y} r="5" className="fill-primary" />;
+              })}
             </svg>
-          </div>
 
-          <div className="w-48 border-l border-white/[0.05] bg-white/[0.01] p-4 flex flex-col gap-6">
-            <div>
-              <p className="text-[9px] font-black uppercase tracking-widest text-white/20 mb-3">
-                Attributes
+            <div className="absolute left-4 top-4 rounded-md border border-border bg-card/85 px-3 py-2 text-card-foreground backdrop-blur">
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
+                Active label
               </p>
-              <div className="space-y-2">
-                {[
-                  { label: "Occluded", value: "No" },
-                  { label: "Truncated", value: "Partial" },
-                  { label: "Difficulty", value: "Easy" },
-                ].map((attr) => (
-                  <div
-                    key={attr.label}
-                    className="flex items-center justify-between"
-                  >
-                    <span className="text-[10px] text-white/30">
-                      {attr.label}
-                    </span>
-                    <span className="text-[10px] font-bold text-white/60">
-                      {attr.value}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <p className="mt-1 text-sm font-semibold">vehicle.occluded</p>
             </div>
-            <div className="mt-auto">
-              <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 text-center">
-                <span className="text-[10px] font-bold text-primary">
-                  Annotating Image 42/1,200
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <div className="h-8 border-t border-white/[0.05] bg-white/[0.01] flex items-center justify-between px-4">
-          <span className="text-[8px] font-mono text-white/20 uppercase tracking-widest">
-            Polygon Mode • Sub-pixel Precision • HW Accel
-          </span>
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.5)]" />
-            <span className="text-[8px] font-mono text-white/20">
-              LIVE: 00:12:44
-            </span>
+            <div className="absolute bottom-4 right-4 flex items-center gap-2 rounded-md border border-primary/35 bg-card/85 px-3 py-2 text-sm font-semibold text-primary backdrop-blur">
+              <BadgeCheck className="h-4 w-4" />
+              Reviewer approved
+            </div>
           </div>
+
+          <aside className="hidden border-l border-border bg-card/95 p-4 text-card-foreground md:block">
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-muted-foreground">
+              Quality panel
+            </p>
+            <div className="mt-4 space-y-3">
+              {[
+                ["Objects", "128"],
+                ["Conflicts", "02"],
+                ["Mean IOU", "98.1%"],
+              ].map(([label, value]) => (
+                <div key={label} className="flex items-center justify-between rounded-md bg-muted/70 px-3 py-2">
+                  <span className="text-xs text-muted-foreground">{label}</span>
+                  <span className="text-sm font-semibold">{value}</span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-5 rounded-md border border-border bg-muted/50 p-3">
+              <p className="text-xs font-semibold text-foreground">Next action</p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                Recheck small objects near reflective surfaces before exporting batch.
+              </p>
+            </div>
+          </aside>
         </div>
       </div>
     </div>
   );
 }
 
-function GridBackground() {
+function ProductImage({
+  src,
+  label,
+  title,
+}: {
+  src: string;
+  label: string;
+  title: string;
+}) {
   return (
-    <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none opacity-20">
-      <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:40px_40px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
-    </div>
-  );
-}
-
-function MeshGlow() {
-  return (
-    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/10 blur-[160px] rounded-full animate-glow" />
-      <div
-        className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-600/10 blur-[160px] rounded-full animate-glow"
-        style={{ animationDelay: "-4s" }}
-      />
-      <div
-        className="absolute top-[30%] left-[30%] w-[40%] h-[40%] bg-purple-600/5 blur-[140px] rounded-full animate-glow"
-        style={{ animationDelay: "-2s" }}
-      />
+    <div className="relative overflow-hidden rounded-lg border border-border bg-card">
+      <img alt={title} className="aspect-[4/3] w-full object-cover" src={src} />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_42%,rgba(9,11,8,0.74))]" />
+      <div className="absolute bottom-4 left-4 right-4 text-on-image">
+        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-on-image-muted">
+          {label}
+        </p>
+        <p className="mt-1 text-lg font-semibold">{title}</p>
+      </div>
     </div>
   );
 }
 
 export default function HomePage() {
   return (
-    <div className="bg-[#030307] text-white min-h-screen selection:bg-blue-500/30 selection:text-blue-200 antialiased">
-      <GridBackground />
-      <MeshGlow />
+    <main className="min-h-screen bg-background text-foreground antialiased selection:bg-primary selection:text-primary-foreground">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbJsonLd([{ name: "Home", path: "/" }])),
+        }}
+      />
 
-      <div className="relative z-10">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(
-              breadcrumbJsonLd([{ name: "Home", path: "/" }]),
-            ),
-          }}
+      <LandingNav />
+
+      <section className="relative min-h-[88vh] overflow-hidden bg-background px-5 pb-10 pt-28 text-on-image md:px-8 lg:px-10">
+        <img
+          alt="Street scene used for computer vision annotation"
+          className="absolute inset-0 h-full w-full object-cover opacity-72"
+          src={HERO_IMAGE}
         />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(13,16,12,0.94)_0%,rgba(13,16,12,0.66)_46%,rgba(13,16,12,0.18)_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-[linear-gradient(180deg,transparent,var(--background))]" />
 
-        <LandingNav />
-
-        <section className="relative pt-48 pb-32 px-6 lg:px-8 overflow-hidden">
-          <div className="max-w-7xl mx-auto flex flex-col items-center text-center">
-            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/[0.03] border border-white/[0.08] mb-10 animate-fade-in">
-              <Sparkles className="h-4 w-4 text-blue-400" />
-              <span className="text-[11px] font-black uppercase tracking-[0.25em] text-white/60">
-                Powered by SAM 2.0 & Segment Anything
-              </span>
+        <div className="relative z-10 mx-auto flex max-w-7xl flex-col gap-14">
+          <div className="max-w-3xl pt-8 md:pt-14">
+            <div className="mb-7 inline-flex items-center gap-2 border-l-2 border-accent bg-on-image/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-on-image-muted backdrop-blur">
+              <Eye className="h-4 w-4 text-accent" />
+              Vision datasets without the theatre
             </div>
-
-            <h1 className="text-6xl lg:text-9xl font-black tracking-tight leading-[0.85] mb-10 text-gradient animate-fade-in-up relative">
-              Annotate at <br />
-            <span>Machine Speed.</span>
-              <div className="absolute -bottom-4 left-0 right-0 h-5 bg-blue-600/20 blur-xl rounded-full" />
+            <h1 className="text-6xl font-semibold leading-[0.92] tracking-normal md:text-8xl lg:text-[9.5rem]">
+              Synthmark
             </h1>
-
-            <p className="text-xl lg:text-2xl text-white/40 leading-relaxed max-w-2xl font-medium mb-12 animate-fade-in-up delay-100">
-              The high-performance workspace for elite computer vision teams.
-              Precision tools, AI-orchestrated workflows, and enterprise scale.
+            <p className="mt-7 max-w-2xl text-xl leading-8 text-on-image-muted md:text-2xl md:leading-9">
+              A focused annotation workspace for teams turning messy visual data into
+              reviewed, versioned training sets.
             </p>
-
-            <div className="flex flex-wrap items-center justify-center gap-6 mb-24 animate-fade-in-up delay-200">
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/auth/sign-up"
-                className="bg-white text-black hover:bg-white/90 px-10 py-5 rounded-full font-black text-lg inline-flex items-center gap-2 transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.4)] hover:shadow-[0_0_60px_-10px_rgba(255,255,255,0.6)] hover:-translate-y-1 active:scale-95"
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-accent px-6 py-3.5 text-sm font-bold text-accent-foreground transition hover:bg-accent/90"
               >
-                Start Free Trial
-                <ArrowRight className="h-5 w-5" />
+                Start labeling
+                <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 href="/project/sample-project"
-                className="inline-flex items-center gap-3 px-10 py-5 rounded-full border border-white/10 bg-white/[0.02] text-white/70 hover:text-white hover:bg-white/[0.05] hover:border-white/20 text-lg font-bold transition-all backdrop-blur-xl"
+                className="inline-flex items-center justify-center gap-2 rounded-md border border-on-image/25 bg-on-image/10 px-6 py-3.5 text-sm font-bold text-on-image backdrop-blur transition hover:bg-on-image/20"
               >
-                Explore Sandbox
+                Open sample project
+                <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
-
-            <div className="w-full max-w-5xl mx-auto animate-fade-in-up delay-300">
-              <EditorPreview />
-            </div>
           </div>
-        </section>
 
-        <div className="py-24 border-y border-white/[0.05] bg-white/[0.01]">
-          <div className="max-w-7xl mx-auto px-6 flex flex-col lg:flex-row items-center gap-12">
-            <div className="flex items-center gap-3 shrink-0">
-              <div className="w-8 h-px bg-white/10" />
-              <p className="text-[10px] uppercase tracking-[0.3em] text-white/20 font-black">
-                Pioneering AI with
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center justify-center lg:justify-between flex-1 gap-12 lg:gap-8">
-              {[
-                "Voyage",
-                "Luminary",
-                "Orbital",
-                "DeepSight",
-                "Axon",
-                "Nexus",
-              ].map((name) => (
-                <div
-                  key={name}
-                  className="flex items-center gap-2 grayscale opacity-20 hover:grayscale-0 hover:opacity-100 transition-all duration-500 cursor-default"
-                >
-                  <div className="w-6 h-6 rounded-md bg-white/10" />
-                  <span className="text-xl font-black tracking-tighter">
-                    {name}
-                  </span>
-                </div>
-              ))}
-            </div>
+          <AnnotationFrame />
+        </div>
+      </section>
+
+      <section className="border-y border-border bg-background px-5 py-7 md:px-8 lg:px-10">
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 md:flex-row md:items-center">
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-muted-foreground">
+            Built for annotation teams at
+          </p>
+          <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm font-semibold text-foreground/65">
+            {TRUSTED_BY.map((name) => (
+              <span key={name}>{name}</span>
+            ))}
           </div>
         </div>
+      </section>
 
-        <section
-          id="features"
-          className="py-40 px-6 lg:px-8 relative overflow-hidden"
-        >
-          <div className="max-w-7xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-24 items-end mb-32">
-              <div>
-                <h2 className="text-5xl lg:text-7xl font-black tracking-tighter leading-none mb-8">
-                  Engineered for <br />
-                  <span className="text-gradient">Accuracy.</span>
-                </h2>
-                <p className="text-xl text-white/40 font-medium leading-relaxed max-w-lg">
-                  We've spent thousands of hours refining the interaction model
-                  so your team can label with sub-pixel precision without the
-                  fatigue.
-                </p>
-              </div>
-              <div className="flex lg:justify-end">
-                <div className="inline-flex items-center gap-8 px-8 py-6 rounded-3xl bg-white/[0.02] border border-white/5 backdrop-blur-xl">
-                  <div>
-                    <p className="text-3xl font-black tabular-nums">98.2%</p>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-white/20 mt-1">
-                      Mean IOU
-                    </p>
-                  </div>
-                  <div className="w-px h-10 bg-white/10" />
-                  <div>
-                    <p className="text-3xl font-black tabular-nums">10x</p>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-white/20 mt-1">
-                      Faster Throughput
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[
-                {
-                  title: "Universal Canvas",
-                  desc: "One viewport for every annotation type. Polygon, Box, Keypoint, and Line tools integrated into a unified hardware-accelerated engine.",
-                  icon: Layers,
-                },
-                {
-                  title: "Neural Orchestration",
-                  desc: "SAM-powered pre-annotation that learns your dataset. Automate 90% of your labeling tasks with a single click.",
-                  icon: Cpu,
-                },
-                {
-                  title: "Live Sync",
-                  desc: "Collaborate in real-time. Full conflict resolution, presence indicators, and live review feedback loops.",
-                  icon: Users,
-                },
-                {
-                  title: "Dataset Governance",
-                  desc: "Enterprise-grade role management and security. Control every bit of your data with granular permission schemas.",
-                  icon: Lock,
-                },
-                {
-                  title: "Workflow Automation",
-                  desc: "Custom pipelines to automate export, validation, and metadata enrichment. Scale from thousands to millions of images.",
-                  icon: Workflow,
-                },
-                {
-                  title: "ML-Ready Exports",
-                  desc: "Native support for YOLO, COCO, VOC, and custom formats. Zero-overhead integration with your training pipelines.",
-                  icon: Database,
-                },
-              ].map((item, i) => (
-                <div
-                  key={i}
-                  className="group p-10 rounded-[2.5rem] bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] transition-all duration-500"
-                >
-                  <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-8 border border-white/10 group-hover:bg-primary/20 group-hover:border-primary/30 transition-all duration-500">
-                    <item.icon className="h-6 w-6 text-white/40 group-hover:text-primary transition-colors duration-500" />
-                  </div>
-                  <h3 className="text-2xl font-black mb-4 tracking-tight group-hover:text-primary transition-colors duration-500">
-                    {item.title}
-                  </h3>
-                  <p className="text-white/30 font-medium leading-relaxed">
-                    {item.desc}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="py-40 px-6">
-          <div className="max-w-5xl mx-auto rounded-[4rem] bg-gradient-to-br from-blue-600/20 via-purple-600/10 to-transparent border border-white/[0.1] p-16 lg:p-24 text-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.1),transparent_70%)]" />
-            <div className="relative z-10">
-              <h2 className="text-5xl lg:text-7xl font-black tracking-tighter leading-none mb-10">
-                Ready to label <br />
-                <span className="text-gradient">at scale?</span>
-              </h2>
-              <div className="flex flex-wrap items-center justify-center gap-6">
-                <Link
-                  href="/auth/sign-up"
-                  className="bg-white text-black hover:bg-white/90 px-12 py-5 rounded-full font-black text-xl transition-all shadow-2xl shadow-white/10"
-                >
-                  Create Organization
-                </Link>
-                <a
-                  href="mailto:sales@synthmark.ai"
-                  className="px-12 py-5 rounded-full border border-white/10 bg-white/[0.02] text-white/70 hover:text-white hover:bg-white/[0.05] text-xl font-bold transition-all backdrop-blur-xl"
-                >
-                  Talk to Sales
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <footer className="border-t border-white/[0.05] bg-[#030307] px-6 lg:px-8 py-24">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-20 pb-20 border-b border-white/[0.05]">
-              <div className="col-span-2 lg:col-span-1">
-                <div className="flex items-center gap-2 mb-8">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                    <Sparkles className="h-6 w-6 text-white" />
-                  </div>
-                  <span className="font-bold text-xl tracking-tight text-white">
-                    synth<span className="text-blue-500">mark</span>
-                  </span>
-                </div>
-                <p className="text-white/30 font-medium leading-relaxed mb-10 max-w-[240px]">
-                  Professional data annotation for high-growth ML teams.
-                </p>
-                <div className="flex items-center gap-4">
-                  {[1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="w-10 h-10 rounded-xl border border-white/[0.05] bg-white/[0.01] hover:bg-white/[0.05] flex items-center justify-center transition-colors cursor-pointer group"
-                    >
-                      <div className="w-4 h-4 rounded-sm bg-white/10 group-hover:bg-white/40 transition-colors" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {[
-                {
-                  title: "Platform",
-                  links: ["Features", "Security", "Workflows", "Integrations"],
-                },
-                {
-                  title: "Company",
-                  links: ["About Us", "Blog", "Customers", "Careers"],
-                },
-                {
-                  title: "Legal",
-                  links: [
-                    "Privacy Policy",
-                    "Terms of Service",
-                    "Cookie Policy",
-                    "GDPR",
-                  ],
-                },
-              ].map((group) => (
-                <div key={group.title}>
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mb-8">
-                    {group.title}
-                  </p>
-                  <ul className="space-y-4">
-                    {group.links.map((link) => (
-                      <li key={link}>
-                        <a
-                          href="#"
-                          className="text-white/30 hover:text-white font-medium transition-colors"
-                        >
-                          {link}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-
-            <div className="pt-12 flex flex-col sm:flex-row items-center justify-between gap-8">
-              <p className="text-sm font-medium text-white/10">
-                © 2026 Synthmark, Inc. Designed for the future of AI.
+      <section id="features" className="px-5 py-24 md:px-8 lg:px-10">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary">
+                Product surface
               </p>
-              <div className="flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/[0.02] border border-white/[0.05]">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">
-                  Systems Fully Operational
-                </span>
-              </div>
+              <h2 className="mt-4 text-4xl font-semibold leading-tight tracking-normal md:text-6xl">
+                Less prompt sparkle. More labeling control.
+              </h2>
+            </div>
+            <p className="text-lg leading-8 text-muted-foreground">
+              Synthmark is designed like production software: visible state, clean
+              review paths, and interface density that helps operators work for hours
+              without fighting the tool.
+            </p>
+          </div>
+
+          <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+            {FEATURES.map((feature) => (
+              <article
+                key={feature.title}
+                className="rounded-lg border border-border bg-card/70 p-6 shadow-sm"
+              >
+                <feature.icon className="h-6 w-6 text-primary" />
+                <h3 className="mt-7 text-xl font-semibold leading-7">{feature.title}</h3>
+                <p className="mt-4 text-sm leading-6 text-muted-foreground">{feature.text}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-card px-5 py-24 text-card-foreground md:px-8 lg:px-10">
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary">
+              Workflow
+            </p>
+            <h2 className="mt-4 text-4xl font-semibold leading-tight md:text-6xl">
+              From raw frames to training data, with fewer handoffs.
+            </h2>
+            <div className="mt-10 space-y-4">
+              {WORKFLOW_STEPS.map((step, index) => (
+                <div key={step} className="flex items-center gap-4 border-t border-border pt-4">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-sm font-bold text-primary-foreground">
+                    {index + 1}
+                  </span>
+                  <span className="text-lg text-card-foreground/80">{step}</span>
+                </div>
+              ))}
             </div>
           </div>
-        </footer>
-      </div>
 
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-        @keyframes fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes fade-in-up {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in { animation: fade-in 1s ease-out forwards; }
-        .animate-fade-in-up { opacity: 0; animation: fade-in-up 0.8s ease-out forwards; }
-        .delay-100 { animation-delay: 0.1s; }
-        .delay-200 { animation-delay: 0.2s; }
-        .delay-300 { animation-delay: 0.3s; }
-        .perspective-1000 { perspective: 1000px; }
-        .rotate-y-n2:hover { transform: rotateY(-2deg); }
-        .rotate-x-1:hover { transform: rotateX(1deg); }
-        .animate-spin-slow { animation: spin 10s linear infinite; }
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .text-gradient {
-          background: linear-gradient(to right, #fff, #94a3b8);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-      `,
-        }}
-      />
-    </div>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <ProductImage src={LAB_IMAGE} label="Model feedback" title="Review label quality beside the dataset." />
+            <ProductImage src={WORKFLOW_IMAGE} label="Operations" title="Coordinate batches across real project work." />
+          </div>
+        </div>
+      </section>
+
+      <section id="roles" className="px-5 py-24 md:px-8 lg:px-10">
+        <div className="mx-auto max-w-7xl">
+          <div className="max-w-3xl">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary">
+              Teams
+            </p>
+            <h2 className="mt-4 text-4xl font-semibold leading-tight md:text-6xl">
+              One workspace for the people who touch the dataset.
+            </h2>
+          </div>
+
+          <div className="mt-12 grid gap-5 lg:grid-cols-3">
+            {ROLES.map((role) => (
+              <article key={role.title} className="rounded-lg border border-border bg-card p-7">
+                <h3 className="text-2xl font-semibold">{role.title}</h3>
+                <p className="mt-4 min-h-24 text-base leading-7 text-muted-foreground">{role.description}</p>
+                <div className="mt-8 border-t border-border pt-5">
+                  <p className="text-5xl font-semibold">{role.stat}</p>
+                  <p className="mt-1 text-xs font-bold uppercase tracking-[0.2em] text-primary">
+                    {role.statLabel}
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="pricing" className="bg-muted px-5 py-24 md:px-8 lg:px-10">
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary">
+              Pricing
+            </p>
+            <h2 className="mt-4 text-4xl font-semibold leading-tight md:text-6xl">
+              Start small. Keep the export history.
+            </h2>
+            <p className="mt-6 text-lg leading-8 text-muted-foreground">
+              Pricing is shaped around projects, collaborators, and review volume
+              rather than vague usage drama.
+            </p>
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-2">
+            {[
+              {
+                name: "Studio",
+                price: "$29",
+                description: "For small teams validating a labeling workflow.",
+                items: ["5 active projects", "COCO and YOLO exports", "Basic review queues"],
+              },
+              {
+                name: "Scale",
+                price: "Custom",
+                description: "For teams running production annotation operations.",
+                items: ["Unlimited projects", "Role controls", "Custom exports", "Priority support"],
+              },
+            ].map((plan) => (
+              <article key={plan.name} className="rounded-lg border border-border bg-card p-7">
+                <h3 className="text-2xl font-semibold">{plan.name}</h3>
+                <p className="mt-5 text-5xl font-semibold">{plan.price}</p>
+                <p className="mt-4 min-h-14 text-sm leading-6 text-muted-foreground">{plan.description}</p>
+                <ul className="mt-7 space-y-3">
+                  {plan.items.map((item) => (
+                    <li key={item} className="flex items-center gap-3 text-sm text-foreground">
+                      <Check className="h-4 w-4 text-primary" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="faq" className="px-5 py-24 md:px-8 lg:px-10">
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.7fr_1.3fr]">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary">
+              FAQ
+            </p>
+            <h2 className="mt-4 text-4xl font-semibold leading-tight">Practical answers.</h2>
+          </div>
+          <div className="space-y-4">
+            {FAQ.map((item) => (
+              <article key={item.question} className="rounded-lg border border-border bg-card/70 p-6">
+                <h3 className="text-lg font-semibold">{item.question}</h3>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">{item.answer}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-5 pb-24 md:px-8 lg:px-10">
+        <div className="mx-auto max-w-7xl rounded-lg bg-primary px-6 py-12 text-primary-foreground md:px-10 lg:px-14">
+          <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary-foreground/70">
+                Ship the dataset
+              </p>
+              <h2 className="mt-4 max-w-3xl text-4xl font-semibold leading-tight md:text-6xl">
+                Give your labeling team a workspace that feels built for the work.
+              </h2>
+            </div>
+            <Link
+              href="/auth/sign-up"
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-accent px-6 py-3.5 text-sm font-bold text-accent-foreground transition hover:bg-accent/90"
+            >
+              Create workspace
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <footer className="relative min-h-[520px] overflow-hidden border-t border-border bg-card px-5 py-24 text-card-foreground md:px-8 lg:px-10">
+        <div className="absolute inset-0 bg-[linear-gradient(135deg,var(--card)_0%,var(--muted)_48%,var(--background)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(var(--border)_1px,transparent_1px),linear-gradient(90deg,var(--border)_1px,transparent_1px)] bg-[size:56px_56px] opacity-25" />
+        <div className="absolute left-1/2 top-0 h-48 w-[70vw] -translate-x-1/2 bg-primary/10 blur-3xl" />
+
+        <div className="relative z-10 mx-auto flex min-h-[350px] max-w-7xl flex-col justify-between gap-16">
+          <div className="grid gap-10 lg:grid-cols-[1fr_0.75fr] lg:items-start">
+            <div className="max-w-3xl">
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-primary">
+                Synthmark
+              </p>
+              <h2 className="mt-5 text-5xl font-semibold leading-none tracking-normal md:text-7xl">
+                End the labeling loop with cleaner datasets.
+              </h2>
+            </div>
+            <p className="max-w-md text-base leading-7 text-muted-foreground lg:justify-self-end">
+              Built for teams that need annotation, review, and export to feel like
+              one disciplined workflow instead of a pile of disconnected tools.
+            </p>
+          </div>
+
+          <div className="grid gap-10 border-t border-border pt-8 md:grid-cols-[1.2fr_1fr_auto] md:items-end">
+            <div>
+            <div className="flex items-center gap-3">
+              <img alt="Synthmark" className="h-10 w-10 rounded-md" src="/logo.png" />
+              <span className="text-xl font-semibold">synthmark</span>
+            </div>
+              <p className="mt-4 text-sm text-muted-foreground">(c) 2026 Synthmark, Inc.</p>
+            </div>
+            <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm font-medium text-muted-foreground md:justify-center">
+              <a href="#features" className="hover:text-foreground">Features</a>
+              <a href="#roles" className="hover:text-foreground">Roles</a>
+              <a href="#pricing" className="hover:text-foreground">Pricing</a>
+              <a href="#faq" className="hover:text-foreground">FAQ</a>
+            </div>
+            <Link
+              href="/auth/sign-up"
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-accent px-5 py-3 text-sm font-bold text-accent-foreground transition hover:bg-accent/90"
+            >
+              Create workspace
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </footer>
+    </main>
   );
 }

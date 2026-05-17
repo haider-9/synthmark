@@ -81,7 +81,7 @@ export function MainLayout({ leftSidebar, rightSidebar, canvas, topToolbar, bott
           </aside>
 
           {/* Canvas */}
-          <main id="canvas-container" className="flex-1 relative overflow-hidden bg-[#0d0d0d]">
+          <main id="canvas-container" className="flex-1 relative overflow-hidden bg-background">
             {canvas}
           </main>
 

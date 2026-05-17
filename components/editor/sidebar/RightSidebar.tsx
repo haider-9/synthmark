@@ -143,19 +143,19 @@ export function RightSidebar() {
         </div>
         <div className="w-full mt-2 p-2 rounded-md bg-muted/30 border border-border/40 text-[10px] text-muted-foreground/60 space-y-1.5">
           <div className="flex items-center gap-2">
-            <kbd className="bg-[#1e1e1e] text-[#4f8ef7] border border-[#2e2e2e] px-1.5 py-0.5 rounded font-mono text-[9px] leading-none">
+            <kbd className="bg-muted text-primary border border-border px-1.5 py-0.5 rounded font-mono text-[9px] leading-none">
               Shift
             </kbd>{" "}
             multi-select
           </div>
           <div className="flex items-center gap-2">
-            <kbd className="bg-[#1e1e1e] text-[#4f8ef7] border border-[#2e2e2e] px-1.5 py-0.5 rounded font-mono text-[9px] leading-none">
+            <kbd className="bg-muted text-primary border border-border px-1.5 py-0.5 rounded font-mono text-[9px] leading-none">
               Del
             </kbd>{" "}
             delete selected
           </div>
           <div className="flex items-center gap-2">
-            <kbd className="bg-[#1e1e1e] text-[#4f8ef7] border border-[#2e2e2e] px-1.5 py-0.5 rounded font-mono text-[9px] leading-none">
+            <kbd className="bg-muted text-primary border border-border px-1.5 py-0.5 rounded font-mono text-[9px] leading-none">
               M
             </kbd>{" "}
             merge polygons
@@ -172,7 +172,7 @@ export function RightSidebar() {
         <div className="px-3 py-2 border-b border-border/40 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div
-              className="w-2.5 h-2.5 rounded-full ring-1 ring-black/20 flex-shrink-0"
+              className="w-2.5 h-2.5 rounded-full ring-1 ring-border flex-shrink-0"
               style={{ backgroundColor: cls?.color ?? "#6366f1" }}
             />
             <span className="text-xs font-semibold truncate">

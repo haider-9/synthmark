@@ -39,19 +39,19 @@ export function DashboardNav() {
   }
 
   return (
-    <header className="h-12 border-b border-[#1a1a1a] bg-[#0d0d0d] px-6 flex items-center justify-between shrink-0">
+    <header className="h-12 border-b border-border bg-background px-6 flex items-center justify-between shrink-0">
       {/* ── Left: brand + nav ─────────────────────────────────────────────── */}
       <div className="flex items-center gap-5">
         {/* Brand */}
         <Link href="/dashboard" className="flex items-center gap-2">
           <img src="/logo.png" alt="Synthmark" className="h-5 w-5 object-cover" />
-          <span className="text-[13px] font-semibold text-[#888] tracking-tight">
+          <span className="text-[13px] font-semibold text-muted-foreground tracking-tight">
             synthmark
           </span>
         </Link>
 
         {/* Divider */}
-        <div className="w-px h-4 bg-[#1e1e1e]" />
+        <div className="w-px h-4 bg-muted" />
 
         {/* Nav links */}
         <nav className="flex items-center gap-0.5">
@@ -65,8 +65,8 @@ export function DashboardNav() {
                 className={cn(
                   "text-[13px] px-3 py-1.5 rounded-md transition-colors",
                   isActive
-                    ? "text-white bg-[#161616]"
-                    : "text-[#555] hover:text-[#aaa] hover:bg-[#161616]",
+                    ? "text-foreground bg-muted"
+                    : "text-muted-foreground hover:text-muted-foreground hover:bg-muted",
                 )}
               >
                 {label}
@@ -80,21 +80,21 @@ export function DashboardNav() {
       {user && (
         <div className="flex items-center gap-3">
           {/* Avatar + name */}
-          <Link href="/profile" className="flex items-center gap-2.5 rounded-md px-1.5 py-1 transition-colors hover:bg-[#161616]">
-            <div className="h-6 w-6 rounded-full bg-[#1a1a1a] border border-[#272727] flex items-center justify-center shrink-0">
+          <Link href="/profile" className="flex items-center gap-2.5 rounded-md px-1.5 py-1 transition-colors hover:bg-muted">
+            <div className="h-6 w-6 rounded-full bg-muted border border-border flex items-center justify-center shrink-0">
               {user.avatar ? (
                 <img src={user.avatar} alt="" className="h-full w-full rounded-full object-cover" />
               ) : (
-                <span className="text-[9px] font-semibold text-[#666] leading-none">
+                <span className="text-[9px] font-semibold text-muted-foreground leading-none">
                   {initials}
                 </span>
               )}
             </div>
             <div>
-              <p className="text-[13px] text-[#aaa] leading-none">
+              <p className="text-[13px] text-muted-foreground leading-none">
                 {user.firstName} {user.lastName}
               </p>
-              <p className="text-[11px] text-[#555] mt-0.5 capitalize">
+              <p className="text-[11px] text-muted-foreground mt-0.5 capitalize">
                 {user.role.replace(/_/g, " ")}
               </p>
             </div>
@@ -102,12 +102,12 @@ export function DashboardNav() {
 
 
           {/* Divider */}
-          <div className="w-px h-4 bg-[#1e1e1e]" />
+          <div className="w-px h-4 bg-muted" />
 
           {/* Sign out */}
           <button
             onClick={handleSignOut}
-            className="flex items-center gap-1.5 text-[12px] text-[#444] hover:text-[#888] transition-colors"
+            className="flex items-center gap-1.5 text-[12px] text-muted-foreground hover:text-muted-foreground transition-colors"
           >
             <LogOut className="h-3 w-3" />
             Sign out
