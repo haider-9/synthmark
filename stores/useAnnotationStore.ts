@@ -20,6 +20,7 @@ interface AnnotationState {
 
   // Annotations
   annotations: Annotation[];
+  savedAnnotationsSnapshot: string;
   selectedAnnotationIds: string[];
   activeVertex: { annId: string; idx: number } | null;
   copiedAnnotations: Annotation[];
@@ -61,6 +62,7 @@ interface AnnotationState {
 
   // Annotations
   setAnnotations: (annotations: Annotation[]) => void;
+  markAnnotationsSaved: () => void;
   addAnnotation: (annotation: Annotation) => void;
   updateAnnotation: (id: string, updates: Partial<Annotation>) => void;
   setAnnotationsVisibility: (visible: boolean, labelId?: string) => void;
@@ -109,6 +111,7 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
   // ── Initial state — no hardcoded data ──────────────────────────────────────
   projectId: null,
   annotations: [],
+  savedAnnotationsSnapshot: "[]",
   selectedAnnotationIds: [],
   activeVertex: null,
   copiedAnnotations: [],
@@ -139,6 +142,7 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
       activeLabelId: labelClasses[0]?.id ?? null,
       // Reset editor state for fresh project load
       annotations: [],
+      savedAnnotationsSnapshot: "[]",
       selectedAnnotationIds: [],
       activeVertex: null,
       history: [[]],
@@ -171,7 +175,14 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
 
   // ── Annotations ────────────────────────────────────────────────────────────
 
-  setAnnotations: (annotations) => set({ annotations }),
+  setAnnotations: (annotations) =>
+    set({
+      annotations,
+      savedAnnotationsSnapshot: JSON.stringify(annotations),
+    }),
+
+  markAnnotationsSaved: () =>
+    set({ savedAnnotationsSnapshot: JSON.stringify(get().annotations) }),
 
   addAnnotation: (annotation) => {
     const next = [...get().annotations, annotation];
@@ -291,6 +302,7 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
       updates.imageUrl = remaining[0].url;
       updates.activeImageId = remaining[0].id;
       updates.annotations = [];
+      updates.savedAnnotationsSnapshot = "[]";
       updates.history = [[]];
       updates.historyIndex = 0;
     } else if (remaining.length === 0) {
@@ -312,6 +324,7 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
       activeVertex: null,
       // Clear annotations — in a real app you'd load per-image annotations here
       annotations: [],
+      savedAnnotationsSnapshot: "[]",
       history: [[]],
       historyIndex: 0,
     });

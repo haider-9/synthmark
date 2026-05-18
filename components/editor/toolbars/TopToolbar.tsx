@@ -129,12 +129,16 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
   const historyIndex = useAnnotationStore((s) => s.historyIndex);
   const history = useAnnotationStore((s) => s.history);
   const annotations = useAnnotationStore((s) => s.annotations);
+  const savedAnnotationsSnapshot = useAnnotationStore(
+    (s) => s.savedAnnotationsSnapshot
+  );
   const labelClasses = useAnnotationStore((s) => s.labelClasses);
   const images = useAnnotationStore((s) => s.images);
   const activeImageId = useAnnotationStore((s) => s.activeImageId);
   const addAnnotation = useAnnotationStore((s) => s.addAnnotation);
   const replaceAnnotations = useAnnotationStore((s) => s.replaceAnnotations);
   const updateImageStatus = useAnnotationStore((s) => s.updateImageStatus);
+  const markAnnotationsSaved = useAnnotationStore((s) => s.markAnnotationsSaved);
   const activeLabelId = useAnnotationStore((s) => s.activeLabelId);
 
   const [lsOpen, setLsOpen] = useState(false);
@@ -146,6 +150,8 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
 
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < history.length - 1;
+  const hasUnsavedChanges =
+    JSON.stringify(annotations) !== savedAnnotationsSnapshot;
 
   const handleSave = async () => {
     if (!activeImageId) {
@@ -177,6 +183,7 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
     try {
       const data = await promise;
       updateImageStatus(activeImageId, data.status);
+      markAnnotationsSaved();
     } catch (error) {
       // toast.promise already presents the failure.
     }
@@ -359,7 +366,13 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
           <div className="h-4 w-px bg-border/40" />
 
           <div className="flex items-center gap-1">
-            <ActionBtn icon={Save} onClick={handleSave} label="Save" shortcut="Ctrl+S" />
+            <ActionBtn
+              icon={Save}
+              onClick={handleSave}
+              disabled={!hasUnsavedChanges}
+              label={hasUnsavedChanges ? "Save changes" : "All changes saved"}
+              shortcut="Ctrl+S"
+            />
             <ExportDialog />
             <Tooltip>
               <TooltipTrigger
