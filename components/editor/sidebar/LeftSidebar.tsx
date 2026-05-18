@@ -68,6 +68,9 @@ export function LeftSidebar({ projectId }: { projectId: string }) {
   const deleteLabelClass = useAnnotationStore((s) => s.deleteLabelClass);
   const setActiveLabelId = useAnnotationStore((s) => s.setActiveLabelId);
   const updateAnnotation = useAnnotationStore((s) => s.updateAnnotation);
+  const setAnnotationsVisibility = useAnnotationStore(
+    (s) => s.setAnnotationsVisibility
+  );
   const setSelectedAnnotationIds = useAnnotationStore(
     (s) => s.setSelectedAnnotationIds
   );
@@ -350,8 +353,8 @@ export function LeftSidebar({ projectId }: { projectId: string }) {
   };
 
   return (
-    <div className="h-full flex flex-col bg-background border-r">
-      <Tabs defaultValue="layers" className="flex-1 flex flex-col">
+    <div className="h-full min-h-0 flex flex-col bg-background border-r">
+      <Tabs defaultValue="layers" className="flex-1 min-h-0 flex flex-col">
         <TabsList className="w-full grid grid-cols-3 h-7 rounded-none border-b">
           <TabsTrigger value="layers" className="h-full gap-1.5 text-xs">
             <Layers className="size-4" />
@@ -369,11 +372,37 @@ export function LeftSidebar({ projectId }: { projectId: string }) {
 
        
 
-        <TabsContent value="layers" className="flex-1 flex flex-col mt-0 p-3 space-y-3">
-          <div className="space-y-2">
+        <TabsContent value="layers" className="flex-1 min-h-0 flex flex-col mt-0 p-3 space-y-3 overflow-hidden">
+          <div className="space-y-2 shrink-0">
             <div className="flex items-center justify-between">
               <div className="text-sm font-medium">
                 {annotations.length} Annotation{annotations.length !== 1 ? "s" : ""}
+              </div>
+              <div className="flex items-center gap-1">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger
+                      className={buttonVariants({ size: "sm", variant: "ghost" }) + " h-7 w-7 p-0"}
+                      disabled={annotations.length === 0}
+                      onClick={() => setAnnotationsVisibility(true)}
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                    </TooltipTrigger>
+                    <TooltipContent>Show all annotations</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger
+                      className={buttonVariants({ size: "sm", variant: "ghost" }) + " h-7 w-7 p-0"}
+                      disabled={annotations.length === 0}
+                      onClick={() => setAnnotationsVisibility(false)}
+                    >
+                      <EyeOff className="h-3.5 w-3.5" />
+                    </TooltipTrigger>
+                    <TooltipContent>Hide all annotations</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
 
@@ -405,7 +434,7 @@ export function LeftSidebar({ projectId }: { projectId: string }) {
 
           <Separator />
 
-          <ScrollArea className="flex-1">
+          <ScrollArea className="flex-1 min-h-0">
             {filteredAnnotations.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Layers className="h-12 w-12 text-muted-foreground mb-3" />
@@ -424,10 +453,25 @@ export function LeftSidebar({ projectId }: { projectId: string }) {
                   const label = labelClasses.find(
                     (lc) => lc.id === annotation.labelId
                   );
+                  const isSelected = selectedAnnotationIds.includes(annotation.id);
                   return (
                     <div
                       key={annotation.id}
-                      className="flex items-center gap-2 p-2 rounded hover:bg-accent transition-colors"
+                      className={cn(
+                        "flex items-center gap-2 p-2 rounded transition-colors cursor-pointer",
+                        isSelected ? "bg-primary/10 hover:bg-primary/15" : "hover:bg-accent"
+                      )}
+                      onClick={(e) => {
+                        if (e.shiftKey || e.ctrlKey || e.metaKey) {
+                          setSelectedAnnotationIds(
+                            isSelected
+                              ? selectedAnnotationIds.filter((id) => id !== annotation.id)
+                              : [...selectedAnnotationIds, annotation.id]
+                          );
+                        } else {
+                          setSelectedAnnotationIds([annotation.id]);
+                        }
+                      }}
                     >
                       {getTypeIcon(annotation.type)}
                       <div
@@ -483,8 +527,8 @@ export function LeftSidebar({ projectId }: { projectId: string }) {
           </ScrollArea>
         </TabsContent>
 
-        <TabsContent value="classes" className="flex-1 flex flex-col mt-0 p-3 space-y-3">
-          <div className="space-y-2">
+        <TabsContent value="classes" className="flex-1 min-h-0 flex flex-col mt-0 p-3 space-y-3 overflow-hidden">
+          <div className="space-y-2 shrink-0">
             <div className="text-sm font-medium">
               {labelClasses.length} Class{labelClasses.length !== 1 ? "es" : ""}
             </div>
@@ -492,7 +536,7 @@ export function LeftSidebar({ projectId }: { projectId: string }) {
 
           <Separator />
 
-          <ScrollArea className="flex-1">
+          <ScrollArea className="flex-1 min-h-0">
             {labelClasses.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Tag className="h-12 w-12 text-muted-foreground mb-3" />
@@ -504,9 +548,13 @@ export function LeftSidebar({ projectId }: { projectId: string }) {
             ) : (
               <div className="space-y-1 pr-3 mb-3">
                 {labelClasses.map((labelClass) => {
-                  const usageCount = annotations.filter(
+                  const classAnnotations = annotations.filter(
                     (a) => a.labelId === labelClass.id
-                  ).length;
+                  );
+                  const usageCount = classAnnotations.length;
+                  const hasHiddenAnnotations = classAnnotations.some(
+                    (a) => !a.isVisible
+                  );
                   const isActive = labelClass.id === activeLabelId;
 
                   return (
@@ -557,6 +605,32 @@ export function LeftSidebar({ projectId }: { projectId: string }) {
                         <Tooltip>
                           <TooltipTrigger
                             className={buttonVariants({ size: "sm", variant: "ghost" }) + " h-6 w-6 p-0"}
+                            disabled={usageCount === 0}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setAnnotationsVisibility(
+                                hasHiddenAnnotations,
+                                labelClass.id
+                              );
+                            }}
+                          >
+                            {hasHiddenAnnotations ? (
+                              <Eye className="h-3.5 w-3.5" />
+                            ) : (
+                              <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
+                            )}
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {hasHiddenAnnotations
+                              ? "Show this label"
+                              : "Hide this label"}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger
+                            className={buttonVariants({ size: "sm", variant: "ghost" }) + " h-6 w-6 p-0"}
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDeleteClass(
@@ -577,7 +651,7 @@ export function LeftSidebar({ projectId }: { projectId: string }) {
             )}
           </ScrollArea>
 
-          <div className="space-y-2 pt-2 border-t">
+          <div className="space-y-2 pt-2 border-t shrink-0">
             <div className="text-xs font-medium text-muted-foreground">
               Add New Class
             </div>
@@ -611,8 +685,8 @@ export function LeftSidebar({ projectId }: { projectId: string }) {
           </div>
         </TabsContent>
 
-        <TabsContent value="dataset" className="flex-1 flex flex-col mt-0 p-3 space-y-3">
-          <div className="space-y-2">
+        <TabsContent value="dataset" className="flex-1 min-h-0 flex flex-col mt-0 p-3 space-y-3 overflow-hidden">
+          <div className="space-y-2 shrink-0">
             <div className="text-sm font-medium">
               {images.length} {images.length === 1 ? "Image" : "Images"}
             </div>
@@ -641,7 +715,7 @@ export function LeftSidebar({ projectId }: { projectId: string }) {
 
           <Separator />
 
-          <ScrollArea className="flex-1">
+          <ScrollArea className="flex-1 min-h-0">
             {images.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Database className="h-12 w-12 text-muted-foreground mb-3" />

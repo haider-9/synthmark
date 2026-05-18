@@ -63,6 +63,7 @@ interface AnnotationState {
   setAnnotations: (annotations: Annotation[]) => void;
   addAnnotation: (annotation: Annotation) => void;
   updateAnnotation: (id: string, updates: Partial<Annotation>) => void;
+  setAnnotationsVisibility: (visible: boolean, labelId?: string) => void;
   deleteAnnotations: (ids: string[]) => void;
   duplicateAnnotations: (ids: string[]) => void;
   replaceAnnotations: (removeIds: string[], add: Annotation[]) => void;
@@ -187,6 +188,14 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
     get().saveHistory();
   },
 
+  setAnnotationsVisibility: (visible, labelId) => {
+    const next = get().annotations.map((ann) =>
+      labelId && ann.labelId !== labelId ? ann : { ...ann, isVisible: visible },
+    );
+    set({ annotations: next });
+    get().saveHistory();
+  },
+
   deleteAnnotations: (ids) => {
     set({
       annotations: get().annotations.filter((ann) => !ids.includes(ann.id)),
@@ -239,7 +248,7 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
     if (copiedAnnotations.length === 0) return;
     const OFFSET = 20;
     const pasted = copiedAnnotations.map((a) => {
-      const n = { ...a, id: uuidv4() };
+      const n = { ...a, id: uuidv4(), isVisible: true };
       if (n.type === "box")      return { ...n, x: n.x + OFFSET, y: n.y + OFFSET };
       if (n.type === "circle")   return { ...n, x: n.x + OFFSET, y: n.y + OFFSET };
       if (n.type === "polygon")  return { ...n, points: n.points.map((p) => ({ x: p.x + OFFSET, y: p.y + OFFSET })) };
