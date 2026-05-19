@@ -3,6 +3,7 @@
 import React from "react";
 import {
   Clipboard,
+  CheckCircle2,
   Copy,
   Eraser,
   Eye,
@@ -15,20 +16,22 @@ import {
   Pencil,
   Redo2,
   Search,
+  Save,
   Square,
   Trash2,
   Undo2,
   Unlock,
+  Upload,
   ZoomIn,
   ZoomOut,
   CircleIcon,
   Dot,
+  FileDown,
 } from "lucide-react";
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
-  ContextMenuLabel,
   ContextMenuRadioGroup,
   ContextMenuRadioItem,
   ContextMenuSeparator,
@@ -40,6 +43,7 @@ import {
 } from "@/components/ui/context-menu";
 import { useAnnotationStore } from "@/stores/useAnnotationStore";
 import type { ActiveTool } from "@/types/annotation";
+import { EDITOR_EVENTS, dispatchEditorEvent } from "@/lib/editor-events";
 
 const TOOL_OPTIONS: Array<{
   value: ActiveTool;
@@ -65,12 +69,17 @@ export function EditorContextMenu({ children }: { children: React.ReactNode }) {
   const activeTool = useAnnotationStore((s) => s.activeTool);
   const setActiveTool = useAnnotationStore((s) => s.setActiveTool);
   const labelClasses = useAnnotationStore((s) => s.labelClasses);
+  const images = useAnnotationStore((s) => s.images);
+  const activeImageId = useAnnotationStore((s) => s.activeImageId);
   const zoomLevel = useAnnotationStore((s) => s.zoomLevel);
   const setZoomLevel = useAnnotationStore((s) => s.setZoomLevel);
   const undo = useAnnotationStore((s) => s.undo);
   const redo = useAnnotationStore((s) => s.redo);
   const history = useAnnotationStore((s) => s.history);
   const historyIndex = useAnnotationStore((s) => s.historyIndex);
+  const savedAnnotationsSnapshot = useAnnotationStore(
+    (s) => s.savedAnnotationsSnapshot,
+  );
   const copyAnnotations = useAnnotationStore((s) => s.copyAnnotations);
   const pasteAnnotations = useAnnotationStore((s) => s.pasteAnnotations);
   const duplicateAnnotations = useAnnotationStore((s) => s.duplicateAnnotations);
@@ -82,9 +91,12 @@ export function EditorContextMenu({ children }: { children: React.ReactNode }) {
   );
   const selectionCount = selectedAnnotationIds.length;
   const hasSelection = selectionCount > 0;
+  const activeImage = images.find((image) => image.id === activeImageId);
   const canPaste = copiedAnnotations.length > 0;
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < history.length - 1;
+  const hasUnsavedChanges =
+    JSON.stringify(annotations) !== savedAnnotationsSnapshot;
   const allSelectedLocked =
     hasSelection && selectedAnnotations.every((ann) => ann.isLocked);
   const allSelectedHidden =
@@ -109,11 +121,11 @@ export function EditorContextMenu({ children }: { children: React.ReactNode }) {
         {children}
       </ContextMenuTrigger>
       <ContextMenuContent className="min-w-56 rounded-md p-1.5">
-        <ContextMenuLabel>
+        <div className="px-1.5 py-1 text-xs font-medium text-muted-foreground">
           {hasSelection
             ? `${selectionCount} selected`
             : "Canvas options"}
-        </ContextMenuLabel>
+        </div>
 
         <ContextMenuItem onClick={undo} disabled={!canUndo}>
           <Undo2 />
@@ -124,6 +136,48 @@ export function EditorContextMenu({ children }: { children: React.ReactNode }) {
           <Redo2 />
           Redo
           <ContextMenuShortcut>Ctrl+Shift+Z</ContextMenuShortcut>
+        </ContextMenuItem>
+        <ContextMenuItem
+          onClick={() => dispatchEditorEvent(EDITOR_EVENTS.save)}
+          disabled={!hasUnsavedChanges}
+        >
+          <Save />
+          Save
+          <ContextMenuShortcut>Ctrl+S</ContextMenuShortcut>
+        </ContextMenuItem>
+        <ContextMenuItem
+          onClick={() => dispatchEditorEvent(EDITOR_EVENTS.complete)}
+          disabled={!activeImageId || activeImage?.status === "completed"}
+        >
+          <CheckCircle2 />
+          Complete image
+        </ContextMenuItem>
+
+        <ContextMenuSub>
+          <ContextMenuSubTrigger>
+            <Upload />
+            Import
+          </ContextMenuSubTrigger>
+          <ContextMenuSubContent className="min-w-56">
+            <ContextMenuItem
+              onClick={() => dispatchEditorEvent(EDITOR_EVENTS.extractFromNxus)}
+            >
+              <FileDown />
+              Extract polygons from NXUS
+            </ContextMenuItem>
+            <ContextMenuItem
+              onClick={() => dispatchEditorEvent(EDITOR_EVENTS.importFromNxus)}
+            >
+              <Upload />
+              Paste NXUS / Label Studio JSON
+            </ContextMenuItem>
+          </ContextMenuSubContent>
+        </ContextMenuSub>
+        <ContextMenuItem
+          onClick={() => dispatchEditorEvent(EDITOR_EVENTS.copyForNxus)}
+        >
+          <Clipboard />
+          Copy for NXUS / Label Studio
         </ContextMenuItem>
 
         <ContextMenuSeparator />

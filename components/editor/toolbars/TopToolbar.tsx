@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   MousePointer2,
@@ -20,8 +20,8 @@ import {
   Clipboard,
   Copy,
   Check,
+  CheckCircle2,
   Upload,
-  FileDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,6 +42,7 @@ import { ExportDialog } from "@/components/editor/export/ExportDialog";
 import { fromLabelStudioResult, toLabelStudioResult } from "@/lib/export";
 import type { ActiveTool } from "@/types/annotation";
 import { toast } from "sonner";
+import { EDITOR_EVENTS } from "@/lib/editor-events";
 
 const NXUS_POLYGON_EXTRACT_SCRIPT = `(() => {
   const selected = window.Htx?.annotationStore?.selected;
@@ -150,30 +151,35 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
 
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < history.length - 1;
+  const activeImage = images.find((image) => image.id === activeImageId);
   const hasUnsavedChanges =
     JSON.stringify(annotations) !== savedAnnotationsSnapshot;
 
-  const handleSave = async () => {
+  const saveAnnotations = useCallback(async () => {
+    if (!activeImageId) {
+      throw new Error("Upload or select an image before saving");
+    }
+
+    const response = await fetch(
+      `/api/projects/${projectId}/images/${activeImageId}/annotations`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ annotations }),
+      },
+    );
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error ?? "Save failed");
+    return data;
+  }, [activeImageId, annotations, projectId]);
+
+  const handleSave = useCallback(async () => {
     if (!activeImageId) {
       toast.error("Upload or select an image before saving");
       return;
     }
 
-    const save = async () => {
-      const response = await fetch(
-        `/api/projects/${projectId}/images/${activeImageId}/annotations`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ annotations }),
-        },
-      );
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? "Save failed");
-      return data;
-    };
-
-    const promise = save();
+    const promise = saveAnnotations();
     toast.promise(promise, {
       loading: "Saving annotations...",
       success: "Annotations saved",
@@ -185,9 +191,53 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
       updateImageStatus(activeImageId, data.status);
       markAnnotationsSaved();
     } catch (error) {
+      if (error instanceof Error && error.message.includes("Upload or select")) {
+        toast.error(error.message);
+      }
+    }
+  }, [activeImageId, markAnnotationsSaved, saveAnnotations, updateImageStatus]);
+
+  const handleComplete = useCallback(async () => {
+    if (!activeImageId) {
+      toast.error("Upload or select an image before completing");
+      return;
+    }
+
+    const complete = async () => {
+      await saveAnnotations();
+
+      const response = await fetch(`/api/projects/${projectId}/images/${activeImageId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "completed" }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Failed to complete image");
+      return data;
+    };
+
+    const promise = complete();
+    toast.promise(promise, {
+      loading: "Completing image...",
+      success: "Image marked complete",
+      error: (err) =>
+        err instanceof Error ? err.message : "Failed to complete image",
+    });
+
+    try {
+      await promise;
+      updateImageStatus(activeImageId, "completed");
+      markAnnotationsSaved();
+    } catch {
       // toast.promise already presents the failure.
     }
-  };
+  }, [
+    activeImageId,
+    markAnnotationsSaved,
+    projectId,
+    saveAnnotations,
+    updateImageStatus,
+  ]);
 
   const handleAutoLabel = () => {
     const activeImage = images.find((image) => image.id === activeImageId);
@@ -212,7 +262,7 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
     toast.success("Created a starter box. Adjust it, then save.");
   };
 
-  const handleCopyForLabelStudio = () => {
+  const handleCopyForLabelStudio = useCallback(() => {
     const activeImage = images.find((i) => i.id === activeImageId);
     const result = toLabelStudioResult({
       annotations,
@@ -231,7 +281,7 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
     setLsJson(`window.Htx.annotationStore.selected.appendResults(${json})`);
     setLsOpen(true);
     setTextCopied(false);
-  };
+  }, [activeImageId, annotations, images, labelClasses]);
 
   const handleTextCopy = () => {
     // Select all + copy via execCommand — works regardless of focus/permissions
@@ -279,6 +329,28 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
       toast.error(error instanceof Error ? error.message : "Import failed");
     }
   };
+
+  useEffect(() => {
+    const openNxusExtractor = () => {
+      setImportOpen(true);
+      setExtractScriptCopied(false);
+    };
+    const openImporter = () => setImportOpen(true);
+
+    window.addEventListener(EDITOR_EVENTS.save, handleSave);
+    window.addEventListener(EDITOR_EVENTS.complete, handleComplete);
+    window.addEventListener(EDITOR_EVENTS.copyForNxus, handleCopyForLabelStudio);
+    window.addEventListener(EDITOR_EVENTS.extractFromNxus, openNxusExtractor);
+    window.addEventListener(EDITOR_EVENTS.importFromNxus, openImporter);
+
+    return () => {
+      window.removeEventListener(EDITOR_EVENTS.save, handleSave);
+      window.removeEventListener(EDITOR_EVENTS.complete, handleComplete);
+      window.removeEventListener(EDITOR_EVENTS.copyForNxus, handleCopyForLabelStudio);
+      window.removeEventListener(EDITOR_EVENTS.extractFromNxus, openNxusExtractor);
+      window.removeEventListener(EDITOR_EVENTS.importFromNxus, openImporter);
+    };
+  }, [handleComplete, handleSave, handleCopyForLabelStudio]);
 
   return (
     <TooltipProvider>
@@ -373,6 +445,16 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
               label={hasUnsavedChanges ? "Save changes" : "All changes saved"}
               shortcut="Ctrl+S"
             />
+            <ActionBtn
+              icon={CheckCircle2}
+              onClick={handleComplete}
+              disabled={!activeImageId || activeImage?.status === "completed"}
+              label={
+                activeImage?.status === "completed"
+                  ? "Image completed"
+                  : "Complete image"
+              }
+            />
             <ExportDialog />
             <Tooltip>
               <TooltipTrigger
@@ -391,26 +473,6 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
               Copy for NXUS / Label Studio
             </TooltipContent>
           </Tooltip>
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 text-muted-foreground hover:text-foreground transition-colors"
-                    onClick={() => {
-                      setImportOpen(true);
-                      setExtractScriptCopied(false);
-                    }}
-                  >
-                    <FileDown className="h-3.5 w-3.5" />
-                  </Button>
-                }
-              />
-              <TooltipContent side="bottom" className="text-xs">
-                Export polygons from NXUS
-              </TooltipContent>
-            </Tooltip>
             <Tooltip>
               <TooltipTrigger
                 render={
@@ -482,7 +544,7 @@ export function TopToolbar({ projectId, projectName }: { projectId: string; proj
       <Dialog open={importOpen} onOpenChange={setImportOpen}>
         <DialogContent className="sm:max-w-2xl dark">
           <DialogHeader>
-            <DialogTitle className="text-sm font-semibold">Export polygons from NXUS</DialogTitle>
+            <DialogTitle className="text-sm font-semibold">Import from NXUS / Label Studio</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-3">
