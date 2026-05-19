@@ -23,6 +23,7 @@ import Konva from "konva";
 import { useAnnotationStore } from "@/stores/useAnnotationStore";
 import { useCanvasInteractions } from "@/hooks/useCanvasInteractions";
 import { usePolygonOps } from "@/hooks/usePolygonOps";
+import { EditorContextMenu } from "@/components/editor/canvas/EditorContextMenu";
 import {
   BoundingBox,
   Polygon,
@@ -62,6 +63,25 @@ function hexAlpha(hex: string, alpha: number): string {
 
 function dist(a: Point, b: Point): number {
   return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+}
+
+function pointInPolygon(point: Point, points: Point[]): boolean {
+  let inside = false;
+
+  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+    const current = points[i];
+    const previous = points[j];
+    const intersects =
+      current.y > point.y !== previous.y > point.y &&
+      point.x <
+        ((previous.x - current.x) * (point.y - current.y)) /
+          (previous.y - current.y) +
+          current.x;
+
+    if (intersects) inside = !inside;
+  }
+
+  return inside;
 }
 
 // ─── Diamond Vertex Component ─────────────────────────────────────────────────
@@ -819,10 +839,56 @@ function AnnotationCanvasComponent({
     [],
   );
 
+  const getAnnotationAtPoint = useCallback(
+    (point: Point): Annotation | null => {
+      for (const ann of [...annotations].reverse()) {
+        if (!ann.isVisible) continue;
+
+        if (ann.type === "box") {
+          const box = ann as BoundingBox;
+          const x1 = Math.min(box.x, box.x + box.width);
+          const x2 = Math.max(box.x, box.x + box.width);
+          const y1 = Math.min(box.y, box.y + box.height);
+          const y2 = Math.max(box.y, box.y + box.height);
+
+          if (point.x >= x1 && point.x <= x2 && point.y >= y1 && point.y <= y2) {
+            return ann;
+          }
+        }
+
+        if (ann.type === "circle") {
+          const circle = ann as CircleAnnotationType;
+          if (dist(point, { x: circle.x, y: circle.y }) <= circle.radius) {
+            return ann;
+          }
+        }
+
+        if (ann.type === "polygon") {
+          const polygon = ann as Polygon;
+          if (pointInPolygon(point, polygon.points)) {
+            return ann;
+          }
+        }
+
+        if (ann.type === "keypoint") {
+          const keypoint = ann as Keypoint;
+          if (dist(point, keypoint.point) <= 8 / zoomRef.current) {
+            return ann;
+          }
+        }
+      }
+
+      return null;
+    },
+    [annotations],
+  );
+
   // ─── Event Handlers ───────────────────────────────────────────────────────
 
   const handleClick = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
+      if (e.evt.button !== 0) return;
+
       const tool = activeToolRef.current;
 
       if (tool === "select") {
@@ -877,6 +943,8 @@ function AnnotationCanvasComponent({
 
   const handleMouseDown = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
+      if (e.evt.button !== 0) return;
+
       const tool = activeToolRef.current;
       const stage = stageRef.current;
       if (!stage) return;
@@ -960,6 +1028,30 @@ function AnnotationCanvasComponent({
       }
     },
     [addAnnotation, finalizePolygon, updatePolygonPreview, syncDraftShapes],
+  );
+
+  const handleContextMenu = useCallback(
+    (e: Konva.KonvaEventObject<PointerEvent>) => {
+      e.evt.preventDefault();
+
+      const stage = stageRef.current;
+      if (!stage) return;
+
+      const pos = stage.getRelativePointerPosition();
+      if (!pos) return;
+
+      const hit = getAnnotationAtPoint(pos);
+      if (hit && !selectedAnnotationIds.includes(hit.id)) {
+        setSelectedAnnotationIds([hit.id]);
+        setActiveVertex(null);
+      }
+    },
+    [
+      getAnnotationAtPoint,
+      selectedAnnotationIds,
+      setActiveVertex,
+      setSelectedAnnotationIds,
+    ],
   );
 
   const handleMouseMove = useCallback(() => {
@@ -1258,15 +1350,16 @@ function AnnotationCanvasComponent({
   const isMarqueeActive = marqueeState !== null;
 
   return (
-    <div
-      ref={containerRef}
-      className="w-full h-full overflow-hidden"
-      style={{
-        cursor: isMarqueeActive
-          ? "crosshair"
-          : (TOOL_CURSORS[activeTool] ?? "default"),
-      }}
-    >
+    <EditorContextMenu>
+      <div
+        ref={containerRef}
+        className="w-full h-full overflow-hidden"
+        style={{
+          cursor: isMarqueeActive
+            ? "crosshair"
+            : (TOOL_CURSORS[activeTool] ?? "default"),
+        }}
+      >
       <Stage
         ref={stageRef}
         width={stageSize.width}
@@ -1280,6 +1373,7 @@ function AnnotationCanvasComponent({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onClick={handleClick}
+        onContextMenu={handleContextMenu}
         onWheel={handleWheel}
       >
         {/* Background Layer */}
@@ -1485,7 +1579,8 @@ function AnnotationCanvasComponent({
           )}
         </Layer>
       </Stage>
-    </div>
+      </div>
+    </EditorContextMenu>
   );
 }
 
