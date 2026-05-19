@@ -19,9 +19,10 @@ interface ImageUploadZoneProps {
   projectId: string;
   onUploaded?: (image: UploadedImage) => void;
   className?: string;
+  triggerId?: string;
 }
 
-export function ImageUploadZone({ projectId, onUploaded, className }: ImageUploadZoneProps) {
+export function ImageUploadZone({ projectId, onUploaded, className, triggerId }: ImageUploadZoneProps) {
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -90,10 +91,10 @@ export function ImageUploadZone({ projectId, onUploaded, className }: ImageUploa
   return (
     <div
       className={cn(
-        "relative border-2 border-dashed rounded-xl transition-colors cursor-pointer",
+        "relative border border-dashed transition-colors cursor-pointer",
         dragActive
           ? "border-primary bg-primary/5"
-          : "border-border hover:border-primary/50 hover:bg-card",
+          : "border-border hover:border-primary/50 hover:bg-muted/30",
         uploading && "pointer-events-none opacity-60",
         className
       )}
@@ -107,6 +108,7 @@ export function ImageUploadZone({ projectId, onUploaded, className }: ImageUploa
       }}
     >
       <input
+        id={triggerId}
         ref={inputRef}
         type="file"
         accept="image/*"
@@ -115,20 +117,20 @@ export function ImageUploadZone({ projectId, onUploaded, className }: ImageUploa
         onChange={(e) => uploadFiles(e.target.files)}
       />
 
-      <div className="flex flex-col items-center justify-center gap-2 py-8 px-4 text-center select-none">
+      <div className="flex items-center justify-center gap-3 px-4 py-4 text-center select-none">
         {uploading ? (
           <>
-            <Loader2 className="h-6 w-6 text-primary animate-spin" />
+            <Loader2 className="h-5 w-5 text-primary animate-spin" />
             <p className="text-[13px] text-muted-foreground">Uploading…</p>
           </>
         ) : (
           <>
-            <div className="w-10 h-10 rounded-xl bg-muted border border-border flex items-center justify-center">
-              <Upload className="h-5 w-5 text-muted-foreground" />
+            <div className="w-8 h-8 rounded border border-border bg-background flex items-center justify-center">
+              <Upload className="h-4 w-4 text-muted-foreground" />
             </div>
-            <div>
+            <div className="text-left">
               <p className="text-[13px] font-medium text-muted-foreground">
-                Drop images here or <span className="text-primary">browse</span>
+                Drop images or <span className="text-primary">browse</span>
               </p>
               <p className="text-[11px] text-muted-foreground mt-0.5">PNG, JPG, WEBP supported</p>
             </div>

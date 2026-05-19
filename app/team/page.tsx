@@ -43,7 +43,7 @@ function TeamContent() {
         </div>
 
         {loading ? (
-          <AppLoading title="Loading team" subtitle="Finding members in your workspace." />
+          <AppLoading variant="team" title="Loading team" />
         ) : error ? (
           <div className="bg-card border border-border rounded-xl p-10 text-center text-[13px] text-muted-foreground">{error}</div>
         ) : members.length === 0 ? (

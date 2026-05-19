@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
-import { Annotation, Point, LabelClass, ActiveTool } from "../types/annotation";
+import { Annotation, Point, LabelClass, ActiveTool, Polygon } from "../types/annotation";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -68,6 +68,7 @@ interface AnnotationState {
   setAnnotationsVisibility: (visible: boolean, labelId?: string) => void;
   deleteAnnotations: (ids: string[]) => void;
   duplicateAnnotations: (ids: string[]) => void;
+  overlayAnnotations: (ids: string[], labelId?: string) => void;
   replaceAnnotations: (removeIds: string[], add: Annotation[]) => void;
 
   // Selection
@@ -221,6 +222,30 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => ({
     set({
       annotations: [...get().annotations, ...dupes],
       selectedAnnotationIds: dupes.map((d) => d.id),
+    });
+    get().saveHistory();
+  },
+
+  overlayAnnotations: (ids, labelId) => {
+    const targetLabelId = labelId ?? get().activeLabelId;
+    const toOverlay = get().annotations.filter(
+      (a): a is Polygon => ids.includes(a.id) && a.type === "polygon",
+    );
+    if (toOverlay.length === 0) return;
+
+    const overlays = toOverlay.map((a) => ({
+      ...a,
+      id: uuidv4(),
+      labelId: targetLabelId ?? a.labelId,
+      isVisible: true,
+      isLocked: false,
+      metadata: a.metadata ? { ...a.metadata } : undefined,
+      points: a.points.map((p) => ({ ...p })),
+    }));
+
+    set({
+      annotations: [...get().annotations, ...overlays],
+      selectedAnnotationIds: overlays.map((a) => a.id),
     });
     get().saveHistory();
   },

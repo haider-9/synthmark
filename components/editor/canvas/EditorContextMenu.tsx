@@ -10,6 +10,7 @@ import {
   EyeOff,
   Hand,
   Hexagon,
+  Layers2,
   Lock,
   Merge,
   MousePointer2,
@@ -83,6 +84,7 @@ export function EditorContextMenu({ children }: { children: React.ReactNode }) {
   const copyAnnotations = useAnnotationStore((s) => s.copyAnnotations);
   const pasteAnnotations = useAnnotationStore((s) => s.pasteAnnotations);
   const duplicateAnnotations = useAnnotationStore((s) => s.duplicateAnnotations);
+  const overlayAnnotations = useAnnotationStore((s) => s.overlayAnnotations);
   const deleteAnnotations = useAnnotationStore((s) => s.deleteAnnotations);
   const updateAnnotation = useAnnotationStore((s) => s.updateAnnotation);
 
@@ -91,6 +93,8 @@ export function EditorContextMenu({ children }: { children: React.ReactNode }) {
   );
   const selectionCount = selectedAnnotationIds.length;
   const hasSelection = selectionCount > 0;
+  const canOverlaySelection =
+    hasSelection && selectedAnnotations.every((ann) => ann.type === "polygon");
   const activeImage = images.find((image) => image.id === activeImageId);
   const canPaste = copiedAnnotations.length > 0;
   const canUndo = historyIndex > 0;
@@ -202,6 +206,13 @@ export function EditorContextMenu({ children }: { children: React.ReactNode }) {
           <Copy />
           Duplicate
           <ContextMenuShortcut>Ctrl+D</ContextMenuShortcut>
+        </ContextMenuItem>
+        <ContextMenuItem
+          onClick={() => overlayAnnotations(selectedAnnotationIds)}
+          disabled={!canOverlaySelection}
+        >
+          <Layers2 />
+          Overlay as active class
         </ContextMenuItem>
         <ContextMenuItem
           variant="destructive"

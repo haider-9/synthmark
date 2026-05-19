@@ -75,7 +75,7 @@ function AnalyticsContent() {
         </div>
 
         {loading ? (
-          <AppLoading title="Loading analytics" subtitle="Aggregating labels, tasks, and image status." />
+          <AppLoading variant="analytics" title="Loading analytics" />
         ) : error || !data ? (
           <div className="bg-card border border-border rounded-xl p-10 text-center text-[13px] text-muted-foreground">{error}</div>
         ) : totals.imageTotal === 0 && totals.annotationTotal === 0 && totals.taskTotal === 0 ? (

@@ -55,7 +55,7 @@ function ProjectsContent() {
 
         {/* Content */}
         {loading ? (
-          <AppLoading title="Loading projects" subtitle="Fetching your annotation workspaces." />
+          <AppLoading variant="projects" title="Loading projects" />
         ) : projects.length === 0 ? (
           /* Empty state */
           <div className="bg-card border border-border rounded-xl p-20 flex flex-col items-center justify-center text-center gap-4">

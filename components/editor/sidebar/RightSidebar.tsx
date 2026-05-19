@@ -15,7 +15,6 @@ import {
   Maximize2,
   Wand2,
   MousePointer2,
-  Info,
   Hash,
   Ruler,
   Layers2,
@@ -35,7 +34,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAnnotationStore } from "@/stores/useAnnotationStore";
 import { usePolygonOps } from "@/hooks/usePolygonOps";
-import { BoundingBox, Polygon } from "@/types/annotation";
+import { BoundingBox, Keypoint, Polygon } from "@/types/annotation";
 import { Scissors } from "lucide-react";
 
 function Section({
@@ -70,30 +69,15 @@ function Section({
   );
 }
 
-function FieldRow({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-center gap-2">
-      <span className="text-[10px] text-muted-foreground w-12 flex-shrink-0 uppercase tracking-wide">
-        {label}
-      </span>
-      <div className="flex-1">{children}</div>
-    </div>
-  );
-}
-
 export function RightSidebar() {
   const selectedAnnotationIds = useAnnotationStore((s) => s.selectedAnnotationIds);
   const annotations = useAnnotationStore((s) => s.annotations);
   const deleteAnnotations = useAnnotationStore((s) => s.deleteAnnotations);
   const duplicateAnnotations = useAnnotationStore((s) => s.duplicateAnnotations);
+  const overlayAnnotations = useAnnotationStore((s) => s.overlayAnnotations);
   const updateAnnotation = useAnnotationStore((s) => s.updateAnnotation);
   const labelClasses = useAnnotationStore((s) => s.labelClasses);
+  const activeLabelId = useAnnotationStore((s) => s.activeLabelId);
 
   const { handleMerge, handleSubtractSelected } = usePolygonOps();
 
@@ -105,6 +89,7 @@ export function RightSidebar() {
   const count = selectedAnnotationIds.length;
   const ann = annotations.find((a) => a.id === selectedAnnotationIds[0]);
   const cls = labelClasses.find((c) => c.id === ann?.labelId);
+  const activeCls = labelClasses.find((c) => c.id === activeLabelId);
 
   // Both selected are polygons
   const selectedPolygons = selectedAnnotationIds
@@ -113,6 +98,8 @@ export function RightSidebar() {
 
   const canMerge = selectedPolygons.length >= 2;
   const canSubtract = selectedPolygons.length === 2; // exactly 2: first minus second
+  const canOverlay =
+    selectedPolygons.length > 0 && selectedPolygons.length === count;
 
   const handleLabelChange = (classId: string) => {
     selectedAnnotationIds.forEach((id) =>
@@ -334,7 +321,7 @@ export function RightSidebar() {
                   </Label>
                   <Input
                     className="h-6 text-xs font-mono bg-muted/40 border-border/40 px-2"
-                    value={Math.round((ann as any).point[field])}
+                    value={Math.round((ann as Keypoint).point[field])}
                     readOnly
                   />
                 </div>
@@ -455,25 +442,37 @@ export function RightSidebar() {
         <Separator className="opacity-30" />
 
         {/* ── Actions ───────────────────────────────────────────────── */}
-        <div className="px-3 pt-2 flex gap-1.5">
-          <Button
-            variant="destructive"
-            size="sm"
-            className="flex-1 h-7 text-xs"
-            onClick={() => deleteAnnotations(selectedAnnotationIds)}
-          >
-            <Trash2 className="h-3 w-3 mr-1.5" />
-            Delete
-          </Button>
+        <div className="px-3 pt-2 space-y-1.5">
           <Button
             variant="outline"
             size="sm"
-            className="flex-1 h-7 text-xs border-border/60"
-            onClick={() => duplicateAnnotations(selectedAnnotationIds)}
+            className="w-full h-7 text-xs border-border/60"
+            onClick={() => overlayAnnotations(selectedAnnotationIds)}
+            disabled={!canOverlay}
           >
-            <Copy className="h-3 w-3 mr-1.5" />
-            Duplicate
+            <Layers2 className="h-3 w-3 mr-1.5" />
+            Overlay as {activeCls?.name ?? "active class"}
           </Button>
+          <div className="flex gap-1.5">
+            <Button
+              variant="destructive"
+              size="sm"
+              className="flex-1 h-7 text-xs"
+              onClick={() => deleteAnnotations(selectedAnnotationIds)}
+            >
+              <Trash2 className="h-3 w-3 mr-1.5" />
+              Delete
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1 h-7 text-xs border-border/60"
+              onClick={() => duplicateAnnotations(selectedAnnotationIds)}
+            >
+              <Copy className="h-3 w-3 mr-1.5" />
+              Duplicate
+            </Button>
+          </div>
         </div>
       </div>
     </ScrollArea>

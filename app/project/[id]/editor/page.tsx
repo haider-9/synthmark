@@ -130,9 +130,9 @@ function StatusBar({ cursorPosition }: { cursorPosition: { x: number; y: number 
 function LoadingScreen() {
   return (
     <AppLoading
+      variant="editor"
       fullScreen
       title="Loading annotation editor"
-      subtitle="Preparing canvas tools, label classes, and dataset images."
     />
   );
 }

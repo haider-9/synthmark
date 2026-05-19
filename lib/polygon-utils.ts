@@ -1,17 +1,19 @@
 import polygonClipping from "polygon-clipping";
 import { Point } from "../types/annotation";
 
+type PCRing = [number, number][];
+
 /**
  * Converts a list of Point objects to the format expected by polygon-clipping: [[x, y], [x, y], ...]
  */
-export const pointsToPC = (points: Point[]): [number, number][] => {
+export const pointsToPC = (points: Point[]): PCRing => {
   return points.map((p) => [p.x, p.y]);
 };
 
 /**
  * Converts the format from polygon-clipping back to a list of Point objects.
  */
-export const pcToPoints = (pcPoints: [number, number][]): Point[] => {
+export const pcToPoints = (pcPoints: PCRing): Point[] => {
   return pcPoints.map(([x, y]) => ({ x, y }));
 };
 
@@ -22,6 +24,21 @@ export const unionPolygons = (p1: Point[], p2: Point[]): Point[][] => {
   const result = polygonClipping.union([pointsToPC(p1)], [pointsToPC(p2)]);
   // Result is MultiPolygon: Polygon[] -> Ring[] -> [x, y][]
   return result.map((poly) => pcToPoints(poly[0])); // Returning only the exterior rings for now
+};
+
+/**
+ * Performs a union operation on any number of polygons.
+ */
+export const unionManyPolygons = (polygons: Point[][]): Point[][] => {
+  if (polygons.length === 0) return [];
+
+  let result = [[pointsToPC(polygons[0])]];
+
+  for (const points of polygons.slice(1)) {
+    result = polygonClipping.union(result, [pointsToPC(points)]);
+  }
+
+  return result.map((poly) => pcToPoints(poly[0]));
 };
 
 /**

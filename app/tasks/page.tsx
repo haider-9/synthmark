@@ -45,7 +45,7 @@ function TasksContent() {
         </div>
 
         {loading ? (
-          <AppLoading title="Loading tasks" subtitle="Checking assignments and review status." />
+          <AppLoading variant="tasks" title="Loading tasks" />
         ) : error ? (
           <div className="bg-card border border-border rounded-xl p-10 text-center text-[13px] text-muted-foreground">{error}</div>
         ) : tasks.length === 0 ? (

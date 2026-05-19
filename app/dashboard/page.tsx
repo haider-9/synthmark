@@ -118,7 +118,7 @@ function Dashboard() {
         </div>
 
         {loading ? (
-          <AppLoading title="Building dashboard" subtitle="Gathering project progress and work queues." />
+          <AppLoading variant="dashboard" title="Building dashboard" />
         ) : error || !data || !stats ? (
           <EmptyState title={error ?? "Dashboard data is unavailable."} href="/projects" cta="Open projects" />
         ) : (
